@@ -1,0 +1,21 @@
+{
+  "name": "express-test",
+  "version": "1.0.0",
+  "description": "express framework sample server app",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/micstach/express-test.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/micstach/express-test/issues"
+  },
+  "homepage": "https://github.com/micstach/express-test#readme",
+  "dependencies": {}
+}
