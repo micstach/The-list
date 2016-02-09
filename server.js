@@ -2,16 +2,10 @@ var express = require('express') ;
 var mongodb = require('mongodb') ; 
 var bodyParser = require('body-parser') ;
 
-// var MessageSchema = mongoose.Schema({  
-// 	text: String
-// });  
-
 var MongoClient = mongodb.MongoClient ;
 
 var mongoUrl = 'mongodb://127.0.0.1/mymongodb' ;  
  
-//var MessageModel = mongoose.model('MessageModel', MessageSchema);  
-
 var port = 80 ;
 
 var app = express() ;
@@ -23,9 +17,9 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded());  
 
 app.get('*', function(req, res) {
-	//var items = MessageModel.find() ;
 
-	MongoClient.connect(mongoUrl, function(err, db){
+	MongoClient.connect(mongoUrl, function(err, db) {
+	
 		var collection = db.collection('messages').find().toArray(function(err, result){
 			console.log(result);
 
@@ -33,11 +27,7 @@ app.get('*', function(req, res) {
 
 			db.close();
 		});
-		//console.log(collection) ;
-		//db.close() ;
 	}) ;
-
-	//res.render('index', {title:'Koledzy Julka', messages:[]}) ;
 }) ;
 
 app.post('/post', function(req, res){
