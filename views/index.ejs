@@ -1,3 +1,21 @@
 <html>
 	<h1><%= title %></h1>
+	<p>
+	 <form action="\post" method="post">
+	 	<input type="text" name="message">
+	 	<input type="submit">
+	 </form>
+	</p>
+    <p>
+	    <ul>
+	    	<% for(var i=messages.length-1; i>=0; i--) { %>
+	    		<li>
+	    	    	<form acton="\remove" method="post">
+	    				<%= messages[i].text %>
+	    				<!-- <input type="submit" text="usuń"> -->
+	    			</form>
+	    		</li>
+	    	<% } %>
+	    </ul> 
+    </p>
 </html>
