@@ -19,27 +19,33 @@ app.use(bodyParser.urlencoded());
 app.get('*', function(req, res) {
 
 	MongoClient.connect(mongoUrl, function(err, db) {
-	
 		var collection = db.collection('messages').find().toArray(function(err, result){
 			console.log(result);
-
 			res.render('index', {title:'Koledzy Julka', messages:result}) ;
-
 			db.close();
 		});
 	}) ;
 }) ;
 
-app.post('/post', function(req, res){
-	console.log(req.body.message) ;
+app.post('/add', function(req, res){
+	console.log("add: " + req.body.message) ;
 
 	MongoClient.connect(mongoUrl, function(err, db){
 		var collection = db.collection('messages') ;
 		collection.save({text: req.body.message}) ;
 		db.close() ;
+		res.redirect('/');
 	}) ;
+}) ;
 
-	res.redirect('/');
+app.post('/clear', function(req, res){
+	console.log("clear") ;
+
+	MongoClient.connect(mongoUrl, function(err, db){
+		db.collection('messages').drop() ;
+		db.close() ;
+		res.redirect('/');
+	}) ;
 }) ;
 
 app.listen(port, function(){

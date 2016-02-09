@@ -1,11 +1,14 @@
 <html>
 	<h1><%= title %></h1>
 	<p>
-	 <form action="\post" method="post">
+	 <form action="\add" method="post">
 	 	<input type="text" name="message">
-	 	<input type="submit">
+	 	<button type="submit" value="add">Dodaj</button>
 	 </form>
 	</p>
+	<form action="\clear" method="post">
+		<button type="submit" value="clear">Wyczyść liste</button>
+	</form>
     <p>
 	    <ul>
 	    	<% for(var i=messages.length-1; i>=0; i--) { %>
