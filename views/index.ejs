@@ -3,29 +3,45 @@
 	<head>
 		<meta charset="UTF-8">
 		<!-- CSS (load bootstrap from a CDN) -->
-		<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+	    <meta name="viewport" content="width=device-width, initial-scale=1">
+	    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+	    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+	    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
 		<style>
-		    body { padding-top: 50px; }
+		    body { padding-top: 10px; }
 		    .clear-button 
 		    {
 		        right: 0px;
-    			margin: 20px 0px 20px 0px; 
+    			margin: 0px 0px 0px 0px; 
+		    }
+
+		    .items-counter
+		    {
+		    	margin-left: 10px;
+		    }
+
+		    .message-form
+		    {
+		    	margin: 10px 0px 20px 0px;
 		    }
 		</style>
 	</head>
 	<body class="container">
-		<h2><%= title %></h2>
-		<form action="/add" method="post">
-				<input type="text" name="message" class="form-control input-default" autofocus>
-				<!-- <button type="submit" class="btn btn-default">Dodaj</button> -->
-		</form>
-		<form action="\clear" method="post">
+		<form action="\clear" method="post" class="text-right">
 			<% if (messages.length != 0) { %>
-				<button type="submit" value="clear" class="clear-button btn btn-danger btn-default">Wyczyść listę</button>
+				<button type="submit" value="clear" class="clear-button btn btn-danger btn-sm">Wyczyść listę</button>
 			<% } else { %>
-				<button type="submit" value="clear" class="clear-button btn btn-danger btn-default disabled">Wyczyść listę</button>
+				<button type="submit" value="clear" class="clear-button btn btn-danger btn-sm disabled">Wyczyść listę</button>
 			<% } %>
 		</form>
+
+		<h2 class="text-center"><%= title %><span class="items-counter badge"><%= messages.length %></span></h2>
+		<form action="/add" method="post" class="message-form">
+				<input type="text" name="message" class="form-control input-default" placeholder="Wpisz cokolwiek..." autofocus>
+				<!-- <button type="submit" class="btn btn-default">Dodaj</button> -->
+		</form>
+
 	    <ul class="list-group">
 	    	<% messages.reverse().forEach(function(msg) { %>
 	    		<% include partials/message %>
