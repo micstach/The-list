@@ -21,21 +21,21 @@ app.get('*', function(req, res) {
 	MongoClient.connect(mongoUrl, function(err, db) {
 		var collection = db.collection('messages').find().toArray(function(err, result){
 			console.log(result);
-			res.render('index', {title:'Koledzy Julka', messages:result}) ;
+			res.render('index', {title:'Lista Julka', messages:result}) ;
 			db.close();
 		});
 	}) ;
 }) ;
 
 app.post('/add', function(req, res){
-	console.log("add: " + req.body.message) ;
-
-	MongoClient.connect(mongoUrl, function(err, db){
-		var collection = db.collection('messages') ;
-		collection.save({text: req.body.message}) ;
-		db.close() ;
-		res.redirect('/');
-	}) ;
+	if (req.body.message.length > 0) {
+		MongoClient.connect(mongoUrl, function(err, db){
+			var collection = db.collection('messages') ;
+			collection.save({text: req.body.message}) ;
+			db.close() ;
+			res.redirect('/');
+		}) ;
+	}
 }) ;
 
 app.post('/clear', function(req, res){
