@@ -10,14 +10,14 @@ var port = 80 ;
 
 var app = express() ;
 
-app.set('views', __dirname + '/views');  
+app.set('views', __dirname + '/public/views');  
 app.set('view engine', 'ejs');  
   
-app.use(express.static(__dirname));
+app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json());  
 app.use(bodyParser.urlencoded());  
 
-app.get('*', function(req, res) {
+app.get('/', function(req, res) {
 
 	MongoClient.connect(mongoUrl, function(err, db) {
 		var collection = db.collection('messages').find().toArray(function(err, result){
@@ -26,6 +26,10 @@ app.get('*', function(req, res) {
 			db.close();
 		});
 	}) ;
+}) ;
+
+app.get('/login', function(req, res) {
+	res.render('login') ;
 }) ;
 
 app.post('/add', function(req, res){
