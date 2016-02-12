@@ -15,6 +15,16 @@ body { padding-top: 10px; }
 	margin: 10px 0px 20px 0px;
 }
 
+.message-delete
+{
+    background-color: Transparent;
+    background-repeat:no-repeat;
+    border: none;
+    cursor:pointer;
+    overflow: hidden;
+    outline:none;
+}
+
 .toolbox
 {
 	background-color: rgb(250, 250, 250);

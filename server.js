@@ -58,6 +58,18 @@ app.post('/api/clear', function(req, res){
 	}) ;
 }) ;
 
+app.post('/api/user/:userid/message/:action/:id', function(req, res){
+	console.log("%s message: %s", req.params.action, req.params.id) ;
+
+	var mongoUrl = 'mongodb://127.0.0.1/' + req.params.userid;  
+
+	MongoClient.connect(mongoUrl, function(err, db){
+		db.collection('messages').remove({_id: mongodb.ObjectID(req.params.id)}) ;
+		db.close() ;
+		res.redirect('/user/' + req.params.userid);
+	}) ;
+}) ;
+
 app.listen(port, function(){
 	console.log('Server started, port: %s', port) ;
 }) ;
