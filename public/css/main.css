@@ -1,8 +1,13 @@
 body { padding-top: 10px; }
-.clear-button 
+.tool-box
 {
     right: 0px;
-	margin: 0px 0px 0px 0px; 
+	margin: 20px 0px 20px 0px; 
+}
+
+.user
+{
+	font-size: 1.5em;
 }
 
 .items-counter

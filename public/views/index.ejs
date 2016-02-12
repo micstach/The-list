@@ -12,28 +12,16 @@
 
 	<body class="container">
 
-<!-- 	  <div class="toolbox container col-sm-2">
-			<form action="/" method="" class="message-form">
-				<input type="text" name="search" class="form-control input-default" placeholder="szukaj..." autofocus>
-			</form>
-	  </div>
- -->	
 	  <div class="container">
-			<form action="/api/clear" method="post" class="text-right">
-			  <input type="hidden" name="userid" value="<%= userid %>">
-				<% if (messages.length != 0) { %>
-					<button type="submit" value="clear" class="clear-button btn btn-danger btn-sm">Wyczyść listę</button>
-				<% } else { %>
-					<button type="submit" value="clear" class="clear-button btn btn-danger btn-sm disabled">Wyczyść listę</button>
-				<% } %>
+			<form action="/api/clear" method="post" class="tool-box">
+			  <label class="user text-left"><%= username %><span class="items-counter badge"><%= messages.length %></span></label>
+				<button type="submit" value="clear" class="pull-right btn btn-danger btn-sm <%= (messages.length != 0) ? '' : 'disabled' %>">Wyczyść listę</button>
+				<input type="hidden" name="userid" value="<%= userid %>">
 			</form>
 
-			<h2 class="text-center"><%= title %><span class="items-counter badge"><%= messages.length %></span></h2>
-	
 			<form action="/api/add" method="post" class="message-form">
+  			<input type="text" name="message" class="form-control input-default" placeholder="Wpisz cokolwiek..." autofocus>
 			  <input type="hidden" name="userid" value="<%= userid %>">
-				<input type="text" name="message" class="form-control input-default" placeholder="Wpisz cokolwiek..." autofocus>
-				<!-- <button type="submit" class="btn btn-default">Dodaj</button> -->
 			</form>
 
 	    <ul class="list-group">
