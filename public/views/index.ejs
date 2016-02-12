@@ -13,15 +13,13 @@
 	<body class="container">
 
 	  <div class="container">
-			<form action="/api/clear" method="post" class="tool-box">
+			<form action="/api/user/<%= userid %>/message/removeall" method="post" class="tool-box">
 			  <label class="user text-left"><%= username %><span class="items-counter badge"><%= messages.length %></span></label>
 				<button type="submit" value="clear" class="pull-right btn btn-danger btn-sm <%= (messages.length != 0) ? '' : 'disabled' %>">Wyczyść listę</button>
-				<input type="hidden" name="userid" value="<%= userid %>">
 			</form>
 
-			<form action="/api/add" method="post" class="message-form">
-  			<input type="text" name="message" class="form-control input-default" placeholder="Wpisz cokolwiek..." autofocus>
-			  <input type="hidden" name="userid" value="<%= userid %>">
+			<form action="/api/user/<%= userid %>/message/add" method="post" class="message-form">
+ 				<input type="text" name="message" class="form-control input-default" placeholder="Wpisz cokolwiek..." autofocus>
 			</form>
 
 	    <ul class="list-group">
