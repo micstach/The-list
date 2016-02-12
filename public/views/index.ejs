@@ -19,7 +19,8 @@
 	  </div>
  -->	
 	  <div class="container">
-			<form action="\clear" method="post" class="text-right">
+			<form action="/api/clear" method="post" class="text-right">
+			  <input type="hidden" name="userid" value="<%= userid %>">
 				<% if (messages.length != 0) { %>
 					<button type="submit" value="clear" class="clear-button btn btn-danger btn-sm">Wyczyść listę</button>
 				<% } else { %>
@@ -29,7 +30,8 @@
 
 			<h2 class="text-center"><%= title %><span class="items-counter badge"><%= messages.length %></span></h2>
 	
-			<form action="/add" method="post" class="message-form">
+			<form action="/api/add" method="post" class="message-form">
+			  <input type="hidden" name="userid" value="<%= userid %>">
 				<input type="text" name="message" class="form-control input-default" placeholder="Wpisz cokolwiek..." autofocus>
 				<!-- <button type="submit" class="btn btn-default">Dodaj</button> -->
 			</form>

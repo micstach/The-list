@@ -4,8 +4,6 @@ var bodyParser = require('body-parser') ;
 
 var MongoClient = mongodb.MongoClient ;
 
-var mongoUrl = 'mongodb://127.0.0.1/mymongodb' ;  
- 
 var port = 80 ;
 
 var app = express() ;
@@ -17,12 +15,14 @@ app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json());  
 app.use(bodyParser.urlencoded());  
 
-app.get('/', function(req, res) {
+app.get('/user/:userid', function(req, res) {
+
+	var mongoUrl = 'mongodb://127.0.0.1/' + req.params.userid;  
 
 	MongoClient.connect(mongoUrl, function(err, db) {
 		var collection = db.collection('messages').find().toArray(function(err, result){
 			console.log(result);
-			res.render('index', {title:'Lista Julka', messages:result}) ;
+			res.render('index', {title:'Lista ' + req.params.userid, userid:req.params.userid, messages:result}) ;
 			db.close();
 		});
 	}) ;
@@ -32,24 +32,29 @@ app.get('/login', function(req, res) {
 	res.render('login') ;
 }) ;
 
-app.post('/add', function(req, res){
+app.post('/api/add', function(req, res){
 	if (req.body.message.length > 0) {
+
+		var mongoUrl = 'mongodb://127.0.0.1/' + req.body.userid;  
+
 		MongoClient.connect(mongoUrl, function(err, db){
 			var collection = db.collection('messages') ;
 			collection.save({text: req.body.message}) ;
 			db.close() ;
-			res.redirect('/');
+			res.redirect('/user/' + req.body.userid);
 		}) ;
 	}
 }) ;
 
-app.post('/clear', function(req, res){
+app.post('/api/clear', function(req, res){
 	console.log("clear") ;
+
+	var mongoUrl = 'mongodb://127.0.0.1/' + req.body.userid;  
 
 	MongoClient.connect(mongoUrl, function(err, db){
 		db.collection('messages').drop() ;
 		db.close() ;
-		res.redirect('/');
+		res.redirect('/user/' + req.body.userid);
 	}) ;
 }) ;
 
