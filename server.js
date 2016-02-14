@@ -1,4 +1,6 @@
 var express = require('express') ;
+var session = require('express-session') ;
+var cookieParser = require('cookie-parser') ;
 var mongodb = require('mongodb') ; 
 var bodyParser = require('body-parser') ;
 
@@ -14,23 +16,70 @@ app.set('view engine', 'ejs');
   
 app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json());  
-app.use(bodyParser.urlencoded());  
+app.use(bodyParser.urlencoded());
+app.use(cookieParser('cookie-guid'));  
+app.use(session({secret: 'super-secret'}));
 
-app.get('/user/:userid', function(req, res) {
+var authorize = function(req, res, next) {
+  console.log('autohrize, session user: %s')
+  if (req.session.user != undefined)
+    return next();
+  else
+    return res.redirect('/login');
+};
 
-  var mongoUrl = dbHost + req.params.userid;  
+// routes
+app.get('/user/:userid', authorize, function(req, res) {
 
-  MongoClient.connect(mongoUrl, function(err, db) {
-    var collection = db.collection('messages').find().toArray(function(err, result){
-      console.log(result);
-      res.render('index', {username: req.params.userid, userid:req.params.userid, messages:result}) ;
-      db.close();
-    });
-  }) ;
+  if (req.session.user == req.params.userid) {
+    var mongoUrl = dbHost + req.params.userid;  
+
+    MongoClient.connect(mongoUrl, function(err, db) {
+      var collection = db.collection('messages').find().toArray(function(err, result){
+        console.log(result);
+        res.render('index', {username: req.params.userid, userid:req.params.userid, messages:result}) ;
+        db.close();
+      });
+    }) ;
+  }
+  else
+  {
+    res.redirect('/login') ;
+  }
 }) ;
+
+app.get('/', authorize, function(req, res){
+  res.render('/login') ;
+});
 
 app.get('/login', function(req, res) {
   res.render('login') ;
+}) ;
+ 
+app.post('/api/login', function(req, res) {
+  console.log('login user: %s, %s', req.body.user, req.body.pwd);
+
+  if (req.body.user === 'michal' && req.body.pwd === 'pwd'){
+    console.log("user verified") ;
+    req.session.user = req.body.user ;
+    res.redirect('/user/' + req.body.user); 
+  }
+  else if (req.body.user === 'julek' && req.body.pwd === 'pwd'){
+    console.log("user verified") ;
+    req.session.user = req.body.user ;
+    res.redirect('/user/' + req.body.user); 
+  }
+  else if (req.body.user === 'tosia' && req.body.pwd === 'pwd'){
+    console.log("user verified") ;
+    req.session.user = req.body.user ;
+    res.redirect('/user/' + req.body.user); 
+  }
+  else
+  {
+    console.log("user not verified !") ;
+    req.session.destroy();
+    res.redirect('/user/' + req.body.user); 
+  }
 }) ;
 
 app.post('/api/user/:userid/message/:action/:id?', function(req, res){

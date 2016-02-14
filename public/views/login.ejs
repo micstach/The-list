@@ -9,13 +9,13 @@
     <link rel="stylesheet" type="text/css" href="../css/login.css">
   </head>
   <body class="container">
-    <form action="/" method="get" class="message-form col-sm-4 col-md-offset-4">
+    <form action="/api/login" method="post" class="message-form col-sm-4 col-md-offset-4">
       <div class="form-group">
-        <label for="email">Email:</label>
-        <input type="email" name="email" class="form-control input-default">
+        <label for="user">Użytkownik</label>
+        <input name="user" class="form-control input-default">
       </div>
       <div class="form-group">
-        <label for="pwd">Hasło:</label>
+        <label for="pwd">Hasło</label>
         <input type="password" name="pwd" class="form-control input-default">
       </div>
       <button type="submit" class="btn btn-default">Zaloguj</button>
