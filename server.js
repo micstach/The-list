@@ -4,10 +4,9 @@ var cookieParser = require('cookie-parser') ;
 var mongodb = require('mongodb') ; 
 var bodyParser = require('body-parser') ;
 
-var MongoClient = mongodb.MongoClient ;
+var environment = require('./environment.js') ;
 
-var dbHost = 'mongodb://127.0.0.1/' ;
-var port = 80 ;
+var MongoClient = mongodb.MongoClient ;
 
 var app = express() ;
 
@@ -30,9 +29,8 @@ var authorize = function(req, res, next) {
 
 // routes
 app.get('/user/:userid', authorize, function(req, res) {
-
   if (req.session.user == req.params.userid) {
-    var mongoUrl = dbHost + req.params.userid;  
+    var mongoUrl = environment.configuration.dbHost + req.params.userid;  
 
     MongoClient.connect(mongoUrl, function(err, db) {
       var collection = db.collection('messages').find().toArray(function(err, result){
@@ -59,17 +57,17 @@ app.get('/login', function(req, res) {
 app.post('/api/login', function(req, res) {
   console.log('login user: %s, %s', req.body.user, req.body.pwd);
 
-  if (req.body.user === 'michal' && req.body.pwd === 'pwd'){
+  if (req.body.user === 'Michal' && req.body.pwd === 'pwd'){
     console.log("user verified") ;
     req.session.user = req.body.user ;
     res.redirect('/user/' + req.body.user); 
   }
-  else if (req.body.user === 'julek' && req.body.pwd === 'pwd'){
+  else if (req.body.user === 'Julek' && req.body.pwd === 'pwd'){
     console.log("user verified") ;
     req.session.user = req.body.user ;
     res.redirect('/user/' + req.body.user); 
   }
-  else if (req.body.user === 'tosia' && req.body.pwd === 'pwd'){
+  else if (req.body.user === 'Tosia' && req.body.pwd === 'pwd'){
     console.log("user verified") ;
     req.session.user = req.body.user ;
     res.redirect('/user/' + req.body.user); 
@@ -78,14 +76,14 @@ app.post('/api/login', function(req, res) {
   {
     console.log("user not verified !") ;
     req.session.destroy();
-    res.redirect('/user/' + req.body.user); 
+    res.redirect('/login'); 
   }
 }) ;
 
 app.post('/api/user/:userid/message/:action/:id?', function(req, res){
   console.log("%s message(s)", req.params.action) ;
 
-  var mongoUrl = dbHost + req.params.userid;  
+  var mongoUrl = environment.configuration.dbHost + req.params.userid;  
 
   if (req.params.action == 'add') {
     if (req.body.message.length > 0) {
@@ -123,6 +121,6 @@ app.post('/api/user/:userid/message/:action/:id?', function(req, res){
   }
 }) ;
 
-app.listen(port, function(){
-  console.log('Server started, port: %s', port) ;
+app.listen(environment.configuration.port, function(){
+  console.log('Server started, port: %s', environment.configuration.port) ;
 }) ;
