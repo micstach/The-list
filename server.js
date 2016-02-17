@@ -6,6 +6,8 @@ var bodyParser = require('body-parser') ;
 
 var environment = require('./environment.js') ;
 
+var appDb = environment.configuration.dbHost + 'application';
+
 var MongoClient = mongodb.MongoClient ;
 
 var app = express() ;
@@ -39,7 +41,14 @@ app.get('/user/:userid', authorize, function(req, res) {
     MongoClient.connect(mongoUrl, function(err, db) {
       var collection = db.collection('messages').find().toArray(function(err, result){
         console.log("mongo result: %s", JSON.stringify(result));
-        res.render('index', {username: req.params.userid, userid:req.params.userid, messages:result}) ;
+
+        MongoClient.connect(appDb, function(err, _db) {
+          _db.collection('users').findOne({_id: mongodb.ObjectID(req.params.userid)}, function(err, item){
+            res.render('index', {username: item.name, userid:req.params.userid, messages:result}) ;
+            _db.close();
+          }) ;
+        });
+
         db.close();
       });
     }) ;
@@ -51,37 +60,65 @@ app.get('/user/:userid', authorize, function(req, res) {
 }) ;
 
 app.get('/', authorize, function(req, res){
-  res.render('/login') ;
+  res.redirect('/login') ;
 });
 
 app.get('/login', function(req, res) {
   res.render('login') ;
 }) ;
- 
-app.post('/api/login', function(req, res) {
-  console.log('login user: %s, %s', req.body.user, req.body.pwd);
 
-  if (req.body.user === 'michal' && req.body.pwd === 'pwd'){
-    console.log("user verified") ;
-    req.session.user = req.body.user ;
-    res.redirect('/user/' + req.body.user); 
+app.get('/register', function(req, res) {
+  res.render('register', {user: null, error:null}) ;
+}) ;
+
+
+app.post('/register', function(req, res){
+  var user = req.body.user ;
+  var pwd = req.body.pwd ;
+  var retypedPwd = req.body['re-pwd'] ;
+
+  console.log('api register: %s, %s, %s', user, pwd, retypedPwd); 
+
+  if (pwd == retypedPwd) {
+
+    var mongoUrl = environment.configuration.dbHost + 'application';  
+    
+    MongoClient.connect(mongoUrl, function(err, db) {
+      var collection = db.collection('users') ;
+      collection.save({name: user, password: pwd}) ;
+      db.close() ;
+
+      res.redirect('/login');
+    });
   }
-  else if (req.body.user === 'julek' && req.body.pwd === 'pwd'){
-    console.log("user verified") ;
-    req.session.user = req.body.user ;
-    res.redirect('/user/' + req.body.user); 
+  else {
+    res.render('register', {user: user, error:"Hasła nie pasują"});
   }
-  else if (req.body.user === 'tosia' && req.body.pwd === 'pwd'){
-    console.log("user verified") ;
-    req.session.user = req.body.user ;
-    res.redirect('/user/' + req.body.user); 
-  }
-  else
-  {
-    console.log("user not verified !") ;
-    req.session.destroy();
-    res.redirect('/login'); 
-  }
+}) ;
+
+app.post('/api/login', function(req, res) {
+  console.log('api login user: %s, %s', req.body.user, req.body.pwd);
+
+  var mongoUrl = environment.configuration.dbHost + 'application';
+
+  MongoClient.connect(mongoUrl, function(err, db) {
+    db.collection('users').find({name: req.body.user, password: req.body.pwd}).toArray(function(err, result) {
+        console.log("mongo err: %s", JSON.stringify(err));
+        console.log("mongo result: %s", JSON.stringify(result));
+        if (result.length == 1)
+        {
+          req.session.user = result[0]._id ;
+          res.redirect('/user/' + req.session.user);
+        }
+        else
+        {
+          console.log("user not verified !") ;
+          req.session.destroy();
+          res.redirect('/login'); 
+        }
+        db.close();
+      });
+  }) ;
 }) ;
 
 app.post('/api/user/:userid/message/:action/:id?', function(req, res){
