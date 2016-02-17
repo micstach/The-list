@@ -20,7 +20,7 @@ app.use(cookieParser('cookie-guid'));
 app.use(session({secret: 'super-secret'}));
 
 var authorize = function(req, res, next) {
-  console.log('autohrize, session user: %s')
+  console.log('autohrize, session user: %s', req.session.user)
   if (req.session.user != undefined)
     return next();
   else
@@ -29,12 +29,16 @@ var authorize = function(req, res, next) {
 
 // routes
 app.get('/user/:userid', authorize, function(req, res) {
+  console.log("ui: user %s", req.params.userid) ;
+
   if (req.session.user == req.params.userid) {
     var mongoUrl = environment.configuration.dbHost + req.params.userid;  
+    
+    console.log("DbUrl: %s", mongoUrl);
 
     MongoClient.connect(mongoUrl, function(err, db) {
       var collection = db.collection('messages').find().toArray(function(err, result){
-        console.log(result);
+        console.log("mongo result: %s", JSON.stringify(result));
         res.render('index', {username: req.params.userid, userid:req.params.userid, messages:result}) ;
         db.close();
       });
@@ -57,17 +61,17 @@ app.get('/login', function(req, res) {
 app.post('/api/login', function(req, res) {
   console.log('login user: %s, %s', req.body.user, req.body.pwd);
 
-  if (req.body.user === 'Michal' && req.body.pwd === 'pwd'){
+  if (req.body.user === 'michal' && req.body.pwd === 'pwd'){
     console.log("user verified") ;
     req.session.user = req.body.user ;
     res.redirect('/user/' + req.body.user); 
   }
-  else if (req.body.user === 'Julek' && req.body.pwd === 'pwd'){
+  else if (req.body.user === 'julek' && req.body.pwd === 'pwd'){
     console.log("user verified") ;
     req.session.user = req.body.user ;
     res.redirect('/user/' + req.body.user); 
   }
-  else if (req.body.user === 'Tosia' && req.body.pwd === 'pwd'){
+  else if (req.body.user === 'tosia' && req.body.pwd === 'pwd'){
     console.log("user verified") ;
     req.session.user = req.body.user ;
     res.redirect('/user/' + req.body.user); 
@@ -81,14 +85,19 @@ app.post('/api/login', function(req, res) {
 }) ;
 
 app.post('/api/user/:userid/message/:action/:id?', function(req, res){
-  console.log("%s message(s)", req.params.action) ;
+  console.log("api: %s message(s)", req.params.action) ;
 
   var mongoUrl = environment.configuration.dbHost + req.params.userid;  
+  console.log("DbUrl: %s", mongoUrl);
 
   if (req.params.action == 'add') {
     if (req.body.message.length > 0) {
 
       MongoClient.connect(mongoUrl, function(err, db) {
+        
+        console.log("mongo client connected");
+        console.log("mongo error: %s", err) ;
+
         var collection = db.collection('messages') ;
         collection.save({text: req.body.message}) ;
         db.close() ;
@@ -97,7 +106,8 @@ app.post('/api/user/:userid/message/:action/:id?', function(req, res){
       }) ;
     }
     else {
-        res.redirect('/user/' + req.params.userid);
+      console.log('api: empty message typed') ;
+      res.redirect('/user/' + req.params.userid);
     }
   } 
   else if (req.params.action == "delete") {
