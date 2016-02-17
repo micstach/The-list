@@ -64,7 +64,7 @@ app.get('/', authorize, function(req, res){
 });
 
 app.get('/login', function(req, res) {
-  res.render('login') ;
+  res.render('login', {error:null}) ;
 }) ;
 
 app.get('/register', function(req, res) {
@@ -96,25 +96,29 @@ app.post('/register', function(req, res){
   }
 }) ;
 
-app.post('/api/login', function(req, res) {
-  console.log('api login user: %s, %s', req.body.user, req.body.pwd);
+app.get('/logoff', function(req, res){
+  req.session.destroy();
+  res.redirect('/login');
+}) ;
+
+app.post('/login', function(req, res) {
+  console.log('login user: %s, %s', req.body.user, req.body.pwd);
 
   var mongoUrl = environment.configuration.dbHost + 'application';
 
   MongoClient.connect(mongoUrl, function(err, db) {
-    db.collection('users').find({name: req.body.user, password: req.body.pwd}).toArray(function(err, result) {
+    db.collection('users').findOne({name: req.body.user, password: req.body.pwd}, function(err, user) {
         console.log("mongo err: %s", JSON.stringify(err));
-        console.log("mongo result: %s", JSON.stringify(result));
-        if (result.length == 1)
-        {
-          req.session.user = result[0]._id ;
+        console.log("mongo user: %s", JSON.stringify(user));
+
+        if (user !== null) {
+          req.session.user = user._id ;
           res.redirect('/user/' + req.session.user);
         }
-        else
-        {
+        else {
           console.log("user not verified !") ;
           req.session.destroy();
-          res.redirect('/login'); 
+          res.render('login', {error: "Niepoprawny użytkownik lub hasło"}); 
         }
         db.close();
       });
