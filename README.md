@@ -1,3 +1,8 @@
 # The list
-
-Start mongodb: ```mongod --dbpath c:\mongo\data```
+## Requirements
+- nodejs
+- mongodb
+## Starting
+- ```npm install```
+- ```mongodb --dbpath <dbpath>```
+- ```node server.js```
