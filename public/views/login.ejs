@@ -20,9 +20,9 @@
         <input type="password" name="pwd" class="form-control input-default">
       </div>
       <% if (error !== undefined) { %>
-        <div class="form-group">
-          <text><%= error %></text>
-        </div>
+      <div class="form-group">
+        <text class="error"><%= error %></text>
+      </div>
       <% } %>      
       <button type="submit" class="btn btn-default">Zaloguj</button>
       <a href="/register" class="pull-right">Zarejestruj</a>

@@ -75,29 +75,29 @@ app.post('/register', function(req, res){
 
   console.log('api register: %s, %s, %s', req.body.user, pwd, retypedPwd); 
 
-  if (pwd == retypedPwd) {
-
-    var mongoUrl = environment.config.db() ;  
-    
-    // register if not exists
-    MongoClient.connect(mongoUrl, function(err, db) {
-      db.collection('users').findOne({name: req.body.user}, function(err, user) {
-        if (user == null) {
+  var mongoUrl = environment.config.db() ;  
+  
+  // register if not exists
+  MongoClient.connect(mongoUrl, function(err, db) {
+    db.collection('users').findOne({name: req.body.user}, function(err, user) {
+      if (user == null) {
+        if (pwd == retypedPwd) {
           db.collection('users').save({name: req.body.user, password: pwd}) ;
           db.close() ;
-
-          res.redirect('/login');
         }
         else {
           db.close() ;
-          res.render('register', {user: req.body.user, error:"Użytkownik o tej nazwie istnieje"});      
+          res.render('register', {user: req.body.user, error:"Hasła nie pasują !"});
         }
-      });
-    }) ;
-  }
-  else {
-    res.render('register', {user: req.body.user, error:"Hasła nie pasują"});
-  }
+
+        res.redirect('/login');
+      }
+      else {
+        db.close() ;
+        res.render('register', {user: req.body.user, user_error:"Użytkownik o tej nazwie już istnieje !"});      
+      }
+    });
+  }) ;
 }) ;
 
 app.get('/logoff', function(req, res){
@@ -123,7 +123,7 @@ app.post('/login', function(req, res) {
         else {
           console.log("user not verified !") ;
           req.session.destroy();
-          res.render('login', {error: "Niepoprawny użytkownik lub hasło"}); 
+          res.render('login', {error: "Niepoprawny użytkownik lub hasło !"}); 
         }
         db.close();
       });

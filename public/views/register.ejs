@@ -13,18 +13,25 @@
     <form action="/register" method="post" class="message-form col-xs-6 col-xs-offset-3">
       <div class="form-group">
         <label for="user">Nazwa użytkownika</label>
-        <input name="user" class="form-control input-default" value="<%= user %>">
+        <input name="user" class="form-control input-default" placeholder="podaj nazwę">
       </div>
+      <% if (locals.user_error) { %>
+      <div class="form-group">
+        <text class="error"><%= user_error %></text>
+      </div>
+      <% } %>        
       <div class="form-group">
         <label for="pwd">Hasło</label>
-        <input type="password" name="pwd" class="form-control input-default" placeholder="hasło">
+        <input type="password" name="pwd" class="form-control input-default" placeholder="podaj hasło">
       </div>
       <div class="form-group">
         <input type="password" name="re-pwd" class="form-control input-default" placeholder="powtórz hasło">
-        <% if (error !== undefined) { %>
-          <text><%= error %></text>
-        <% } %>
       </div>
+      <% if (locals.error) { %>
+        <div  class="form-group">
+          <text class="error"><%= error %></text>
+        </div>
+      <% } %>
       <button type="submit" class="btn btn-default">Zarejestruj</button>
     </form>
   </body>
