@@ -6,8 +6,6 @@ var bodyParser = require('body-parser') ;
 
 var environment = require('./environment.js') ;
 
-var appDb = environment.configuration.dbHost + 'application';
-
 var MongoClient = mongodb.MongoClient ;
 
 var app = express() ;
@@ -34,15 +32,15 @@ app.get('/user/:userid', authorize, function(req, res) {
   console.log("ui: user %s", req.params.userid) ;
 
   if (req.session.user == req.params.userid) {
-    var mongoUrl = environment.configuration.dbHost + req.params.userid;  
+    var mongoUrl = environment.config.db();  
     
     console.log("DbUrl: %s", mongoUrl);
 
     MongoClient.connect(mongoUrl, function(err, db) {
-      var collection = db.collection('messages').find().toArray(function(err, result){
+      var collection = db.collection(req.params.userid).find().toArray(function(err, result){
         console.log("mongo result: %s", JSON.stringify(result));
 
-        MongoClient.connect(appDb, function(err, _db) {
+        MongoClient.connect(mongoUrl, function(err, _db) {
           _db.collection('users').findOne({_id: mongodb.ObjectID(req.params.userid)}, function(err, item){
             res.render('index', {username: item.name, userid:req.params.userid, messages:result}) ;
             _db.close();
@@ -81,7 +79,7 @@ app.post('/register', function(req, res){
 
   if (pwd == retypedPwd) {
 
-    var mongoUrl = environment.configuration.dbHost + 'application';  
+    var mongoUrl = environment.config.db() ;  
     
     MongoClient.connect(mongoUrl, function(err, db) {
       var collection = db.collection('users') ;
@@ -104,7 +102,7 @@ app.get('/logoff', function(req, res){
 app.post('/login', function(req, res) {
   console.log('login user: %s, %s', req.body.user, req.body.pwd);
 
-  var mongoUrl = environment.configuration.dbHost + 'application';
+  var mongoUrl = environment.config.db();
 
   MongoClient.connect(mongoUrl, function(err, db) {
     db.collection('users').findOne({name: req.body.user, password: req.body.pwd}, function(err, user) {
@@ -128,7 +126,7 @@ app.post('/login', function(req, res) {
 app.post('/api/user/:userid/message/:action/:id?', function(req, res){
   console.log("api: %s message(s)", req.params.action) ;
 
-  var mongoUrl = environment.configuration.dbHost + req.params.userid;  
+  var mongoUrl = environment.config.db() ;  
   console.log("DbUrl: %s", mongoUrl);
 
   if (req.params.action == 'add') {
@@ -139,7 +137,7 @@ app.post('/api/user/:userid/message/:action/:id?', function(req, res){
         console.log("mongo client connected");
         console.log("mongo error: %s", err) ;
 
-        var collection = db.collection('messages') ;
+        var collection = db.collection(req.params.userid) ;
         collection.save({text: req.body.message}) ;
         db.close() ;
 
@@ -155,7 +153,7 @@ app.post('/api/user/:userid/message/:action/:id?', function(req, res){
     console.log('message id: %s', req.params.id) ;
 
     MongoClient.connect(mongoUrl, function(err, db) {
-      db.collection('messages').remove({_id: mongodb.ObjectID(req.params.id)}) ;
+      db.collection(req.params.userid).remove({_id: mongodb.ObjectID(req.params.id)}) ;
       db.close() ;
       res.redirect('/user/' + req.params.userid);
     }) ;
@@ -165,13 +163,13 @@ app.post('/api/user/:userid/message/:action/:id?', function(req, res){
     console.log("removeall") ;
 
     MongoClient.connect(mongoUrl, function(err, db) {
-      db.collection('messages').drop() ;
+      db.collection(req.params.userid).drop() ;
       db.close() ;
       res.redirect('/user/' + req.params.userid);
     }) ;
   }
 }) ;
 
-app.listen(environment.configuration.port, function(){
-  console.log('Server started, port: %s', environment.configuration.port) ;
+app.listen(environment.config.port(), environment.config.ip(), function(){
+  console.log('Server started, port: %s', environment.config.port()) ;
 }) ;
