@@ -3,8 +3,8 @@ var session = require('express-session') ;
 var cookieParser = require('cookie-parser') ;
 var mongodb = require('mongodb') ; 
 var bodyParser = require('body-parser') ;
-
 var environment = require('./environment.js') ;
+var utils = require('./utils.js');
 
 var MongoClient = mongodb.MongoClient ;
 
@@ -69,28 +69,34 @@ app.get('/register', function(req, res) {
   res.render('register', {user: null, error:null}) ;
 }) ;
 
-
 app.post('/register', function(req, res){
-  var user = req.body.user ;
-  var pwd = req.body.pwd ;
-  var retypedPwd = req.body['re-pwd'] ;
+  var pwd = utils.security.hashValue(req.body.pwd) ;
+  var retypedPwd = utils.security.hashValue(req.body['re-pwd']) ;
 
-  console.log('api register: %s, %s, %s', user, pwd, retypedPwd); 
+  console.log('api register: %s, %s, %s', req.body.user, pwd, retypedPwd); 
 
   if (pwd == retypedPwd) {
 
     var mongoUrl = environment.config.db() ;  
     
+    // register if not exists
     MongoClient.connect(mongoUrl, function(err, db) {
-      var collection = db.collection('users') ;
-      collection.save({name: user, password: pwd}) ;
-      db.close() ;
+      db.collection('users').findOne({name: req.body.user}, function(err, user) {
+        if (user == null) {
+          db.collection('users').save({name: req.body.user, password: pwd}) ;
+          db.close() ;
 
-      res.redirect('/login');
-    });
+          res.redirect('/login');
+        }
+        else {
+          db.close() ;
+          res.render('register', {user: req.body.user, error:"Użytkownik o tej nazwie istnieje"});      
+        }
+      });
+    }) ;
   }
   else {
-    res.render('register', {user: user, error:"Hasła nie pasują"});
+    res.render('register', {user: req.body.user, error:"Hasła nie pasują"});
   }
 }) ;
 
@@ -103,9 +109,10 @@ app.post('/login', function(req, res) {
   console.log('login user: %s, %s', req.body.user, req.body.pwd);
 
   var mongoUrl = environment.config.db();
+  var pwd = utils.security.hashValue(req.body.pwd) ;
 
   MongoClient.connect(mongoUrl, function(err, db) {
-    db.collection('users').findOne({name: req.body.user, password: req.body.pwd}, function(err, user) {
+    db.collection('users').findOne({name: req.body.user, password: pwd}, function(err, user) {
         console.log("mongo err: %s", JSON.stringify(err));
         console.log("mongo user: %s", JSON.stringify(user));
 
