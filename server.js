@@ -3,6 +3,9 @@ var session = require('express-session') ;
 var cookieParser = require('cookie-parser') ;
 var mongodb = require('mongodb') ; 
 var bodyParser = require('body-parser') ;
+var moment = require('moment');
+
+// local
 var environment = require('./environment.js') ;
 var utils = require('./utils.js');
 
@@ -130,7 +133,33 @@ app.post('/login', function(req, res) {
   }) ;
 }) ;
 
-app.post('/api/user/:userid/message/:action/:id?', function(req, res){
+app.put('/api/user/:userid/message/:id/checked', authorize, function(req, res){
+  console.log("api: check message: " + JSON.stringify(req.params));
+
+  MongoClient.connect(environment.config.db(), function(err, db) {
+    db.collection(req.params.userid).findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, item){
+      item.status = 'checked' ;
+      db.collection(req.params.userid).save(item) ;
+      db.close() ;
+      res.sendStatus(200); 
+    }) ;
+  }) ;
+});
+
+app.put('/api/user/:userid/message/:id/unchecked', authorize, function(req, res){
+  console.log("api: unchecked message: " + JSON.stringify(req.params)); 
+
+  MongoClient.connect(environment.config.db(), function(err, db) {
+    db.collection(req.params.userid).findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, item){
+      item.status = 'unchecked' ;
+      db.collection(req.params.userid).save(item) ;
+      db.close() ;
+      res.sendStatus(200);
+    }) ;
+  }) ;
+});
+
+app.post('/api/user/:userid/message/:action/:id?', authorize, function(req, res){
   console.log("api: %s message(s)", req.params.action) ;
 
   var mongoUrl = environment.config.db() ;  
@@ -145,7 +174,11 @@ app.post('/api/user/:userid/message/:action/:id?', function(req, res){
         console.log("mongo error: %s", err) ;
 
         var collection = db.collection(req.params.userid) ;
-        collection.save({text: req.body.message}) ;
+        collection.save({
+          text: req.body.message, 
+          status: 'unchecked',
+          timestamp: moment().valueOf() 
+        }) ;
         db.close() ;
 
         res.redirect('/user/' + req.params.userid);

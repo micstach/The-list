@@ -1,9 +1,11 @@
-<!-- expected msg object -->
-<li id="<%= msg._id %>" class="list-group-item">
-	<span>
-		<%= msg.text %>
-	</span>
-    <form action="/api/user/<%= userid %>/message/delete/<%= msg._id %>" method="post" class="pull-right">
-      <button type="submit" class="message-delete glyphicon glyphicon-remove">
-    </form>
+<li class="list-group-item">
+  <span>
+    <input class="message-toggle" data-user-id="<%= userid %>" data-message-id="<%= msg._id %>" type="checkbox" value="" <%= msg.status %>>
+  </span>
+  <span tooltip="<%= Date(msg.timestamp) %>">
+    <%= msg.text %>
+  </span>
+  <form action="/api/user/<%= userid %>/message/delete/<%= msg._id %>" method="post" class="pull-right">
+    <button type="submit" class="message-delete glyphicon glyphicon-remove">
+  </form>
 </li>

@@ -1,34 +1,39 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta charset="UTF-8">
-		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
-		<link rel="stylesheet" type="text/css" href="../css/main.css">
+    <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" type="text/css" >
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/main.css" rel="stylesheet" type="text/css">
+    <link href="../css/animated-radios-amp-checkboxes-nojs.css" type="text/css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-	</head>
-
-	<body class="container">
-
-	  <div class="container">
-			<form action="/api/user/<%= userid %>/message/removeall" method="post" class="tool-box">
-			  <label class="user text-left"><%= username %><span class="items-counter badge"><%= messages.length %></span></label>
-			  <a href="/logoff">Wyloguj</a>
-				<button type="submit" value="clear" class="pull-right btn btn-danger btn-sm <%= (messages.length != 0) ? '' : 'disabled' %>">Wyczyść listę</button>
-			</form>
-
-			<form action="/api/user/<%= userid %>/message/add" method="post" class="message-form">
- 				<input type="text" name="message" class="form-control input-default" placeholder="Wpisz cokolwiek..." autofocus>
-			</form>
-
-	    <ul class="list-group">
-	    	<% messages.reverse().forEach(function(msg) { %>
-	    		<% include partials/message %>
-	    	<% }) %>
-	    </ul> 
+    <script src="../scripts/index.js"></script>
+  </head>
+  <body class="container">
+    <div class="container">
+      <form action="/api/user/<%= userid %>/message/removeall" method="post" class="tool-box">
+        <label class="user text-left"><%= username %><span class="items-counter badge"><%= messages.length %></span></label>
+        <!-- <button type="submit" value="clear" class="pull-right btn btn-danger btn-sm <%= (messages.length != 0) ? '' : 'disabled' %>">Wyczyść listę</button> -->
+        <a class="logoff pull-right" href="/logoff">Wyloguj</a>
+      </form>
+      <form action="/api/user/<%= userid %>/message/add" method="post" class="message-form">
+        <input type="text" name="message" class="form-control input-default" placeholder="Wpisz cokolwiek..." autofocus>
+      </form>
+      <ul class="list-group">
+        <% messages.reverse().forEach(function(msg) { %>
+          <% if (msg.status == 'unchecked') { %>
+            <% include partials/message %>
+          <% } %>
+        <% }) %>
+        <% messages.forEach(function(msg) { %>
+          <% if (msg.status == 'checked') { %>
+            <% include partials/message %>
+          <% } %>
+        <% }) %>
+      </ul> 
     </div>
-
   </body>
 </html>
