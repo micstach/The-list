@@ -1,5 +1,5 @@
 exports.config = {
-	
+  
   db: function() 
   {
     var conn = 'mongodb://' ;
@@ -16,11 +16,11 @@ exports.config = {
     }
     return conn ;
   },
-	
+  
   port: function() 
   {
-		return process.env.OPENSHIFT_NODEJS_PORT || 80;
-	},
+    return process.env.OPENSHIFT_NODEJS_PORT || 80;
+  },
   
   ip: function() 
   {
