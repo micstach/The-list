@@ -15,7 +15,7 @@
   <body class="container">
     <div class="container">
       <form action="/api/user/<%= userid %>/message/removeall" method="post" class="tool-box">
-        <label class="user text-left"><%= username %><span class="items-counter badge"><%= messages.length %></span></label>
+        <label class="user text-left"><%= username %></label><span class="items-counter badge"><%= messages.length %></span>
         <!-- <button type="submit" value="clear" class="pull-right btn btn-danger btn-sm <%= (messages.length != 0) ? '' : 'disabled' %>">Wyczyść listę</button> -->
         <a class="logoff pull-right" href="/logoff">Wyloguj</a>
       </form>
