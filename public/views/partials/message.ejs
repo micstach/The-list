@@ -1,10 +1,8 @@
 <!-- expected msg object -->
 <li id="<%= msg._id %>" class="list-group-item">
-	<!-- <form acton="\remove" method="post"> -->
 	<span>
 		<%= msg.text %>
 	</span>
-	<!-- </form> -->
     <form action="/api/user/<%= userid %>/message/delete/<%= msg._id %>" method="post" class="pull-right">
       <button type="submit" class="message-delete glyphicon glyphicon-remove">
     </form>

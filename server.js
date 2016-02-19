@@ -167,7 +167,7 @@ app.post('/api/user/:userid/message/:action/:id?', function(req, res){
     MongoClient.connect(mongoUrl, function(err, db) {
       db.collection('messages').drop() ;
       db.close() ;
-      res.redirect('/user/' + req.body.userid);
+      res.redirect('/user/' + req.params.userid);
     }) ;
   }
 }) ;
