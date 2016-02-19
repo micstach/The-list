@@ -1,3 +1,11 @@
 # The list
+It's a todo-list project
 
-Start mongodb: ```mongod --dbpath c:\mongo\data```
+## Requirements
+- nodejs
+- mongodb
+
+## Starting
+- ```npm install```
+- ```mongodb --dbpath <dbpath>```
+- ```node server.js```
