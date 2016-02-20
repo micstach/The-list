@@ -12,24 +12,27 @@
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
     <script src="../scripts/index.js"></script>
   </head>
-  <body class="container">
+  <body>
     <div class="container">
       <form action="/api/user/<%= userid %>/message/removeall" method="post" class="tool-box">
-        <label class="user text-left"><%= username %></label><span class="items-counter badge"><%= messages.length %></span>
+        <label class="text-left"><%= username %>
+          <span class="items-counter label-danger label label-as-badge"><%= messages.filter(function(message){return message.status === 'unchecked';}).length %></span>
+          <span class="items-counter label-default label label-as-badge"><%= messages.length %></span>
+        </label>
+        <a class="logoff pull-right glyphicon glyphicon-log-out" href="/logoff"></a>
         <!-- <button type="submit" value="clear" class="pull-right btn btn-danger btn-sm <%= (messages.length != 0) ? '' : 'disabled' %>">Wyczyść listę</button> -->
-        <a class="logoff pull-right" href="/logoff">Wyloguj</a>
       </form>
       <form action="/api/user/<%= userid %>/message/add" method="post" class="message-form">
         <input type="text" name="message" class="form-control input-default" placeholder="Wpisz cokolwiek..." autofocus>
       </form>
       <ul class="list-group">
         <% messages.reverse().forEach(function(msg) { %>
-          <% if (msg.status == 'unchecked') { %>
+          <% if (msg.status === 'unchecked') { %>
             <% include partials/message %>
           <% } %>
         <% }) %>
         <% messages.forEach(function(msg) { %>
-          <% if (msg.status == 'checked') { %>
+          <% if (msg.status === 'checked') { %>
             <% include partials/message %>
           <% } %>
         <% }) %>
