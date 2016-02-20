@@ -65,7 +65,12 @@ app.get('/', authorize, function(req, res){
 });
 
 app.get('/login', function(req, res) {
-  res.render('login', {error:null}) ;
+  if (req.session.user !== undefined){
+    res.redirect('/user/' + req.session.user);
+  }
+  else {
+    res.render('login', {error:null}) ;
+  }
 }) ;
 
 app.get('/register', function(req, res) {
