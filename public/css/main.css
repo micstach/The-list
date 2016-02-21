@@ -39,12 +39,12 @@ body { padding-top: 10px; }
 	height: 500px;
 }
 	
-.logoff
+.utilities
 {
-	margin-right: 5px;
+	margin-left: 20px;
 }	    
 
-.logoff:hover
+.utilities:hover
 {
 	text-decoration: none;
 }	    

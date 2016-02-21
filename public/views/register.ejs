@@ -10,30 +10,32 @@
     <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script> -->
     <!-- <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script> -->
   </head>
-  <body class="container">
-    <form action="/register" method="post" class="message-form col-xs-6 col-xs-offset-3">
-      <div class="form-group">
-        <label for="user">Nazwa użytkownika</label>
-        <input name="user" class="form-control input-default" placeholder="podaj nazwę">
-      </div>
-      <% if (locals.user_error) { %>
-      <div class="form-group">
-        <text class="error"><%= user_error %></text>
-      </div>
-      <% } %>        
-      <div class="form-group">
-        <label for="pwd">Hasło</label>
-        <input type="password" name="pwd" class="form-control input-default" placeholder="podaj hasło">
-      </div>
-      <div class="form-group">
-        <input type="password" name="re-pwd" class="form-control input-default" placeholder="powtórz hasło">
-      </div>
-      <% if (locals.error) { %>
-        <div  class="form-group">
-          <text class="error"><%= error %></text>
+  <body>
+    <div class="container">
+      <form action="/register" method="post" class="message-form col-xs-6 col-xs-offset-3 centered">
+        <div class="form-group">
+          <label for="user">Nazwa użytkownika</label>
+          <input name="user" class="form-control input-default" placeholder="podaj nazwę">
         </div>
-      <% } %>
-      <button type="submit" class="form-control btn btn-primary glyphicon glyphicon-log-in"></button>
-    </form>
+        <% if (locals.user_error) { %>
+        <div class="form-group">
+          <text class="error"><%= user_error %></text>
+        </div>
+        <% } %>        
+        <div class="form-group">
+          <label for="pwd">Hasło</label>
+          <input type="password" name="pwd" class="form-control input-default" placeholder="podaj hasło">
+        </div>
+        <div class="form-group">
+          <input type="password" name="re-pwd" class="form-control input-default" placeholder="powtórz hasło">
+        </div>
+        <% if (locals.error) { %>
+          <div  class="form-group">
+            <text class="error"><%= error %></text>
+          </div>
+        <% } %>
+        <button type="submit" class="form-control btn btn-primary glyphicon glyphicon-log-in"></button>
+      </form>
+    </div>  
   </body>
 </html>

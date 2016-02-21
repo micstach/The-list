@@ -3,30 +3,32 @@
   <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=250, initial-scale=1, maximum-scale=1">
     <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" type="text/css" >
     <link href="../css/bootstrap.min.css" rel="stylesheet" type="text/css">
     <link href="../css/login.css" rel="stylesheet" type="text/css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="../scripts/login.js"></script>
   </head>
   <body>
     <div class="container">
       <form action="/login" method="post" class="message-form col-xs-6 col-xs-offset-3 centered">
         <div class="form-group">
           <label for="user">Użytkownik</label>
-          <input name="user" class="form-control input-default">
+          <input id="user" name="user" class="form-control input-default">
         </div>
         <div class="form-group">
           <label for="pwd">Hasło</label>
-          <input type="password" name="pwd" class="form-control input-default">
+          <input id="pwd" type="password" name="pwd" class="form-control input-default">
         </div>
-        <% if (error !== undefined) { %>
+        <% if (locals.error) { %>
         <div class="form-group">
           <text class="error"><%= error %></text>
         </div>
         <% } %>  
-        <button type="submit" class="form-control btn btn-primary glyphicon glyphicon-log-in"></button>
+        <button type="submit" class="login-button form-control btn btn-primary glyphicon glyphicon-log-in"></button>
         <div class="form-group">
-          <a class="user-register" href="/register">Zarejestruj</a>
+          <a class="user-register pull-right" href="/register">Zarejestruj się...</a>
         </div>
       </form>
     </div>

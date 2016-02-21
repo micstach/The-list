@@ -33,6 +33,11 @@ var authorize = function(req, res, next) {
 // routes
 app.get('/user/:userid', authorize, function(req, res) {
   console.log("ui: user %s", req.params.userid) ;
+  console.log("ui: user-agent: " + req.headers['user-agent']);
+
+  var desktopClient = (req.headers['user-agent'] === 'desktop client') ;
+
+  console.log("desktopClient: " + desktopClient);
 
   if (req.session.user == req.params.userid) {
     var mongoUrl = environment.config.db();  
@@ -45,7 +50,7 @@ app.get('/user/:userid', authorize, function(req, res) {
 
         MongoClient.connect(mongoUrl, function(err, _db) {
           _db.collection('users').findOne({_id: mongodb.ObjectID(req.params.userid)}, function(err, item){
-            res.render('index', {username: item.name, userid:req.params.userid, messages:result}) ;
+            res.render('index', {desktopClient: desktopClient, username: item.name, userid:req.params.userid, messages:result}) ;
             _db.close();
           }) ;
         });
@@ -77,11 +82,15 @@ app.get('/register', function(req, res) {
   res.render('register', {user: null, error:null}) ;
 }) ;
 
-app.post('/register', function(req, res){
+app.post('/register', function(req, res) {
+  console.log('api register: %s, %s, %s', req.body.user, pwd, retypedPwd); 
+
+  if (req.body.user.length == 0) {
+    res.render('register', {user: req.body.user, user_error:"Niepoprawna nazwa użytkownika !"});      
+  }
+
   var pwd = utils.security.hashValue(req.body.pwd) ;
   var retypedPwd = utils.security.hashValue(req.body['re-pwd']) ;
-
-  console.log('api register: %s, %s, %s', req.body.user, pwd, retypedPwd); 
 
   var mongoUrl = environment.config.db() ;  
   
