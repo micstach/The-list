@@ -42,6 +42,7 @@ body { padding-top: 10px; }
 .utilities
 {
 	margin-left: 20px;
+	text-decoration: none;
 }	    
 
 .utilities:hover

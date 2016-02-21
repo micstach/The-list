@@ -41,7 +41,7 @@ app.get('/user/:userid', authorize, function(req, res) {
 
   if (req.headers['user-agent'].indexOf('Windows') != -1)
   {
-    downloadLink = '/clients/windows/TheListClientInstaller.exe';
+    downloadLink = '/clients/windows/TheListClientPackage.zip';
   }
 
   if (req.session.user == req.params.userid) {
