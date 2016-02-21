@@ -39,9 +39,11 @@ app.get('/user/:userid', authorize, function(req, res) {
   var downloadLink = null ;
   console.log("desktopClient: " + desktopClient);
 
-  if (req.headers['user-agent'].indexOf('Windows') != -1)
-  {
+  if (req.headers['user-agent'].indexOf('Windows') != -1) {
     downloadLink = '/clients/windows/TheListClientPackage.zip';
+  }
+  else if (req.headers['user-agent'].indexOf('Android') != -1) {
+    downloadLink = '/clients/android/TheListClient.apk';
   }
 
   if (req.session.user == req.params.userid) {
