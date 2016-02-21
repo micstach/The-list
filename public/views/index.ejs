@@ -23,8 +23,8 @@
           <a class="utilities pull-right glyphicon glyphicon-log-out" href="/logoff"></a>
         <% } %>
         <a class="utilities pull-right glyphicon glyphicon-repeat" href="/user/<%= userid %>"></a>
-        <% if (locals.desktopClient == false) { %>
-          <a class="utilities pull-right glyphicon glyphicon-download-alt" href="/clients/windows/TheListClientInstaller.exe"></a>
+        <% if (locals.downloadLink) { %>
+          <a class="utilities pull-right glyphicon glyphicon-download-alt" href="<% downloadLink %>"></a>
         <% } %>
         <!-- <button type="submit" value="clear" class="pull-right btn btn-danger btn-sm <%= (messages.length != 0) ? '' : 'disabled' %>">Wyczyść listę</button> -->
       </form>

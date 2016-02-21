@@ -36,8 +36,13 @@ app.get('/user/:userid', authorize, function(req, res) {
   console.log("ui: user-agent: " + req.headers['user-agent']);
 
   var desktopClient = (req.headers['user-agent'] === 'desktop client') ;
-
+  var downloadLink = null ;
   console.log("desktopClient: " + desktopClient);
+
+  if (req.headers['user-agent'].indexOf('Windows') != -1)
+  {
+    downloadLink = '/clients/windows/TheListClientInstaller.exe';
+  }
 
   if (req.session.user == req.params.userid) {
     var mongoUrl = environment.config.db();  
@@ -50,7 +55,7 @@ app.get('/user/:userid', authorize, function(req, res) {
 
         MongoClient.connect(mongoUrl, function(err, _db) {
           _db.collection('users').findOne({_id: mongodb.ObjectID(req.params.userid)}, function(err, item){
-            res.render('index', {desktopClient: desktopClient, username: item.name, userid:req.params.userid, messages:result}) ;
+            res.render('index', {desktopClient: desktopClient, downloadLink:downloadLink, username: item.name, userid:req.params.userid, messages:result}) ;
             _db.close();
           }) ;
         });
@@ -225,5 +230,5 @@ app.post('/api/user/:userid/message/:action/:id?', authorize, function(req, res)
 }) ;
 
 app.listen(environment.config.port(), environment.config.ip(), function(){
-  console.log('Server started, port: %s', environment.config.port()) ;
+  console.log('Server started: %s:%s', environment.config.ip(), environment.config.port()) ;
 }) ;
