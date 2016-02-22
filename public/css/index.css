@@ -1,4 +1,8 @@
-body { padding-top: 10px; }
+body 
+{ 
+	padding-top: 0px; 
+}
+
 .tool-box
 {
     right: 0px;
@@ -26,11 +30,24 @@ body { padding-top: 10px; }
 .message-delete
 {
     background-color: Transparent;
-    background-repeat:no-repeat;
+    background-repeat: no-repeat;
+    /*background-size: 10px 10px;*/
     border: none;
     cursor:pointer;
     overflow: hidden;
     outline:none;
+}
+
+.message-time
+{
+	font-size: 1.0em;
+	color: gray;
+	font-size: 0.75em;
+}
+
+.message-tools
+{
+	float:right;
 }
 
 .toolbox
@@ -50,6 +67,12 @@ body { padding-top: 10px; }
 	text-decoration: none;
 }	    
 
-.label-as-badge {
+.label-as-badge 
+{
     border-radius: 1em;
+}
+
+.list-group-item
+{
+	padding: 0px 10px;
 }

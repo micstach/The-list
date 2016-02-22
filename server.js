@@ -154,82 +154,72 @@ app.post('/login', function(req, res) {
   }) ;
 }) ;
 
-app.put('/api/user/:userid/message/:id/checked', authorize, function(req, res){
-  console.log("api: check message: " + JSON.stringify(req.params));
+app.post('/api/user/:userid/message/create', authorize, function(req, res){
+  console.log("api: message delete");
+  var mongoUrl = environment.config.db() ;  
+
+  if (req.body.message.length == 0) {
+    res.redirect('/user/' + req.params.userid) ;
+  }
+  else {
+
+    MongoClient.connect(mongoUrl, function(err, db) {
+      
+      db.collection(req.params.userid).save({
+        text: req.body.message, 
+        status: 'unchecked',
+        timestamp: moment().valueOf() 
+      }) ;
+      
+      db.close() ;
+
+      res.redirect('/user/' + req.params.userid);
+    }) ;
+  }
+}) ;
+
+app.post('/api/user/:userid/message/delete/:id', authorize, function(req, res){
+  console.log("api: delete message") ;
+
+  var mongoUrl = environment.config.db() ;  
+  console.log("DbUrl: %s", mongoUrl);
+
+  console.log('message id: %s', req.params.id) ;
+
+  MongoClient.connect(mongoUrl, function(err, db) {
+    db.collection(req.params.userid).remove({_id: mongodb.ObjectID(req.params.id)}) ;
+    db.close() ;
+    res.redirect('/user/' + req.params.userid);
+  }) ;
+}) ;
+
+app.post('/api/user/:userid/message/removeall', authorize, function(req, res){
+  console.log("api: remove all message(s)") ;
+
+  var mongoUrl = environment.config.db() ;  
+  console.log("DbUrl: %s", mongoUrl);
+
+  console.log("removeall") ;
+
+  MongoClient.connect(mongoUrl, function(err, db) {
+    db.collection(req.params.userid).drop() ;
+    db.close() ;
+    res.redirect('/user/' + req.params.userid);
+  }) ;
+}) ;
+
+app.put('/api/user/:userid/message/:status/:id', authorize, function(req, res){
+  console.log("api: message status: " + JSON.stringify(req.params));
 
   MongoClient.connect(environment.config.db(), function(err, db) {
     db.collection(req.params.userid).findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, item){
-      item.status = 'checked' ;
+      item.status = req.params.status ;
       db.collection(req.params.userid).save(item) ;
       db.close() ;
       res.sendStatus(200); 
     }) ;
   }) ;
 });
-
-app.put('/api/user/:userid/message/:id/unchecked', authorize, function(req, res){
-  console.log("api: unchecked message: " + JSON.stringify(req.params)); 
-
-  MongoClient.connect(environment.config.db(), function(err, db) {
-    db.collection(req.params.userid).findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, item){
-      item.status = 'unchecked' ;
-      db.collection(req.params.userid).save(item) ;
-      db.close() ;
-      res.sendStatus(200);
-    }) ;
-  }) ;
-});
-
-app.post('/api/user/:userid/message/:action/:id?', authorize, function(req, res){
-  console.log("api: %s message(s)", req.params.action) ;
-
-  var mongoUrl = environment.config.db() ;  
-  console.log("DbUrl: %s", mongoUrl);
-
-  if (req.params.action == 'add') {
-    if (req.body.message.length > 0) {
-
-      MongoClient.connect(mongoUrl, function(err, db) {
-        
-        console.log("mongo client connected");
-        console.log("mongo error: %s", err) ;
-
-        var collection = db.collection(req.params.userid) ;
-        collection.save({
-          text: req.body.message, 
-          status: 'unchecked',
-          timestamp: moment().valueOf() 
-        }) ;
-        db.close() ;
-
-        res.redirect('/user/' + req.params.userid);
-      }) ;
-    }
-    else {
-      console.log('api: empty message typed') ;
-      res.redirect('/user/' + req.params.userid);
-    }
-  } 
-  else if (req.params.action == "delete") {
-    console.log('message id: %s', req.params.id) ;
-
-    MongoClient.connect(mongoUrl, function(err, db) {
-      db.collection(req.params.userid).remove({_id: mongodb.ObjectID(req.params.id)}) ;
-      db.close() ;
-      res.redirect('/user/' + req.params.userid);
-    }) ;
-
-  }
-  else if (req.params.action == "removeall") {
-    console.log("removeall") ;
-
-    MongoClient.connect(mongoUrl, function(err, db) {
-      db.collection(req.params.userid).drop() ;
-      db.close() ;
-      res.redirect('/user/' + req.params.userid);
-    }) ;
-  }
-}) ;
 
 app.listen(environment.config.port(), environment.config.ip(), function(){
   console.log('Server started: %s:%s', environment.config.ip(), environment.config.port()) ;

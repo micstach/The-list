@@ -1,11 +1,10 @@
-<li class="list-group-item">
+<li id="<%= msg._id %>"class="list-group-item">
   <div class="checkbox">
-    <input type="checkbox" id="<%= msg._id %>" class="message-toggle" data-user-id="<%= userid %>" data-message-id="<%= msg._id %>" <%= msg.status %>>
-    <label for="<%= msg._id %>" tooltip="<%= Date(msg.timestamp) %>">
-      <%= msg.text %>
-    </label>
-    <form action="/api/user/<%= userid %>/message/delete/<%= msg._id %>" method="post" class="pull-right">
-      <button type="submit" class="message-delete glyphicon glyphicon-remove">
-    </form>
+    <input id="unique-<%= msg._id %>" type="checkbox" class="message-toggle" data-user-id="<%= userid %>" data-message-id="<%= msg._id %>" <%= msg.status %>>
+    <label for="unique-<%= msg._id %>"><%= msg.text %></label>
+    <span class="message-tools">
+      <span class="message-time"><%= msg.timestamp %></span>
+      <button type="submit" class="message-delete glyphicon glyphicon-remove" data-user-id="<%= userid %>" data-message-id="<%= msg._id %>">
+    </span>
   </div>
 </li>
