@@ -29,18 +29,14 @@
         <!-- <button type="submit" value="clear" class="pull-right btn btn-danger btn-sm <%= (messages.length != 0) ? '' : 'disabled' %>">Wyczyść listę</button> -->
       </form>
       <form action="/api/user/<%= userid %>/message/create" method="post" class="message-form">
-        <input type="text" name="message" class="form-control input-default" placeholder="Wpisz tekst tutaj..." autofocus>
+        <input type="text" name="message" class="form-control input-default" placeholder="Zanotujmy coś..." autofocus>
       </form>
       <ul class="list-group">
-        <% messages.reverse().forEach(function(msg) { %>
-          <% if (msg.status === 'unchecked') { %>
-            <% include partials/message %>
-          <% } %>
+        <% messages.filter(function(message){return message.status === 'unchecked';}).sort(function(a, b) { return b.timestamp - a.timestamp ; }).forEach(function(msg) { %>
+          <% include partials/message %>
         <% }) %>
-        <% messages.forEach(function(msg) { %>
-          <% if (msg.status === 'checked') { %>
-            <% include partials/message %>
-          <% } %>
+        <% messages.filter(function(message){return message.status === 'checked';}).sort(function(a, b) { return b.timestamp - a.timestamp ; }).forEach(function(msg) { %>
+          <% include partials/message %>
         <% }) %>
       </ul> 
     </div>

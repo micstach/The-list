@@ -9,8 +9,8 @@
       content: "";
       display: inline-block;
       position: absolute;
-      width: 17px;
-      height: 17px;
+      width: 1.2em;
+      height: 1.2em;
       left: 0;
       margin-left: -20px;
       border: 1px solid #cccccc;
@@ -22,8 +22,8 @@
     .checkbox label::after {
       display: inline-block;
       position: absolute;
-      width: 16px;
-      height: 16px;
+      width: 1.2em;
+      height: 1.2em;
       left: 0;
       top: 0;
       margin-left: -20px;
@@ -80,7 +80,7 @@
 .checkbox-success input[type="checkbox"]:checked + label::after {
   color: #fff; }
 
-.radio {
+/*.radio {
   padding-left: 20px; }
   .radio label {
     display: inline-block;
@@ -170,4 +170,4 @@
 .radio-success input[type="radio"]:checked + label::before {
   border-color: #5cb85c; }
 .radio-success input[type="radio"]:checked + label::after {
-  background-color: #5cb85c; }
+  background-color: #5cb85c; }*/

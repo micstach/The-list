@@ -170,7 +170,7 @@ app.post('/api/user/:userid/message/create', authorize, function(req, res){
         status: 'unchecked',
         timestamp: moment().valueOf() 
       }) ;
-      
+
       db.close() ;
 
       res.redirect('/user/' + req.params.userid);
@@ -214,6 +214,7 @@ app.put('/api/user/:userid/message/:status/:id', authorize, function(req, res){
   MongoClient.connect(environment.config.db(), function(err, db) {
     db.collection(req.params.userid).findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, item){
       item.status = req.params.status ;
+      item.timestamp = moment().valueOf() ;
       db.collection(req.params.userid).save(item) ;
       db.close() ;
       res.sendStatus(200); 
