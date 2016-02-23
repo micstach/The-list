@@ -48,10 +48,9 @@ function getTimeString(timestamp)
 		timeString = 'pół minuty temu' ;
 	} 
 	else {
-		timeStirng = 'prawie minutę temu' ;
+		timeString = 'prawie minutę temu' ;
 	}
 	
-
 	return timeString ;
 }
 
