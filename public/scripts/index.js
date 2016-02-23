@@ -1,10 +1,27 @@
+
+function isLastDigit(value, arr)
+{
+	var valueAsString = value.toString() ;
+	if (valueAsString.length >= 1) {
+		
+		console.log("valueAsString: " + valueAsString) ;
+
+		var lastDigit = parseInt(valueAsString[valueAsString.length-1]) ;
+
+		return arr.filter(function(obj) {
+				return obj === lastDigit ;
+			}).length > 0 ;
+	}
+	return false ;
+}
+
 function getTimeString(timestamp)
 {
 	var now = Date.now() ;
 	console.log(now) ;
 	var time = new Date(timestamp) ;
 
-	var seconds = Math.floor((now - timestamp) / 1000) ;  //seconds
+	var seconds = Math.floor((now - timestamp) / 1000) ;
 	var minutes = Math.floor(seconds / 60) ;
 	var hours = Math.floor(minutes / 60) ;
 	var days = Math.floor(hours / 24) ;
@@ -23,7 +40,7 @@ function getTimeString(timestamp)
 		if (hours == 1) {
 			timeString = hours + ' godzinę temu' ;
 		} 
-		else if (2 <= hours && hours <= 4) {
+		else if (isLastDigit(hours, [2,3,4])) {
 			timeString = hours + ' godziny temu' ;
 		}
 		else {
@@ -34,7 +51,7 @@ function getTimeString(timestamp)
 		if (minutes == 1) {
 			timeString = minutes + ' minutę temu';
 		} 
-		else if (2 <= minutes && minutes <= 4) {
+		else if (isLastDigit(minutes, [2,3,4])) {
 			timeString = minutes + ' minuty temu' ;
 		}
 		else {
