@@ -88,4 +88,18 @@ $(document).ready(function() {
 			$('#'+messageid).hide();
 		})
 	}) ;
+
+	$('.message-removeall').click(function(e){
+		$.ajax({
+			url: $(this).attr('href'),
+			method: 'POST'
+		}).done(function(){
+			$('.list-group').empty();
+			$('.items-counter').each(function(){
+				$(this).text('0');
+			}) ;
+		}) ;
+
+		e.preventDefault();
+	}) ;
 }) ;

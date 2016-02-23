@@ -14,20 +14,19 @@
   </head>
   <body>
     <div class="container">
-      <form action="/api/user/<%= userid %>/message/removeall" method="post" class="tool-box">
-        <label class="text-left"><%= username %>
-          <span class="items-counter label-danger label label-as-badge"><%= messages.filter(function(message){return message.status === 'unchecked';}).length %></span>
-          <span class="items-counter label-default label label-as-badge"><%= messages.length %></span>
-        </label>
-        <% if (locals.desktopClient == false) { %>
-          <a class="utilities pull-right glyphicon glyphicon-log-out" href="/logoff"></a>
-        <% } %>
-        <a class="utilities pull-right glyphicon glyphicon-repeat" href="/user/<%= userid %>"></a>
-        <% if (locals.downloadLink) { %>
-          <a class="utilities pull-right glyphicon glyphicon-download-alt" href="<%= downloadLink %>"></a>
-        <% } %>
-        <!-- <button type="submit" value="clear" class="pull-right btn btn-danger btn-sm <%= (messages.length != 0) ? '' : 'disabled' %>">Wyczyść listę</button> -->
-      </form>
+      <label class="text-left">
+        <span class="user"><%= username %></span>
+        <span class="items-counter label-danger label label-as-badge"><%= messages.filter(function(message){return message.status === 'unchecked';}).length %></span>
+        <span class="items-counter label-default label label-as-badge"><%= messages.length %></span>
+      </label>
+      <% if (locals.desktopClient == false) { %>
+        <a class="utilities pull-right glyphicon glyphicon-log-out" href="/logoff"></a>
+      <% } %>
+      <a class="utilities pull-right glyphicon glyphicon-repeat" href="/user/<%= userid %>"></a>
+      <a class="message-removeall utilities pull-right glyphicon glyphicon-trash" href="/api/user/<%= userid %>/message/removeall"></a>
+      <% if (locals.downloadLink) { %>
+        <a class="utilities pull-right glyphicon glyphicon-download-alt" href="<%= downloadLink %>"></a>
+      <% } %>
       <form action="/api/user/<%= userid %>/message/create" method="post" class="message-form">
         <input type="text" name="message" class="form-control input-default" placeholder="Zanotujmy coś..." autofocus>
       </form>
