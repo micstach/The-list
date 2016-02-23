@@ -132,26 +132,31 @@ app.get('/logoff', function(req, res){
 app.post('/login', function(req, res) {
   console.log('login user: %s, %s', req.body.user, req.body.pwd);
 
-  var mongoUrl = environment.config.db();
-  var pwd = utils.security.hashValue(req.body.pwd) ;
+  if (req.body.user.length == 0 || req.body.pwd.length == 0) {
+    res.render('login', {error: "Niepoprawny użytkownik lub hasło !"}); 
+  }
+  else {
+    var mongoUrl = environment.config.db();
+    var pwd = utils.security.hashValue(req.body.pwd) ;
 
-  MongoClient.connect(mongoUrl, function(err, db) {
-    db.collection('users').findOne({name: req.body.user, password: pwd}, function(err, user) {
-        console.log("mongo err: %s", JSON.stringify(err));
-        console.log("mongo user: %s", JSON.stringify(user));
+    MongoClient.connect(mongoUrl, function(err, db) {
+      db.collection('users').findOne({name: req.body.user, password: pwd}, function(err, user) {
+          console.log("mongo err: %s", JSON.stringify(err));
+          console.log("mongo user: %s", JSON.stringify(user));
 
-        if (user !== null) {
-          req.session.user = user._id ;
-          res.redirect('/user/' + req.session.user);
-        }
-        else {
-          console.log("user not verified !") ;
-          req.session.destroy();
-          res.render('login', {error: "Niepoprawny użytkownik lub hasło !"}); 
-        }
-        db.close();
-      });
-  }) ;
+          if (user !== null) {
+            req.session.user = user._id ;
+            res.redirect('/user/' + req.session.user);
+          }
+          else {
+            console.log("user not verified !") ;
+            req.session.destroy();
+            res.render('login', {error: "Niepoprawny użytkownik lub hasło !"}); 
+          }
+          db.close();
+        });
+    }) ;
+  }
 }) ;
 
 app.post('/api/user/:userid/message/create', authorize, function(req, res){
