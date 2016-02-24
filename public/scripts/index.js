@@ -100,6 +100,13 @@ $(document).ready(function() {
 	}) ;
 
 	$('.message-delete').click(function(){
+		$('#accept-remove-message').attr('data-user-id', $(this).attr('data-user-id'));		
+		$('#accept-remove-message').attr('data-message-id', $(this).attr('data-message-id'));
+		
+		$('#remove-message').modal();
+	}) ;
+
+    $('#accept-remove-message').click(function(){
 		var userid = $(this).attr('data-user-id') ;
 		var messageid = $(this).attr('data-message-id');
 
@@ -109,11 +116,16 @@ $(document).ready(function() {
 		}).done(function(){
 			$('#'+messageid).hide();
 		})
-	}) ;
+    });
 
 	$('.message-removeall').click(function(e){
+		$('#remove-all').modal();
+		e.preventDefault();
+	}) ;
+
+    $('#accept-remove-all').click(function(){
 		$.ajax({
-			url: $(this).attr('href'),
+			url: $(this).attr('data-uri'),
 			method: 'POST'
 		}).done(function(){
 			$('.list-group').empty();
@@ -121,7 +133,5 @@ $(document).ready(function() {
 				$(this).text('0');
 			}) ;
 		}) ;
-
-		e.preventDefault();
-	}) ;
+    });
 }) ;
