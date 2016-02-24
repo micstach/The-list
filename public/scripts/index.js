@@ -1,18 +1,22 @@
 
-function isLastDigit(value, arr)
+function finishesWith(referenceValue, endingValue)
 {
-	var valueAsString = value.toString() ;
-	if (valueAsString.length >= 1) {
-		
-		console.log("valueAsString: " + valueAsString) ;
-
-		var lastDigit = parseInt(valueAsString[valueAsString.length-1]) ;
-
-		return arr.filter(function(obj) {
-				return obj === lastDigit ;
-			}).length > 0 ;
+	if (referenceValue.toString().length >= endingValue.toString().length) {
+		var start = referenceValue.toString().length - endingValue.toString().length ;
+		var length = endingValue.toString().length ;
+		var a = referenceValue.toString().substring(start, referenceValue.toString().length) ;
+		var b = endingValue.toString() ;
+		console.log(a + ' = ' + b);
+		return a === b ;	
 	}
-	return false ;
+	else {
+		return false ;
+	}
+}
+
+function finishesWithArray(referenceValue, arr)
+{
+	return arr.filter(function(endingValue) { return finishesWith(referenceValue, endingValue); }).length > 0 ;
 }
 
 function getTimeString(timestamp)
@@ -25,8 +29,9 @@ function getTimeString(timestamp)
 	var minutes = Math.floor(seconds / 60) ;
 	var hours = Math.floor(minutes / 60) ;
 	var days = Math.floor(hours / 24) ;
+	var weeks = Math.floor(days / 7) ;
 
-	var timeString = '';
+	var timeString = 'error';
 
 	if (days > 0) {
 		if (days == 1) {
@@ -38,24 +43,24 @@ function getTimeString(timestamp)
 	}
 	else if (hours > 0) {
 		if (hours == 1) {
-			timeString = hours + ' godzinę temu' ;
+			timeString = 'godzinę temu' ;
 		} 
-		else if (isLastDigit(hours, [2,3,4])) {
-			timeString = hours + ' godziny temu' ;
+		else if (finishesWithArray(hours, [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21])) {
+			timeString = hours + ' godzin temu' ;
 		}
-		else {
-			timeString = hours + ' godzin temu'
+		else if (finishesWithArray(hours, [2, 3, 4])) {
+			timeString = hours + ' godziny temu'
 		}
 	}
 	else if (minutes > 0) {
 		if (minutes == 1) {
-			timeString = minutes + ' minutę temu';
+			timeString = 'minutę temu';
 		} 
-		else if (isLastDigit(minutes, [2,3,4])) {
-			timeString = minutes + ' minuty temu' ;
-		}
-		else {
+		else if (finishesWithArray(minutes, [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21])) {
 			timeString = minutes + ' minut temu';
+		}
+		else if (finishesWithArray(minutes, [2, 3, 4])) {
+			timeString = minutes + ' minuty temu';
 		}
 	}
 	else if (seconds < 15) {
