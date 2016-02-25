@@ -45,7 +45,7 @@ function getTimeString(timestamp)
 		if (hours == 1) {
 			timeString = 'godzinę temu' ;
 		} 
-		else if (finishesWithArray(hours, [1, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21])) {
+		else if (finishesWithArray(hours, [0, 1, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19])) {
 			timeString = hours + ' godzin temu' ;
 		}
 		else if (finishesWithArray(hours, [2, 3, 4])) {
@@ -56,7 +56,7 @@ function getTimeString(timestamp)
 		if (minutes == 1) {
 			timeString = 'minutę temu';
 		} 
-		else if (finishesWithArray(minutes, [1, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21])) {
+		else if (finishesWithArray(minutes, [0, 1, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19])) {
 			timeString = minutes + ' minut temu';
 		}
 		else if (finishesWithArray(minutes, [2, 3, 4])) {
