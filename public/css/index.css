@@ -21,12 +21,27 @@ body
 	padding-right: 10px;
 }
 
-.message-label
+.checkbox
 {
+	padding-top: 0px;
+	margin-top: 0px;
+	width:20px;
+	display: inline-block;
+}
+
+.message-main
+{
+	padding-left: 5px;
 	width: 90%;
-	width: -webkit-calc(100% - 20px);
-	width: -moz-calc(100% - 20px);
-	width: calc(100% - 20px);
+	width: -webkit-calc(100% - 40px);
+	width: -moz-calc(100% - 40px);
+	width: calc(100% - 40px);
+	display:inline-block;
+}
+
+.message-text
+{
+	font-size: 1.0em;
 }
 
 .message-form
@@ -38,11 +53,22 @@ body
 {
 	background-color: transparent;
     background-repeat: no-repeat;
-    /*background-size: 10px 10px;*/
     border: none;
-    cursor:pointer;
+    cursor: pointer;
     overflow: hidden;
     outline:none;
+    padding:0px;
+    margin:0px;
+}
+
+.message-toggle
+{
+	background-color: transparent;
+    cursor: pointer;
+    overflow: hidden;
+    outline:none;
+	border: none;
+	display:inline;
     padding:0px;
     margin:0px;
 }
@@ -54,8 +80,15 @@ body
 	font-size: 0.65em;
 }
 
+.message-status
+{
+	margin-top: 0.15em;
+	float:left;
+}
+
 .message-tools
 {
+	margin-top: 0.15em;
 	float:right;
 }
 
@@ -83,5 +116,5 @@ body
 
 .list-group-item
 {
-	padding: 0px 10px;
+	padding: 10px ;
 }

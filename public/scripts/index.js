@@ -6,7 +6,6 @@ function finishesWith(referenceValue, endingValue)
 		var length = endingValue.toString().length ;
 		var a = referenceValue.toString().substring(start, referenceValue.toString().length) ;
 		var b = endingValue.toString() ;
-		console.log(a + ' = ' + b);
 		return a === b ;	
 	}
 	else {
@@ -22,7 +21,6 @@ function finishesWithArray(referenceValue, arr)
 function getTimeString(timestamp)
 {
 	var now = Date.now() ;
-	console.log(now) ;
 	var time = new Date(timestamp) ;
 
 	var seconds = Math.floor((now - timestamp) / 1000) ;
@@ -76,22 +74,36 @@ function getTimeString(timestamp)
 	return timeString ;
 }
 
+function refreshMessagesStatus() 
+{
+	$('.message-toggle').each(function(){
+		$(this).removeClass("glyphicon-checked");
+		$(this).removeClass("glyphicon-unchecked");
+
+		if ($(this).attr("data-status") === "checked")
+			$(this).addClass("glyphicon-checked");
+		else
+			$(this).addClass("glyphicon-unchecked");
+	})
+}
+
 $(document).ready(function() {
 	
 	$('.message-toggle').click(function () {
-		var checked = $(this).prop('checked');
+		var status = $(this).attr('data-status');
 		var id = $(this).attr('data-message-id');
 		var userid = $(this).attr('data-user-id');
-		var action = checked ? 'checked' : 'unchecked';
+		var action = (status === 'checked' ? 'unchecked' : 'checked');
 
 		$.ajax({
 			url: "/api/user/" + userid + "/message/" + action + "/" + id,
 			method: 'PUT'
 		}).done(function(){
-			console.log('toggle ' + checked) ;
-		}) 
+			console.log('toggle ' + action) ;
+			$(this).attr('data-status', action);
 
-		console.log('toggle ' + checked) ;
+			refreshMessagesStatus() ;	
+		}) ;
 	}) ;
 
 	$('.message-time').each(function(){
@@ -134,4 +146,6 @@ $(document).ready(function() {
 			}) ;
 		}) ;
     });
+
+    refreshMessagesStatus();
 }) ;
