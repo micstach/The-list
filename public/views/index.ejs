@@ -20,15 +20,15 @@
 	      <span class="toolbox">
 	        <!-- <span class="items-counter label-danger label label-as-badge"><%= messages.filter(function(message){return message.status === 'unchecked';}).length %></span> -->
 	        <!-- <span class="items-counter label-default label label-as-badge"><%= messages.length %></span> -->
-		      <a class="message-removeall glyphicon glyphicon-trash utilities " href="#"></a>
-		      <a class="glyphicon glyphicon-repeat utilities" href="/user/<%= userid %>"></a>
+		      <a class="message-removeall glyphicon glyphicon-trash utilities" data-toggle="tooltip" data-placement="bottom" title="Kliknij aby usunąć wszystkie elementy" href="#"></a>
+		      <a class="glyphicon glyphicon-repeat utilities" data-toggle="tooltip" data-placement="bottom" title="Kliknij aby odświeżyć" href="/user/<%= userid %>"></a>
 		      <% if (locals.downloadLink) { %>
-		        <a class="utilities glyphicon glyphicon-download-alt" href="<%= downloadLink %>"></a>
+		        <a class="utilities glyphicon glyphicon-download-alt" data-toggle="tooltip" data-placement="bottom" title="Kliknij aby pobrać applikacje na Twój komputer" href="<%= downloadLink %>"></a>
 		      <% } %>	      </span>
 	      <span class="pull-right">
-	        <span class="user"><%= username %></span>
+	        <span class="user" data-toggle="tooltip" data-placement="bottom" title="Witaj <%= username %>!"><%= username %></span>
 		      <% if (locals.desktopClient == false) { %>
-		        <a class="utilities-user glyphicon glyphicon-log-out" href="/logoff"></a>
+		        <a class="utilities-user glyphicon glyphicon-log-out" data-toggle="tooltip" data-placement="bottom" title="Kliknij aby się wylogować" href="/logoff"></a>
 		      <% } %>
 		    </span>
 	      <form class="message-form" action="/api/user/<%= userid %>/message/create" method="post">

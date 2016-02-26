@@ -1,7 +1,8 @@
 <div class="modal fade" id="remove-message">
   <div class="modal-dialog">
     <div class="modal-content">
-      <div class="modal-body">Czy chcesz usunać notatkę ?</div>
+      <div class="modal-header">Czy chcesz usunać notatkę ?</div>
+      <div id="message-text" class="modal-body"></div>
       <div class="modal-footer">
         <button id="accept-remove-message" type="button" class="btn btn-default" data-dismiss="modal" data-uri="/api/user/<%= userid %>/message/removeall">Tak, chcę</button>
         <button id="cancel-remove-message" type="button" class="btn btn-primary" data-dismiss="modal">Nie, jednak nie !</button>

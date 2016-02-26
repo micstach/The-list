@@ -112,9 +112,10 @@ $(document).ready(function() {
 	}) ;
 
 	$('.message-delete').click(function(){
+		var messageId = $(this).attr('data-message-id') ;
 		$('#accept-remove-message').attr('data-user-id', $(this).attr('data-user-id'));		
-		$('#accept-remove-message').attr('data-message-id', $(this).attr('data-message-id'));
-		
+		$('#accept-remove-message').attr('data-message-id', messageId);
+		$('#message-text').html($('#'+messageId).find('.message-main').html());
 		$('#remove-message').modal();
 	}) ;
 
@@ -148,4 +149,7 @@ $(document).ready(function() {
     });
 
     refreshMessagesStatus();
+
+    // enable tooltips
+    $('[data-toggle="tooltip"]').tooltip()
 }) ;
