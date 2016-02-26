@@ -20,8 +20,8 @@
 	      <span class="toolbox">
 	        <!-- <span class="items-counter label-danger label label-as-badge"><%= messages.filter(function(message){return message.status === 'unchecked';}).length %></span> -->
 	        <!-- <span class="items-counter label-default label label-as-badge"><%= messages.length %></span> -->
+          <a class="glyphicon glyphicon-repeat utilities" data-toggle="tooltip" data-placement="bottom" title="Kliknij aby odświeżyć" href="/user/<%= userid %>"></a>
 		      <a class="message-removeall glyphicon glyphicon-trash utilities" data-toggle="tooltip" data-placement="bottom" title="Kliknij aby usunąć wszystkie elementy" href="#"></a>
-		      <a class="glyphicon glyphicon-repeat utilities" data-toggle="tooltip" data-placement="bottom" title="Kliknij aby odświeżyć" href="/user/<%= userid %>"></a>
 		      <% if (locals.downloadLink) { %>
 		        <a class="utilities glyphicon glyphicon-download-alt" data-toggle="tooltip" data-placement="bottom" title="Kliknij aby pobrać applikacje na Twój komputer" href="<%= downloadLink %>"></a>
 		      <% } %>	      </span>

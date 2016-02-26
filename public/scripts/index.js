@@ -74,35 +74,18 @@ function getTimeString(timestamp)
 	return timeString ;
 }
 
-function refreshMessagesStatus() 
-{
-	$('.message-toggle').each(function(){
-		$(this).removeClass("glyphicon-checked");
-		$(this).removeClass("glyphicon-unchecked");
-
-		if ($(this).attr("data-status") === "checked")
-			$(this).addClass("glyphicon-checked");
-		else
-			$(this).addClass("glyphicon-unchecked");
-	})
-}
-
 $(document).ready(function() {
 	
 	$('.message-toggle').click(function () {
-		var status = $(this).attr('data-status');
+		var status = $(this).prop('checked');
 		var id = $(this).attr('data-message-id');
 		var userid = $(this).attr('data-user-id');
-		var action = (status === 'checked' ? 'unchecked' : 'checked');
+		var action = (status ? 'checked' : 'unchecked');
 
 		$.ajax({
 			url: "/api/user/" + userid + "/message/" + action + "/" + id,
 			method: 'PUT'
 		}).done(function(){
-			console.log('toggle ' + action) ;
-			$(this).attr('data-status', action);
-
-			refreshMessagesStatus() ;	
 		}) ;
 	}) ;
 
@@ -148,8 +131,8 @@ $(document).ready(function() {
 		}) ;
     });
 
-    refreshMessagesStatus();
+    $('.application-list').css('margin-top', $('.application-header').outerHeight() + 'px') ;
 
     // enable tooltips
-    $('[data-toggle="tooltip"]').tooltip()
+    $('[data-toggle="tooltip"]').tooltip() ;
 }) ;

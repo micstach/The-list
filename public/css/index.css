@@ -10,7 +10,7 @@ body
 
 .user
 {
-	color: rgb(162, 162, 205);
+	color: rgb(132, 132, 175);
 	font-weight: bold;
 }
 
@@ -51,6 +51,7 @@ body
 
 .message-delete
 {
+	opacity: 0.75;
 	background-color: transparent;
     background-repeat: no-repeat;
     border: none;
@@ -59,6 +60,11 @@ body
     outline:none;
     padding:0px;
     margin:0px;
+}
+
+.message-delete:hover
+{
+	opacity: 1.0;
 }
 
 .message-toggle
@@ -99,23 +105,27 @@ body
 	
 .utilities-user
 {
+	opacity: 0.75;
 	margin-left: 10px;
 	text-decoration: none;
 }	    
 
 .utilities-user:hover
 {
+	opacity: 1.0;
 	text-decoration: none;
 }	    
 
 .utilities
 {
+	opacity: 0.75;
 	margin-right: 10px;
 	text-decoration: none;
 }	    
 
 .utilities:hover
 {
+	opacity: 1.0;
 	text-decoration: none;
 }	    
 
@@ -137,10 +147,5 @@ body
     width:100%;
     z-index:100;
     padding-top: 1em;
-    padding-bottom: 1em;
-}
-
-.application-list
-{
-	margin-top: 7.5em ;
+    padding-bottom: 0;
 }
