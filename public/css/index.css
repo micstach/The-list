@@ -1,6 +1,6 @@
 body 
 { 
-	margin: 10px; 
+	/*margin: 10px; */
 }
 
 .tool-box
@@ -11,12 +11,13 @@ body
 
 .user
 {
-	font-weight: bold;
+	color: rgb(162, 162, 205);
+	font-weight: normal;
 }
 
 .items-counter
 {
-	margin-left: 5px;
+	margin-right: 5px;
 	padding-left: 10px;
 	padding-right: 10px;
 }
@@ -94,13 +95,23 @@ body
 
 .toolbox
 {
-	background-color: rgb(250, 250, 250);
-	height: 500px;
+	color: rgba(192, 192, 235);
 }
 	
+.utilities-user
+{
+	margin-left: 10px;
+	text-decoration: none;
+}	    
+
+.utilities-user:hover
+{
+	text-decoration: none;
+}	    
+
 .utilities
 {
-	margin-left: 20px;
+	margin-right: 10px;
 	text-decoration: none;
 }	    
 
@@ -117,4 +128,20 @@ body
 .list-group-item
 {
 	padding: 10px ;
+}
+
+.application-header
+{
+    background: linear-gradient(rgba(255, 255, 255, 1), rgba(255, 255, 255, 1.0), rgba(255, 255, 255, 0));
+    position:fixed;
+    top: 0em;
+    width:100%;
+    z-index:100;
+    padding-top: 1em;
+    padding-bottom: 1em;
+}
+
+.application-list
+{
+	margin-top: 7.5em ;
 }

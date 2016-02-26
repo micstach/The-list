@@ -15,25 +15,28 @@
   <body>
     <% include partials/dialog-remove-all %>
     <% include partials/dialog-remove-message %>
-    <div class="container">
-      <label class="text-left">
-        <span class="user"><%= username %></span>
-        <span class="items-counter label-danger label label-as-badge"><%= messages.filter(function(message){return message.status === 'unchecked';}).length %></span>
-        <span class="items-counter label-default label label-as-badge"><%= messages.length %></span>
-      </label>
-      <% if (locals.desktopClient == false) { %>
-        <a class="utilities pull-right glyphicon glyphicon-log-out" href="/logoff"></a>
-      <% } %>
-      <a class="utilities pull-right glyphicon glyphicon-repeat" href="/user/<%= userid %>"></a>
-      <a class="message-removeall utilities pull-right glyphicon glyphicon-trash" href="#"></a>
-      <% if (locals.downloadLink) { %>
-        <a class="utilities pull-right glyphicon glyphicon-download-alt" href="<%= downloadLink %>"></a>
-      <% } %>
-      <form class="message-form" action="/api/user/<%= userid %>/message/create" method="post">
-        <input type="text" name="message" class="form-control input-default" placeholder="Zanotujmy coś..." autofocus>
-      </form>
-    </div>
-    <div class="container">
+    <div class="application-header">
+	    <div class="container">
+	      <span class="toolbox">
+	        <!-- <span class="items-counter label-danger label label-as-badge"><%= messages.filter(function(message){return message.status === 'unchecked';}).length %></span> -->
+	        <!-- <span class="items-counter label-default label label-as-badge"><%= messages.length %></span> -->
+		      <a class="message-removeall glyphicon glyphicon-trash utilities " href="#"></a>
+		      <a class="glyphicon glyphicon-repeat utilities" href="/user/<%= userid %>"></a>
+		      <% if (locals.downloadLink) { %>
+		        <a class="utilities glyphicon glyphicon-download-alt" href="<%= downloadLink %>"></a>
+		      <% } %>	      </span>
+	      <span class="pull-right">
+	        <span class="user"><%= username %></span>
+		      <% if (locals.desktopClient == false) { %>
+		        <a class="utilities-user glyphicon glyphicon-log-out" href="/logoff"></a>
+		      <% } %>
+		    </span>
+	      <form class="message-form" action="/api/user/<%= userid %>/message/create" method="post">
+	        <input type="text" name="message" class="form-control input-default" placeholder="Zanotujmy coś..." autofocus>
+	      </form>
+	    </div>
+		</div>
+    <div class="container application-list">
       <ul class="list-group">
         <% messages.filter(function(message){return message.status === 'unchecked';}).sort(function(a, b) { return b.timestamp - a.timestamp ; }).forEach(function(msg) { %>
           <% include partials/message %>
