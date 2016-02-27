@@ -142,14 +142,14 @@ $(document).ready(function() {
 		var action = $('#message-create').attr('action');
 		var data = $("#message-create").serialize() ;
 		
-		$('#message-text').prop('disabled', true);
+		$('#message-create-text').prop('disabled', true);
 
 		$.ajax({
 			url: action,
 			method: 'POST',
 			data: data
 		}).done(function(){
-			$('#message-text').prop('disabled', false).focus().val('');
+			$('#message-create-text').prop('disabled', false).focus().val('');
 			readNotes();
 		});
 
