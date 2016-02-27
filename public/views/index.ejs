@@ -20,7 +20,7 @@
 	    <div class="container">
         <button class="glyphicon glyphicon-option-horizontal options-menu"></button>
         <span class="menu-items">
-          <a class="glyphicon glyphicon-repeat utilities" href="/user/<%= userid %>"></a>
+          <a id="messages-refresh" class="glyphicon glyphicon-repeat utilities" href="javascript:void(0)"></a>
 		      <a class="message-removeall glyphicon glyphicon-trash utilities" href="javascript:void(0)"></a>
 		      <% if (locals.downloadLink) { %>
 		        <a class="glyphicon glyphicon-download-alt utilities" href="<%= downloadLink %>"></a>
@@ -38,13 +38,7 @@
 	    </div>
 		</div>
     <div class="container application-list">
-      <ul class="list-group">
-        <% messages.filter(function(message){return message.status === 'unchecked';}).sort(function(a, b) { return b.timestamp - a.timestamp ; }).forEach(function(msg) { %>
-          <% include partials/message %>
-        <% }) %>
-        <% messages.filter(function(message){return message.status === 'checked';}).sort(function(a, b) { return b.timestamp - a.timestamp ; }).forEach(function(msg) { %>
-          <% include partials/message %>
-        <% }) %>
+      <ul class="list-group" data-user-id="<%= userid %>">
       </ul> 
     </div>
     <div>

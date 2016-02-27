@@ -72,6 +72,29 @@ app.get('/user/:userid', authorize, function(req, res) {
   }
 }) ;
 
+app.get('/user/:userid/messages', authorize, function(req, res) {
+  console.log("ui: user %s", req.params.userid) ;
+
+  if (req.session.user == req.params.userid) {
+    var mongoUrl = environment.config.db();  
+    
+    MongoClient.connect(mongoUrl, function(err, db) {
+      var collection = db.collection(req.params.userid).find().toArray(function(err, result){
+        console.log("mongo result: %s", JSON.stringify(result));
+
+        MongoClient.connect(mongoUrl, function(err, _db) {
+          _db.collection('users').findOne({_id: mongodb.ObjectID(req.params.userid)}, function(err, item){
+            res.render('messages', {userid:req.params.userid, messages:result}) ;
+            _db.close();
+          }) ;
+        });
+
+        db.close();
+      });
+    }) ;
+  }
+}) ;
+
 app.get('/', authorize, function(req, res){
   res.redirect('/login') ;
 });

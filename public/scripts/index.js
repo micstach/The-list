@@ -74,51 +74,68 @@ function getTimeString(timestamp)
 	return timeString ;
 }
 
+function readNotes()
+{
+	var userid = $('.list-group').attr('data-user-id');
+
+	$.ajax({
+		url: "/user/" + userid + "/messages",
+		method: 'GET'
+	}).done(function(data) {
+
+		$('.list-group').html(data);
+
+		$('.message-time').each(function(){
+			var timestamp = parseInt($(this).text()) ;
+			$(this).text(getTimeString(timestamp)) ;
+		}) ;
+
+		$('.message-toggle').click(function () {
+			var status = $(this).prop('checked');
+			var id = $(this).attr('data-message-id');
+			var userid = $(this).attr('data-user-id');
+			var action = (status ? 'checked' : 'unchecked');
+
+			$.ajax({
+				url: "/api/user/" + userid + "/message/" + action + "/" + id,
+				method: 'PUT'
+			}).done(function(){
+			}) ;
+		}) ;
+
+		$('.message-delete').click(function(){
+			var messageId = $(this).attr('data-message-id') ;
+			$('#accept-remove-message').attr('data-user-id', $(this).attr('data-user-id'));		
+			$('#accept-remove-message').attr('data-message-id', messageId);
+			$('#message-text').html($('#'+messageId).find('.message-main').html());
+			$('#remove-message').modal();
+		}) ;
+
+	    $('#accept-remove-message').click(function(){
+			var userid = $(this).attr('data-user-id') ;
+			var messageid = $(this).attr('data-message-id');
+
+			$.ajax({
+				url: "/api/user/" + userid + "/message/delete/" + messageid,
+				method: 'POST'
+			}).done(function(){
+				$('#'+messageid).hide();
+			})
+	    });
+	}) ;	
+}
+
 $(document).ready(function() {
 	
-	$('.message-toggle').click(function () {
-		var status = $(this).prop('checked');
-		var id = $(this).attr('data-message-id');
-		var userid = $(this).attr('data-user-id');
-		var action = (status ? 'checked' : 'unchecked');
-
-		$.ajax({
-			url: "/api/user/" + userid + "/message/" + action + "/" + id,
-			method: 'PUT'
-		}).done(function(){
-			//$('#'+id).css('background-color', 'rgba(225,225,245,1)');
-		}) ;
-	}) ;
-
-	$('.message-time').each(function(){
-		var timestamp = parseInt($(this).text()) ;
-		$(this).text(getTimeString(timestamp)) ;
-	}) ;
-
-	$('.message-delete').click(function(){
-		var messageId = $(this).attr('data-message-id') ;
-		$('#accept-remove-message').attr('data-user-id', $(this).attr('data-user-id'));		
-		$('#accept-remove-message').attr('data-message-id', messageId);
-		$('#message-text').html($('#'+messageId).find('.message-main').html());
-		$('#remove-message').modal();
-	}) ;
-
-    $('#accept-remove-message').click(function(){
-		var userid = $(this).attr('data-user-id') ;
-		var messageid = $(this).attr('data-message-id');
-
-		$.ajax({
-			url: "/api/user/" + userid + "/message/delete/" + messageid,
-			method: 'POST'
-		}).done(function(){
-			$('#'+messageid).hide();
-		})
-    });
-
 	$('.message-removeall').click(function(e){
 		$('#remove-all').modal();
 		e.preventDefault();
 	}) ;
+
+	$('#messages-refresh').click(function(e){
+		readNotes();
+		e.preventDefault() ;
+	});
 
     $('#accept-remove-all').click(function(){
 		$.ajax({
@@ -154,4 +171,6 @@ $(document).ready(function() {
 
     // enable tooltips
     $('[data-toggle="tooltip"]').tooltip() ;
+
+    readNotes();
 }) ;
