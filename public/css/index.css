@@ -94,6 +94,9 @@ body
 
 .toolbox-menu
 {
+	opacity: 0.75;
+	margin-right: 10px;
+	text-decoration: none;	
 }
 
 .toolbox
@@ -101,14 +104,14 @@ body
 	display:inline-block;
 	color: rgba(192, 192, 235);
 	width: 20px;
-	height: 15px;
+	height: 14px;
 	overflow: hidden;
 }
 
 .toolbox-full
 {
 	width: 120px;
-	height: 15px;
+	height: 14px;
 	overflow: visible;
 }
 

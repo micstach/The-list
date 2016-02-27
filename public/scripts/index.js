@@ -136,7 +136,17 @@ $(document).ready(function() {
 
     $('.toolbox-menu').click(function(e){
     	$('div.toolbox').toggleClass('toolbox-full');
+
+    	if ($('div.toolbox').hasClass('toolbox-full'))
+    		$('.utilities').show();
+    	else
+    		$('.utilities').hide();
+    	
     	e.preventDefault() ;
+    });
+
+    $('.utilities').each(function(){
+    	$(this).hide();
     });
 
     // enable tooltips
