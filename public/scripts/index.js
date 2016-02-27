@@ -127,14 +127,33 @@ function readNotes()
 
 $(document).ready(function() {
 	
-	$('.message-removeall').click(function(e){
+	$('.message-removeall').click(function(e) {
 		$('#remove-all').modal();
 		e.preventDefault();
 	}) ;
 
-	$('#messages-refresh').click(function(e){
+	$('#messages-refresh').click(function(e) {
 		readNotes();
 		e.preventDefault() ;
+	});
+
+	$('#message-create').submit(function(e) {
+		
+		var action = $('#message-create').attr('action');
+		var data = $("#message-create").serialize() ;
+		
+		$('#message-text').prop('disabled', true);
+
+		$.ajax({
+			url: action,
+			method: 'POST',
+			data: data
+		}).done(function(){
+			$('#message-text').prop('disabled', false).focus().val('');
+			readNotes();
+		});
+
+		e.preventDefault();
 	});
 
     $('#accept-remove-all').click(function(){

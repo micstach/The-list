@@ -1,6 +1,6 @@
 body 
 { 
-	padding:10px;
+	/*padding: 10px;*/
 }
 
 .user
@@ -26,7 +26,6 @@ body
 
 .message-main
 {
-	/*padding-left: 5px;*/
 	width: 90%;
 	width: -webkit-calc(100% - 40px);
 	width: -moz-calc(100% - 40px);
@@ -159,7 +158,7 @@ body
     background: linear-gradient(rgba(255, 255, 255, 1) 65%, rgba(255, 255, 255, 0));
     position:fixed;
     top: 0em;
-    width: calc(100% - 20px);
+    width: calc(100%);
     z-index:100;
     padding-top: 1em;
     padding-bottom: 0px;

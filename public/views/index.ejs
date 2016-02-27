@@ -32,8 +32,8 @@
 		        <a class="glyphicon glyphicon-log-out utilities-user" data-toggle="tooltip" data-placement="bottom" title="Kliknij aby się wylogować" href="/logoff"></a>
 		      <% } %>
 		    </span>
-	      <form class="message-form" action="/api/user/<%= userid %>/message/create" method="post">
-	        <input type="text" name="message" class="form-control input-default" placeholder="Zanotujmy coś..." autofocus>
+	      <form id="message-create" class="message-form" action="/api/user/<%= userid %>/message/create" method="post">
+	        <input id="message-text" type="text" name="message" class="form-control input-default" placeholder="Zanotujmy coś..." autofocus>
 	      </form>
 	    </div>
 		</div>
