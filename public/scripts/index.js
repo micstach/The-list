@@ -80,9 +80,9 @@ function readNotes()
 
 	$.ajax({
 		url: "/user/" + userid + "/messages",
-		method: 'GET'
+		method: 'GET',
+		cache: false
 	}).done(function(data) {
-
 		$('.list-group').html(data);
 
 		$('.message-time').each(function(){
