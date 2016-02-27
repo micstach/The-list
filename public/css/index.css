@@ -1,6 +1,7 @@
-body 
-{ 
-	/*padding: 10px;*/
+body {
+	padding-right:0px !important;
+	margin-right:10px !important;
+	margin-left:10px !important;
 }
 
 .user
@@ -158,7 +159,7 @@ body
     background: linear-gradient(rgba(255, 255, 255, 1) 65%, rgba(255, 255, 255, 0));
     position:fixed;
     top: 0em;
-    width: calc(100%);
+    width: calc(100% - 20px);
     z-index:100;
     padding-top: 1em;
     padding-bottom: 0px;
