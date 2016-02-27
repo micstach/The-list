@@ -16,6 +16,10 @@
     <script src="../scripts/index.js"></script>
   </head>
   <body>
+    <div>
+      <% include partials/dialog-remove-all %>
+      <% include partials/dialog-remove-message %>
+    </div>  
     <div class="application-header">
 	    <div class="container">
         <button class="glyphicon glyphicon-option-horizontal options-menu"></button>
@@ -33,17 +37,13 @@
 		      <% } %>
 		    </span>
 	      <form id="message-create" class="message-form" action="/api/user/<%= userid %>/message/create" method="post">
-	        <input id="message-text" type="text" name="message" class="form-control input-default" placeholder="Zanotujmy coś..." autofocus>
+	        <input id="message-create-text" type="text" name="message" class="form-control input-default" placeholder="Zanotujmy coś..." autofocus>
 	      </form>
 	    </div>
 		</div>
     <div class="container application-list">
       <ul class="list-group" data-user-id="<%= userid %>">
       </ul> 
-    </div>
-    <div>
-      <% include partials/dialog-remove-all %>
-      <% include partials/dialog-remove-message %>
     </div>
   </body>
 </html>
