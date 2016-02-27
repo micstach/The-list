@@ -86,6 +86,7 @@ $(document).ready(function() {
 			url: "/api/user/" + userid + "/message/" + action + "/" + id,
 			method: 'PUT'
 		}).done(function(){
+			//$('#'+id).css('background-color', 'rgba(225,225,245,1)');
 		}) ;
 	}) ;
 
