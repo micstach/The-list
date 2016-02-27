@@ -2,12 +2,6 @@ body
 { 
 }
 
-.tool-box
-{
-    right: 0px;
-	margin: 20px 0px 20px 0px; 
-}
-
 .user
 {
 	color: rgb(132, 132, 175);
@@ -98,11 +92,26 @@ body
 	float:right;
 }
 
+.toolbox-menu
+{
+}
+
 .toolbox
 {
+	display:inline-block;
 	color: rgba(192, 192, 235);
+	width: 20px;
+	height: 15px;
+	overflow: hidden;
 }
-	
+
+.toolbox-full
+{
+	width: 120px;
+	height: 15px;
+	overflow: visible;
+}
+
 .utilities-user
 {
 	opacity: 0.75;
@@ -126,6 +135,11 @@ body
 .utilities:hover
 {
 	opacity: 1.0;
+	text-decoration: none;
+}	    
+
+.utilities:visited
+{
 	text-decoration: none;
 }	    
 

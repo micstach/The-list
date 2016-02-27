@@ -8,9 +8,9 @@
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
     <link href="../css/checkboxes-nojs.css" rel="stylesheet" type="text/css">
     <link href="../css/index.css" rel="stylesheet" type="text/css">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">    
+    <link rel="icon" type="image/png" sizes="16x16" href="/res/todo_16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/res/todo_32.png">
+    <link rel="icon" type="image/png" sizes="64x64" href="/res/todo_64.png">    
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
     <script src="../scripts/index.js"></script>
@@ -20,14 +20,16 @@
     <% include partials/dialog-remove-message %>
     <div class="application-header">
 	    <div class="container">
-	      <span class="toolbox">
+	      <div class="toolbox">
 	        <!-- <span class="items-counter label-danger label label-as-badge"><%= messages.filter(function(message){return message.status === 'unchecked';}).length %></span> -->
 	        <!-- <span class="items-counter label-default label label-as-badge"><%= messages.length %></span> -->
-          <a class="glyphicon glyphicon-repeat utilities" data-toggle="tooltip" data-placement="bottom" title="Kliknij aby odświeżyć" href="/user/<%= userid %>"></a>
-		      <a class="message-removeall glyphicon glyphicon-trash utilities" data-toggle="tooltip" data-placement="bottom" title="Kliknij aby usunąć wszystkie elementy" href="#"></a>
+          <a class="toolbox-menu glyphicon glyphicon-option-horizontal utilities" href="javascript:void(0)"></a>
+          <a class="glyphicon glyphicon-repeat utilities" href="/user/<%= userid %>"></a>
+		      <a class="message-removeall glyphicon glyphicon-trash utilities" href="#"></a>
 		      <% if (locals.downloadLink) { %>
-		        <a class="utilities glyphicon glyphicon-download-alt" data-toggle="tooltip" data-placement="bottom" title="Kliknij aby pobrać applikacje na Twój komputer" href="<%= downloadLink %>"></a>
-		      <% } %>	      </span>
+		        <a class="utilities glyphicon glyphicon-download-alt" href="<%= downloadLink %>"></a>
+		      <% } %>	      
+        </div>
 	      <span class="pull-right">
 	        <span class="user" data-toggle="tooltip" data-placement="bottom" title="Witaj <%= username %>!"><%= username %></span>
 		      <% if (locals.desktopClient == false) { %>

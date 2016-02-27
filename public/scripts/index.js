@@ -134,6 +134,11 @@ $(document).ready(function() {
 
     $('.application-list').css('margin-top', $('.application-header').outerHeight() + 'px') ;
 
+    $('.toolbox-menu').click(function(e){
+    	$('div.toolbox').toggleClass('toolbox-full');
+    	e.preventDefault() ;
+    });
+
     // enable tooltips
     $('[data-toggle="tooltip"]').tooltip() ;
 }) ;
