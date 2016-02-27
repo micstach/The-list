@@ -16,20 +16,16 @@
     <script src="../scripts/index.js"></script>
   </head>
   <body>
-    <% include partials/dialog-remove-all %>
-    <% include partials/dialog-remove-message %>
     <div class="application-header">
 	    <div class="container">
-	      <div class="toolbox">
-	        <!-- <span class="items-counter label-danger label label-as-badge"><%= messages.filter(function(message){return message.status === 'unchecked';}).length %></span> -->
-	        <!-- <span class="items-counter label-default label label-as-badge"><%= messages.length %></span> -->
-          <a class="glyphicon glyphicon-option-horizontal toolbox-menu" href="javascript:void(0)"></a>
+        <button class="glyphicon glyphicon-option-horizontal options-menu"></button>
+        <span class="menu-items">
           <a class="glyphicon glyphicon-repeat utilities" href="/user/<%= userid %>"></a>
 		      <a class="message-removeall glyphicon glyphicon-trash utilities" href="javascript:void(0)"></a>
 		      <% if (locals.downloadLink) { %>
-		        <a class="utilities glyphicon glyphicon-download-alt utilities" href="<%= downloadLink %>"></a>
-		      <% } %>	      
-        </div>
+		        <a class="glyphicon glyphicon-download-alt utilities" href="<%= downloadLink %>"></a>
+		      <% } %>
+        </span>	      
 	      <span class="pull-right">
 	        <span class="user" data-toggle="tooltip" data-placement="bottom" title="Witaj <%= username %>!"><%= username %></span>
 		      <% if (locals.desktopClient == false) { %>
@@ -50,6 +46,10 @@
           <% include partials/message %>
         <% }) %>
       </ul> 
+    </div>
+    <div>
+      <% include partials/dialog-remove-all %>
+      <% include partials/dialog-remove-message %>
     </div>
   </body>
 </html>

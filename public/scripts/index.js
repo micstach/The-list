@@ -134,20 +134,23 @@ $(document).ready(function() {
 
     $('.application-list').css('margin-top', $('.application-header').outerHeight() + 'px') ;
 
-    $('.toolbox-menu').click(function(e){
-    	$('div.toolbox').toggleClass('toolbox-full');
+    $('.options-menu').click(function(e){
+		
+		if ($('.menu-items').is(':visible')) {
+			$('.menu-items').hide();
+			$('.options-menu').removeClass('glyphicon-remove');		
+			$('.options-menu').addClass('glyphicon-option-horizontal');
+		}
+		else {
+			$('.menu-items').show();
+			$('.options-menu').removeClass('glyphicon-option-horizontal');
+			$('.options-menu').addClass('glyphicon-remove');
+		}
 
-    	if ($('div.toolbox').hasClass('toolbox-full'))
-    		$('.utilities').show();
-    	else
-    		$('.utilities').hide();
-    	
     	e.preventDefault() ;
     });
 
-    $('.utilities').each(function(){
-    	$(this).hide();
-    });
+    $('.menu-items').hide();
 
     // enable tooltips
     $('[data-toggle="tooltip"]').tooltip() ;

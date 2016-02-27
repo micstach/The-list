@@ -1,6 +1,6 @@
 body 
 { 
-	margin: 10px;
+	padding:10px;
 }
 
 .user
@@ -41,7 +41,7 @@ body
 
 .message-form
 {
-	margin: 10px 0px 20px 0px;
+	margin: 10px 0px 10px 0px;
 }
 
 .message-delete
@@ -93,27 +93,24 @@ body
 	float:right;
 }
 
-.toolbox-menu
+.options-menu
 {
 	opacity: 0.75;
 	margin-right: 10px;
-	text-decoration: none;	
+	background-color: transparent;
+    background-repeat: no-repeat;
+    border: none;
+    cursor: pointer;
+    overflow: hidden;
+    outline:none;
+    padding:0px;
+    margin:0px;
+    margin-right: 10px;
 }
 
-.toolbox
+.menu-items
 {
-	display:inline-block;
 	color: rgba(192, 192, 235);
-	width: 20px;
-	height: 14px;
-	overflow: hidden;
-}
-
-.toolbox-full
-{
-	width: 120px;
-	height: 14px;
-	overflow: visible;
 }
 
 .utilities-user
@@ -165,5 +162,5 @@ body
     width: calc(100% - 20px);
     z-index:100;
     padding-top: 1em;
-    padding-bottom: 0;
+    padding-bottom: 0px;
 }
