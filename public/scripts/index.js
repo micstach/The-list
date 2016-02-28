@@ -79,7 +79,7 @@ function readNotes()
 	var userid = $('.list-group').attr('data-user-id');
 
 	$.ajax({
-		url: "/user/" + userid + "/messages",
+		url: "/messages",
 		method: 'GET',
 		cache: false
 	}).done(function(data) {
@@ -97,7 +97,7 @@ function readNotes()
 			var action = (status ? 'checked' : 'unchecked');
 
 			$.ajax({
-				url: "/api/user/" + userid + "/message/" + action + "/" + id,
+				url: "/api/message/" + action + "/" + id,
 				method: 'PUT'
 			}).done(function(){
 			}) ;
@@ -116,7 +116,7 @@ function readNotes()
 			var messageid = $(this).attr('data-message-id');
 
 			$.ajax({
-				url: "/api/user/" + userid + "/message/delete/" + messageid,
+				url: "/api/message/delete/" + messageid,
 				method: 'POST'
 			}).done(function(){
 				$('#'+messageid).hide();
