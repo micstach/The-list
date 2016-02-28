@@ -285,6 +285,10 @@ app.put('/api/message/:status/:id', authorize, function(req, res){
   }) ;
 });
 
+app.get('*', function(req, res){
+  res.redirect('/');
+});
+
 app.listen(environment.config.port(), environment.config.ip(), function(){
   console.log('Server started: %s:%s', environment.config.ip(), environment.config.port()) ;
 }) ;
