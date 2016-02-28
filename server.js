@@ -155,7 +155,7 @@ app.post('/login', function(req, res) {
 app.get('/api/messages', authorize, function(req, res) {
   console.log('GET: /messages') ;
 
-  var userid = req.session.userid.toString();
+  var userid = req.session.userid;
 
   MongoClient.connect(environment.config.db(), function(err, db) {
       var query = {users: {$elemMatch: {$eq:userid}}} ;
@@ -168,20 +168,20 @@ app.get('/api/messages', authorize, function(req, res) {
 
 app.post('/api/message/create', authorize, function(req, res){
   console.log("api: message delete");
-  var mongodb = environment.config.db() ;  
-  var user = req.session.userid ;
+   
+  var userid = req.session.userid ;
   var text = req.body.message;
   
   if (text.length == 0) {
     res.redirect('/') ;
   }
   else {
-    MongoClient.connect(mongodb, function(err, db) {
+    MongoClient.connect(environment.config.db(), function(err, db) {
       db.collection('notes').save({
         text: text, 
         status: 'unchecked',
-        owner: user,
-        users: [user],
+        owner: userid,
+        users: [userid],
         timestamp: moment().valueOf() 
       }) ;
       db.close() ;
