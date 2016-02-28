@@ -1,25 +1,41 @@
 <!DOCTYPE html>
-<html>
+<html ng-app="Index">
   <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta http-equiv="cache-control" content="no-cache" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" type="text/css" >
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
     <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet"> -->
     <link href="../css/checkboxes-nojs.css" rel="stylesheet" type="text/css">
     <link href="../css/index.css" rel="stylesheet" type="text/css">
     <link rel="icon" type="image/png" sizes="16x16" href="/res/todo_16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/res/todo_32.png">
     <link rel="icon" type="image/png" sizes="64x64" href="/res/todo_64.png">    
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
-    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    <script src="../libs/angular.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.0/angular-animate.js"></script>
+    <script src="../libs/ui-bootstrap-tpls-1.2.1.min.js"></script>
     <script src="../scripts/index.js"></script>
+    <script src="../scripts/application.js"></script>
   </head>
-  <body>
-    <div>
-      <% include partials/dialog-remove-all %>
-      <% include partials/dialog-remove-message %>
-    </div>  
+  <body ng-controller="Notes">
+      <script type="text/ng-template" id="delete-note-template.html">
+        <div class="modal-header">
+            <strong>Czy chcesz usunać notatkę ?</strong>
+        </div>
+        <div class="modal-body">
+				    <div class="message-text">{{note.text}}</div>
+				    <div class="message-time">{{note.timestamp}}</div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-default" type="button" ng-click="ok()">Tak, chcę</button>
+            <button class="btn btn-primary" type="button" ng-click="cancel()">Nie, jednak nie</button>
+        </div>
+    </script>
+
     <div class="application-header">
 	    <div class="container">
         <button class="glyphicon glyphicon-option-horizontal options-menu"></button>
@@ -36,13 +52,28 @@
 		        <a class="glyphicon glyphicon-log-out utilities-user" data-toggle="tooltip" data-placement="bottom" title="Kliknij aby się wylogować" href="/logoff"></a>
 		      <% } %>
 		    </span>
-	      <form id="message-create" class="message-form" action="/api/message/create" method="post">
-	        <input id="message-create-text" type="text" name="message" class="form-control input-default" placeholder="Zanotujmy coś..." autofocus>
+	      <form ng-submit="addNewItem(noteText)" id="message-create" class="message-form">
+	        <input ng-model="noteText" id="message-create-text" type="text" name="message" class="form-control input-default" placeholder="Zanotujmy coś..." autofocus>
 	      </form>
 	    </div>
 		</div>
+
     <div class="container application-list">
-      <ul class="list-group" data-user-id="<%= userid %>">
+      <ul class="list-group">
+				<li ng-repeat="msg in data.messages" id="{{msg._id}}" class="list-group-item">
+				  <div class="checkbox message-status">
+				    <input id="unique-{{msg._id}}" type="checkbox" class="message-toggle" data-user-id="{{data.userid}}" data-message-id="{{msg._id}}" {{msg.status}}>
+				    <label for="unique-{{msg._id}}">
+				    </label>
+				  </div>
+				  <div class="message-main">
+				    <div class="message-text">{{msg.text}}</div>
+				    <div class="message-time">{{msg.timestamp}}</div>
+				  </div>
+				  <div class="message-tools">
+			      <button ng-click="deleteItem($event)" type="submit" class="message-delete glyphicon glyphicon-remove" data-user-id="{{data.userid}}" data-message-id="{{msg._id}}"></button>
+				  </div>
+				</li>				
       </ul> 
     </div>
   </body>

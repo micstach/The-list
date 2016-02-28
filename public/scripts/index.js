@@ -74,45 +74,6 @@ function getTimeString(timestamp)
 	return timeString ;
 }
 
-function readNotes()
-{
-	var userid = $('.list-group').attr('data-user-id');
-
-	$.ajax({
-		url: "/api/messages",
-		method: 'GET',
-		cache: false
-	}).done(function(data) {
-		$('.list-group').html(data);
-
-		$('.message-time').each(function(){
-			var timestamp = parseInt($(this).text()) ;
-			$(this).text(getTimeString(timestamp)) ;
-		}) ;
-
-		$('.message-toggle').click(function () {
-			var status = $(this).prop('checked');
-			var id = $(this).attr('data-message-id');
-			var userid = $(this).attr('data-user-id');
-			var action = (status ? 'checked' : 'unchecked');
-
-			$.ajax({
-				url: "/api/message/" + action + "/" + id,
-				method: 'PUT'
-			}).done(function(){
-			}) ;
-		}) ;
-
-		$('.message-delete').click(function(){
-			var messageId = $(this).attr('data-message-id') ;
-			$('#accept-remove-message').attr('data-user-id', $(this).attr('data-user-id'));		
-			$('#accept-remove-message').attr('data-message-id', messageId);
-			$('#message-text').html($('#'+messageId).find('.message-main').html());
-			$('#remove-message').modal();
-		}) ;
-	}) ;	
-}
-
 $(document).ready(function() {
 	
 	$('.message-removeall').click(function(e) {
@@ -121,27 +82,8 @@ $(document).ready(function() {
 	}) ;
 
 	$('#messages-refresh').click(function(e) {
-		readNotes();
+		//readNotes();
 		e.preventDefault() ;
-	});
-
-	$('#message-create').submit(function(e) {
-		
-		var action = $('#message-create').attr('action');
-		var data = $("#message-create").serialize() ;
-		
-		$('#message-create-text').prop('disabled', true);
-
-		$.ajax({
-			url: action,
-			method: 'POST',
-			data: data
-		}).done(function(){
-			$('#message-create-text').prop('disabled', false).focus().val('');
-			readNotes();
-		});
-
-		e.preventDefault();
 	});
 
     $('#accept-remove-all').click(function(){
@@ -182,7 +124,7 @@ $(document).ready(function() {
 			url: "/api/message/delete/" + messageid,
 			method: 'POST'
 		}).done(function(){
-			readNotes();
+			//readNotes();
 		})
     });
 
@@ -191,5 +133,5 @@ $(document).ready(function() {
     // enable tooltips
     $('[data-toggle="tooltip"]').tooltip() ;
 
-    readNotes();
+    //readNotes();
 }) ;

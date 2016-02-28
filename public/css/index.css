@@ -164,3 +164,16 @@ body {
     padding-top: 1em;
     padding-bottom: 0px;
 }
+
+/* bootstrap ui override */
+.modal {
+    display: block;
+}
+.modal-body:before,
+.modal-body:after {
+    display: table;
+}
+.modal-header:before,
+.modal-header:after {
+    display: table;
+}

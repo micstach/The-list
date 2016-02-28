@@ -160,8 +160,11 @@ app.get('/api/messages', authorize, function(req, res) {
   MongoClient.connect(environment.config.db(), function(err, db) {
       var query = {owner: userid} ;//{users: {$elemMatch: {$eq:userid}}} ;
 
-      db.collection('notes').find(query).toArray(function(err, result){
-      res.render('messages', {userid:userid, messages:result}) ;
+      db.collection('notes').find(query).toArray(function(err, result) {
+  
+      res.writeHead(200, {'Content-Type': 'application/json'});
+      res.end(JSON.stringify({userid:userid, messages:result}));
+
       db.close();
     });
   }) ;
@@ -186,7 +189,8 @@ app.post('/api/message/create', authorize, function(req, res){
         timestamp: moment().valueOf() 
       }) ;
       db.close() ;
-      res.redirect('/');
+      res.writeHead(200);
+      res.end();
     }) ;
   }
 }) ;
@@ -200,7 +204,9 @@ app.post('/api/message/delete/:id', authorize, function(req, res){
   MongoClient.connect(mongoUrl, function(err, db) {
     db.collection('notes').remove({_id: mongodb.ObjectID(req.params.id)}) ;
     db.close() ;
-    res.redirect('/');
+    
+    res.writeHead(200);
+    res.end();
   }) ;
 }) ;
 
