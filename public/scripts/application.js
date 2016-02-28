@@ -18,7 +18,7 @@ angular.module('Index').controller('Notes', function($scope, $http, $uibModal) {
 	$scope.delNoteText = {value: "text"} ;
 
 	$scope.getItems = function() {
-		$http.get('/api/messages', {cache: false})
+		$http.get('/api/messages')
 			.success(function(data) { 
 
 				data.messages.forEach(function(note) {
