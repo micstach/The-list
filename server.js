@@ -5,7 +5,6 @@ var mongodb = require('mongodb') ;
 var bodyParser = require('body-parser') ;
 var moment = require('moment');
 
-// local
 var environment = require('./environment.js') ;
 var utils = require('./utils.js');
 
@@ -18,67 +17,61 @@ app.set('view engine', 'ejs');
   
 app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json());  
-app.use(bodyParser.urlencoded());
+
+app.use(bodyParser.urlencoded({
+  extended:true
+}));
+
 app.use(cookieParser('cookie-guid'));  
-app.use(session({secret: 'super-secret'}));
+
+app.use(session({
+  secret: 'super-secret',
+  resave: false,
+  saveUninitialized: true
+}));
 
 var authorize = function(req, res, next) {
-  console.log('autohrize, session user: %s', req.session.user)
-  if (req.session.user != undefined)
+  console.log('autohrize, session user: %s', req.session.userid)
+  if (req.session.userid != undefined)
     return next();
   else
     return res.redirect('/login');
 };
 
-// routes
-app.get('/user/:userid', authorize, function(req, res) {
-  console.log("ui: user %s", req.params.userid) ;
-  console.log("ui: user-agent: " + req.headers['user-agent']);
-
-  var desktopClient = (req.headers['user-agent'] === 'desktop client') ;
-  var downloadLink = null ;
-  console.log("desktopClient: " + desktopClient);
-
-  if (req.headers['user-agent'].indexOf('Windows') != -1) {
-    downloadLink = '/clients/windows/TheListClientPackage.zip';
-  }
-  else if (req.headers['user-agent'].indexOf('Android') != -1) {
-    downloadLink = '/clients/android/TheListClient.apk';
-  }
-
-  if (req.session.user == req.params.userid) {
-    var mongoUrl = environment.config.db();  
-    
-    console.log("DbUrl: %s", mongoUrl);
-
-    MongoClient.connect(mongoUrl, function(err, db) {
-      var collection = db.collection(req.params.userid).find().toArray(function(err, result){
-        console.log("mongo result: %s", JSON.stringify(result));
-
-        MongoClient.connect(mongoUrl, function(err, _db) {
-          _db.collection('users').findOne({_id: mongodb.ObjectID(req.params.userid)}, function(err, item){
-            res.render('index', {desktopClient: desktopClient, downloadLink:downloadLink, username: item.name, userid:req.params.userid, messages:result}) ;
-            _db.close();
-          }) ;
-        });
-
-        db.close();
-      });
-    }) ;
-  }
-  else
-  {
+app.get('/', authorize, function(req, res) {
+  if (req.session.userid === undefined) {
     res.redirect('/login') ;
   }
-}) ;
+  else {
+    console.log("ui: user %s", req.session.userid) ;
+    console.log("ui: user-agent: " + req.headers['user-agent']);
 
-app.get('/', authorize, function(req, res){
-  res.redirect('/login') ;
+    var desktopClient = (req.headers['user-agent'] === 'desktop client') ;
+    var downloadLink = null ;
+    console.log("desktopClient: " + desktopClient);
+
+    if (req.headers['user-agent'].indexOf('Windows') != -1) {
+      downloadLink = '/clients/windows/TheListClientPackage.zip';
+    }
+    else if (req.headers['user-agent'].indexOf('Android') != -1) {
+      downloadLink = '/clients/android/TheListClient.apk';
+    }
+
+    var mongoUrl = environment.config.db();  
+    var userid = req.session.userid ;
+
+    MongoClient.connect(mongoUrl, function(err, db) {
+      db.collection('users').findOne({_id: mongodb.ObjectID(userid)}, function(err, user){
+        res.render('index', {desktopClient: desktopClient, downloadLink:downloadLink, username: user.name, userid:userid}) ;
+        db.close();
+      }) ;
+    });
+  }
 });
 
 app.get('/login', function(req, res) {
-  if (req.session.user !== undefined){
-    res.redirect('/user/' + req.session.user);
+  if (req.session.userid !== undefined){
+    res.redirect('/');
   }
   else {
     res.render('login', {error:null}) ;
@@ -145,8 +138,8 @@ app.post('/login', function(req, res) {
           console.log("mongo user: %s", JSON.stringify(user));
 
           if (user !== null) {
-            req.session.user = user._id ;
-            res.redirect('/user/' + req.session.user);
+            req.session.userid = user._id ;
+            res.redirect('/');
           }
           else {
             console.log("user not verified !") ;
@@ -159,74 +152,92 @@ app.post('/login', function(req, res) {
   }
 }) ;
 
-app.post('/api/user/:userid/message/create', authorize, function(req, res){
-  console.log("api: message delete");
-  var mongoUrl = environment.config.db() ;  
+app.get('/api/messages', authorize, function(req, res) {
+  console.log('GET: /messages') ;
 
-  if (req.body.message.length == 0) {
-    res.redirect('/user/' + req.params.userid) ;
+  var userid = req.session.userid;
+
+  MongoClient.connect(environment.config.db(), function(err, db) {
+      var query = {owner: userid} ;//{users: {$elemMatch: {$eq:userid}}} ;
+
+      db.collection('notes').find(query).toArray(function(err, result){
+      res.render('messages', {userid:userid, messages:result}) ;
+      db.close();
+    });
+  }) ;
+}) ;
+
+app.post('/api/message/create', authorize, function(req, res){
+  console.log("api: message delete");
+   
+  var userid = req.session.userid ;
+  var text = req.body.message;
+  
+  if (text.length == 0) {
+    res.redirect('/') ;
   }
   else {
-
-    MongoClient.connect(mongoUrl, function(err, db) {
-      
-      db.collection(req.params.userid).save({
-        text: req.body.message, 
+    MongoClient.connect(environment.config.db(), function(err, db) {
+      db.collection('notes').save({
+        text: text, 
         status: 'unchecked',
+        owner: userid,
+        users: [userid],
         timestamp: moment().valueOf() 
       }) ;
-
       db.close() ;
-
-      res.redirect('/user/' + req.params.userid);
+      res.redirect('/');
     }) ;
   }
 }) ;
 
-app.post('/api/user/:userid/message/delete/:id', authorize, function(req, res){
-  console.log("api: delete message") ;
+app.post('/api/message/delete/:id', authorize, function(req, res){
+  console.log("api: delete message: %d", req.params.id) ;
 
   var mongoUrl = environment.config.db() ;  
-  console.log("DbUrl: %s", mongoUrl);
-
-  console.log('message id: %s', req.params.id) ;
+  var userid = req.session.userid ;
 
   MongoClient.connect(mongoUrl, function(err, db) {
-    db.collection(req.params.userid).remove({_id: mongodb.ObjectID(req.params.id)}) ;
+    db.collection('notes').remove({_id: mongodb.ObjectID(req.params.id)}) ;
     db.close() ;
-    res.redirect('/user/' + req.params.userid);
+    res.redirect('/');
   }) ;
 }) ;
 
-app.post('/api/user/:userid/message/removeall', authorize, function(req, res){
+app.post('/api/message/removeall', authorize, function(req, res){
   console.log("api: remove all message(s)") ;
 
   var mongoUrl = environment.config.db() ;  
-  console.log("DbUrl: %s", mongoUrl);
-
-  console.log("removeall") ;
+  var userid = req.session.userid ;
 
   MongoClient.connect(mongoUrl, function(err, db) {
-    db.collection(req.params.userid).drop() ;
+    var query = {owner: userid} ;//{users: {$elemMatch: {$eq:userid}}} ;
+
+    db.collection('notes').drop(query) ;
     db.close() ;
-    res.redirect('/user/' + req.params.userid);
+    res.redirect('/');
   }) ;
 }) ;
 
-app.put('/api/user/:userid/message/:status/:id', authorize, function(req, res){
+app.put('/api/message/:status/:id', authorize, function(req, res){
   console.log("api: message status: " + JSON.stringify(req.params));
+  var userid = req.session.userid ;
 
   MongoClient.connect(environment.config.db(), function(err, db) {
-    db.collection(req.params.userid).findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, item){
+    db.collection('notes').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, item){
       item.status = req.params.status ;
       item.timestamp = moment().valueOf() ;
-      db.collection(req.params.userid).save(item) ;
+      db.collection('notes').save(item) ;
       db.close() ;
       res.sendStatus(200); 
     }) ;
   }) ;
 });
 
+app.get('*', function(req, res){
+  res.redirect('/');
+});
+
 app.listen(environment.config.port(), environment.config.ip(), function(){
-  console.log('Server started: %s:%s', environment.config.ip(), environment.config.port()) ;
+  console.log('2do server started: %s:%s', environment.config.ip(), environment.config.port()) ;
 }) ;

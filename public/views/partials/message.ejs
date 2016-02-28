@@ -1,16 +1,16 @@
 <li id="<%= msg._id %>" class="list-group-item">
-  <div>
-    <div class="checkbox message-status">
-      <input id="unique-<%= msg._id %>" type="checkbox" class="message-toggle" data-user-id="<%= userid %>" data-message-id="<%= msg._id %>" <%= msg.status %>>
-      <label for="unique-<%= msg._id %>">
-      </label>
-    </div>
-    <div class="message-main">
-      <div class="message-text"><%= msg.text %></div>
-      <div class="message-time"><%= msg.timestamp %></div>
-    </div>
-    <div class="message-tools">
+  <div class="checkbox message-status">
+    <input id="unique-<%= msg._id %>" type="checkbox" class="message-toggle" data-user-id="<%= userid %>" data-message-id="<%= msg._id %>" <%= msg.status %>>
+    <label for="unique-<%= msg._id %>">
+    </label>
+  </div>
+  <div class="message-main">
+    <div class="message-text"><%= msg.text %></div>
+    <div class="message-time"><%= msg.timestamp %></div>
+  </div>
+  <div class="message-tools">
+    <% if (msg.owner == userid) { %>
       <button type="submit" class="message-delete glyphicon glyphicon-remove" data-user-id="<%= userid %>" data-message-id="<%= msg._id %>">
-    </div>
+    <% } %>
   </div>
 </li>

@@ -1,16 +1,12 @@
-body 
-{ 
-}
-
-.tool-box
-{
-    right: 0px;
-	margin: 20px 0px 20px 0px; 
+body {
+	padding-right:0px !important;
+	margin-right:10px !important;
+	margin-left:10px !important;
 }
 
 .user
 {
-	color: rgb(162, 162, 205);
+	color: rgb(132, 132, 175);
 	font-weight: bold;
 }
 
@@ -31,7 +27,6 @@ body
 
 .message-main
 {
-	padding-left: 5px;
 	width: 90%;
 	width: -webkit-calc(100% - 40px);
 	width: -moz-calc(100% - 40px);
@@ -46,11 +41,12 @@ body
 
 .message-form
 {
-	margin: 10px 0px 20px 0px;
+	margin: 10px 0px 10px 0px;
 }
 
 .message-delete
 {
+	opacity: 0.45;
 	background-color: transparent;
     background-repeat: no-repeat;
     border: none;
@@ -59,6 +55,11 @@ body
     outline:none;
     padding:0px;
     margin:0px;
+}
+
+.message-delete:hover
+{
+	opacity: 1.0;
 }
 
 .message-toggle
@@ -77,7 +78,7 @@ body
 {
 	color: rgb(162, 162, 205);
 	width: 100px;
-	font-size: 0.65em;
+	font-size: 0.70em;
 }
 
 .message-status
@@ -92,29 +93,53 @@ body
 	float:right;
 }
 
-.toolbox
+.options-menu
+{
+	opacity: 0.75;
+	margin-right: 10px;
+	background-color: transparent;
+    background-repeat: no-repeat;
+    border: none;
+    cursor: pointer;
+    overflow: hidden;
+    outline:none;
+    padding:0px;
+    margin:0px;
+    margin-right: 10px;
+}
+
+.menu-items
 {
 	color: rgba(192, 192, 235);
 }
-	
+
 .utilities-user
 {
+	opacity: 0.75;
 	margin-left: 10px;
 	text-decoration: none;
 }	    
 
 .utilities-user:hover
 {
+	opacity: 1.0;
 	text-decoration: none;
 }	    
 
 .utilities
 {
+	opacity: 0.75;
 	margin-right: 10px;
 	text-decoration: none;
 }	    
 
 .utilities:hover
+{
+	opacity: 1.0;
+	text-decoration: none;
+}	    
+
+.utilities:visited
 {
 	text-decoration: none;
 }	    
@@ -131,16 +156,11 @@ body
 
 .application-header
 {
-    background: linear-gradient(rgba(255, 255, 255, 1), rgba(255, 255, 255, 1.0), rgba(255, 255, 255, 0));
+    background: linear-gradient(rgba(255, 255, 255, 1) 65%, rgba(255, 255, 255, 0));
     position:fixed;
     top: 0em;
-    width:100%;
+    width: calc(100% - 20px);
     z-index:100;
     padding-top: 1em;
-    padding-bottom: 1em;
-}
-
-.application-list
-{
-	margin-top: 7.5em ;
+    padding-bottom: 0px;
 }
