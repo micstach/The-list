@@ -5,7 +5,6 @@ var mongodb = require('mongodb') ;
 var bodyParser = require('body-parser') ;
 var moment = require('moment');
 
-// local
 var environment = require('./environment.js') ;
 var utils = require('./utils.js');
 
@@ -29,48 +28,6 @@ var authorize = function(req, res, next) {
   else
     return res.redirect('/login');
 };
-
-// routes
-// app.get('/user/:userid', authorize, function(req, res) {
-//   console.log("ui: user %s", req.params.userid) ;
-//   console.log("ui: user-agent: " + req.headers['user-agent']);
-
-//   var desktopClient = (req.headers['user-agent'] === 'desktop client') ;
-//   var downloadLink = null ;
-//   console.log("desktopClient: " + desktopClient);
-
-//   if (req.headers['user-agent'].indexOf('Windows') != -1) {
-//     downloadLink = '/clients/windows/TheListClientPackage.zip';
-//   }
-//   else if (req.headers['user-agent'].indexOf('Android') != -1) {
-//     downloadLink = '/clients/android/TheListClient.apk';
-//   }
-
-//   if (req.session.user == req.params.userid) {
-//     var mongoUrl = environment.config.db();  
-    
-//     console.log("DbUrl: %s", mongoUrl);
-
-//     MongoClient.connect(mongoUrl, function(err, db) {
-//       var collection = db.collection(req.params.userid).find().toArray(function(err, result){
-//         console.log("mongo result: %s", JSON.stringify(result));
-
-//         MongoClient.connect(mongoUrl, function(err, _db) {
-//           _db.collection('users').findOne({_id: mongodb.ObjectID(req.params.userid)}, function(err, item){
-//             res.render('index', {desktopClient: desktopClient, downloadLink:downloadLink, username: item.name, userid:req.params.userid, messages:result}) ;
-//             _db.close();
-//           }) ;
-//         });
-
-//         db.close();
-//       });
-//     }) ;
-//   }
-//   else
-//   {
-//     res.redirect('/login') ;
-//   }
-// }) ;
 
 app.get('/messages', authorize, function(req, res) {
 
