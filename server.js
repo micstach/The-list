@@ -158,7 +158,8 @@ app.get('/api/messages', authorize, function(req, res) {
   var userid = req.session.userid;
 
   MongoClient.connect(environment.config.db(), function(err, db) {
-      var query = {users: {$elemMatch: {$eq:userid}}} ;
+      var query = {owner: userid} ;//{users: {$elemMatch: {$eq:userid}}} ;
+
       db.collection('notes').find(query).toArray(function(err, result){
       res.render('messages', {userid:userid, messages:result}) ;
       db.close();
@@ -210,7 +211,8 @@ app.post('/api/message/removeall', authorize, function(req, res){
   var userid = req.session.userid ;
 
   MongoClient.connect(mongoUrl, function(err, db) {
-    var query = {users: {$elemMatch: {$eq:userid}}} ;
+    var query = {owner: userid} ;//{users: {$elemMatch: {$eq:userid}}} ;
+    
     db.collection('notes').drop(query) ;
     db.close() ;
     res.redirect('/');
