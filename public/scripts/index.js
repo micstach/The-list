@@ -110,18 +110,6 @@ function readNotes()
 			$('#message-text').html($('#'+messageId).find('.message-main').html());
 			$('#remove-message').modal();
 		}) ;
-
-	    $('#accept-remove-message').click(function(){
-			var userid = $(this).attr('data-user-id') ;
-			var messageid = $(this).attr('data-message-id');
-
-			$.ajax({
-				url: "/api/message/delete/" + messageid,
-				method: 'POST'
-			}).done(function(){
-				$('#'+messageid).hide();
-			})
-	    });
 	}) ;	
 }
 
@@ -184,6 +172,18 @@ $(document).ready(function() {
 		}
 
     	e.preventDefault() ;
+    });
+
+    $('#accept-remove-message').click(function(){
+		var userid = $(this).attr('data-user-id') ;
+		var messageid = $(this).attr('data-message-id');
+
+		$.ajax({
+			url: "/api/message/delete/" + messageid,
+			method: 'POST'
+		}).done(function(){
+			readNotes();
+		})
     });
 
     $('.menu-items').hide();
