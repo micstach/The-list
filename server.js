@@ -152,7 +152,7 @@ app.post('/login', function(req, res) {
   }
 }) ;
 
-app.get('/messages', authorize, function(req, res) {
+app.get('/api/messages', authorize, function(req, res) {
   console.log('GET: /messages') ;
 
   var userid = req.session.userid.toString();

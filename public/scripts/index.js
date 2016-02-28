@@ -79,7 +79,7 @@ function readNotes()
 	var userid = $('.list-group').attr('data-user-id');
 
 	$.ajax({
-		url: "/messages",
+		url: "/api/messages",
 		method: 'GET',
 		cache: false
 	}).done(function(data) {
