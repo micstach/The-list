@@ -198,7 +198,7 @@ app.post('/api/message/delete/:id', authorize, function(req, res){
   var userid = req.session.userid ;
 
   MongoClient.connect(mongoUrl, function(err, db) {
-    db.collection(userid).remove({_id: mongodb.ObjectID(req.params.id)}) ;
+    db.collection('notes').remove({_id: mongodb.ObjectID(req.params.id)}) ;
     db.close() ;
     res.redirect('/');
   }) ;
@@ -212,7 +212,7 @@ app.post('/api/message/removeall', authorize, function(req, res){
 
   MongoClient.connect(mongoUrl, function(err, db) {
     var query = {owner: userid} ;//{users: {$elemMatch: {$eq:userid}}} ;
-    
+
     db.collection('notes').drop(query) ;
     db.close() ;
     res.redirect('/');
