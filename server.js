@@ -31,43 +31,19 @@ app.use(session({
 }));
 
 var authorize = function(req, res, next) {
-  console.log('autohrize, session user: %s', req.session.user)
-  if (req.session.user != undefined)
+  console.log('autohrize, session user: %s', req.session.userid)
+  if (req.session.userid != undefined)
     return next();
   else
     return res.redirect('/login');
 };
 
-app.get('/messages', authorize, function(req, res) {
-
-  var mongoUrl = environment.config.db();  
-  var userid = req.session.user.toString();
-
-  console.log(userid) ;
-
-  MongoClient.connect(mongoUrl, function(err, db) {
-    var collection = db.collection(userid).find().toArray(function(err, result){
-      console.log("mongo result: %s", JSON.stringify(result));
-
-      MongoClient.connect(mongoUrl, function(err, _db) {
-        _db.collection('users').findOne({_id: mongodb.ObjectID(userid)}, function(err, item){
-          res.render('messages', {userid:userid, messages:result}) ;
-          _db.close();
-        }) ;
-      });
-
-      db.close();
-    });
-  }) ;
-
-}) ;
-
 app.get('/', authorize, function(req, res) {
-  if (req.session.user === undefined) {
+  if (req.session.userid === undefined) {
     res.redirect('/login') ;
   }
   else {
-    console.log("ui: user %s", req.session.user) ;
+    console.log("ui: user %s", req.session.userid) ;
     console.log("ui: user-agent: " + req.headers['user-agent']);
 
     var desktopClient = (req.headers['user-agent'] === 'desktop client') ;
@@ -82,28 +58,19 @@ app.get('/', authorize, function(req, res) {
     }
 
     var mongoUrl = environment.config.db();  
-    
-    console.log("DbUrl: %s", mongoUrl);
+    var userid = req.session.userid ;
 
     MongoClient.connect(mongoUrl, function(err, db) {
-      var collection = db.collection(req.session.user).find().toArray(function(err, result){
-        console.log("mongo result: %s", JSON.stringify(result));
-
-        MongoClient.connect(mongoUrl, function(err, _db) {
-          _db.collection('users').findOne({_id: mongodb.ObjectID(req.session.user)}, function(err, item){
-            res.render('index', {desktopClient: desktopClient, downloadLink:downloadLink, username: item.name, userid:req.session.user, messages:result}) ;
-            _db.close();
-          }) ;
-        });
-
+      db.collection('users').findOne({_id: mongodb.ObjectID(userid)}, function(err, user){
+        res.render('index', {desktopClient: desktopClient, downloadLink:downloadLink, username: user.name, userid:userid}) ;
         db.close();
-      });
-    }) ;
+      }) ;
+    });
   }
 });
 
 app.get('/login', function(req, res) {
-  if (req.session.user !== undefined){
+  if (req.session.userid !== undefined){
     res.redirect('/');
   }
   else {
@@ -171,7 +138,7 @@ app.post('/login', function(req, res) {
           console.log("mongo user: %s", JSON.stringify(user));
 
           if (user !== null) {
-            req.session.user = user._id ;
+            req.session.userid = user._id ;
             res.redirect('/');
           }
           else {
@@ -185,26 +152,39 @@ app.post('/login', function(req, res) {
   }
 }) ;
 
+app.get('/messages', authorize, function(req, res) {
+  console.log('GET: /messages') ;
+
+  var userid = req.session.userid.toString();
+
+  MongoClient.connect(environment.config.db(), function(err, db) {
+      var query = {users: {$elemMatch: {$eq:userid}}} ;
+      db.collection('notes').find(query).toArray(function(err, result){
+      res.render('messages', {userid:userid, messages:result}) ;
+      db.close();
+    });
+  }) ;
+}) ;
+
 app.post('/api/message/create', authorize, function(req, res){
   console.log("api: message delete");
-  var mongoUrl = environment.config.db() ;  
-  var userid = req.session.user ;
-
-  if (req.body.message.length == 0) {
+  var mongodb = environment.config.db() ;  
+  var user = req.session.userid ;
+  var text = req.body.message;
+  
+  if (text.length == 0) {
     res.redirect('/') ;
   }
   else {
-
-    MongoClient.connect(mongoUrl, function(err, db) {
-      
-      db.collection(userid).save({
-        text: req.body.message, 
+    MongoClient.connect(mongodb, function(err, db) {
+      db.collection('notes').save({
+        text: text, 
         status: 'unchecked',
+        owner: user,
+        users: [user],
         timestamp: moment().valueOf() 
       }) ;
-
       db.close() ;
-
       res.redirect('/');
     }) ;
   }
@@ -214,7 +194,7 @@ app.post('/api/message/delete/:id', authorize, function(req, res){
   console.log("api: delete message: %d", req.params.id) ;
 
   var mongoUrl = environment.config.db() ;  
-  var userid = req.session.user ;
+  var userid = req.session.userid ;
 
   MongoClient.connect(mongoUrl, function(err, db) {
     db.collection(userid).remove({_id: mongodb.ObjectID(req.params.id)}) ;
@@ -227,10 +207,11 @@ app.post('/api/message/removeall', authorize, function(req, res){
   console.log("api: remove all message(s)") ;
 
   var mongoUrl = environment.config.db() ;  
-  var userid = req.session.user ;
+  var userid = req.session.userid ;
 
   MongoClient.connect(mongoUrl, function(err, db) {
-    db.collection(userid).drop() ;
+    var query = {users: {$elemMatch: {$eq:userid}}} ;
+    db.collection('notes').drop(query) ;
     db.close() ;
     res.redirect('/');
   }) ;
@@ -238,13 +219,13 @@ app.post('/api/message/removeall', authorize, function(req, res){
 
 app.put('/api/message/:status/:id', authorize, function(req, res){
   console.log("api: message status: " + JSON.stringify(req.params));
-  var userid = req.session.user ;
+  var userid = req.session.userid ;
 
   MongoClient.connect(environment.config.db(), function(err, db) {
-    db.collection(userid).findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, item){
+    db.collection('notes').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, item){
       item.status = req.params.status ;
       item.timestamp = moment().valueOf() ;
-      db.collection(userid).save(item) ;
+      db.collection('notes').save(item) ;
       db.close() ;
       res.sendStatus(200); 
     }) ;
@@ -256,5 +237,5 @@ app.get('*', function(req, res){
 });
 
 app.listen(environment.config.port(), environment.config.ip(), function(){
-  console.log('Server started: %s:%s', environment.config.ip(), environment.config.port()) ;
+  console.log('2do server started: %s:%s', environment.config.ip(), environment.config.port()) ;
 }) ;

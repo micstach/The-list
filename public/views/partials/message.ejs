@@ -9,6 +9,8 @@
     <div class="message-time"><%= msg.timestamp %></div>
   </div>
   <div class="message-tools">
-    <button type="submit" class="message-delete glyphicon glyphicon-remove" data-user-id="<%= userid %>" data-message-id="<%= msg._id %>">
+    <% if (msg.owner == userid) { %>
+      <button type="submit" class="message-delete glyphicon glyphicon-remove" data-user-id="<%= userid %>" data-message-id="<%= msg._id %>">
+    <% } %>
   </div>
 </li>
