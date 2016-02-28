@@ -17,9 +17,18 @@ app.set('view engine', 'ejs');
   
 app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json());  
-app.use(bodyParser.urlencoded());
+
+app.use(bodyParser.urlencoded({
+  extended:true
+}));
+
 app.use(cookieParser('cookie-guid'));  
-app.use(session({secret: 'super-secret'}));
+
+app.use(session({
+  secret: 'super-secret',
+  resave: false,
+  saveUninitialized: true
+}));
 
 var authorize = function(req, res, next) {
   console.log('autohrize, session user: %s', req.session.user)
