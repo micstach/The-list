@@ -22,26 +22,12 @@
     <script src="../scripts/application.js"></script>
   </head>
   <body ng-controller="Notes">
-      <script type="text/ng-template" id="delete-note-template.html">
-        <div class="modal-header">
-            <strong>Czy chcesz usunać notatkę ?</strong>
-        </div>
-        <div class="modal-body">
-				    <div class="message-text">{{note.text}}</div>
-				    <div class="message-time">{{note.timestamp}}</div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-default" type="button" ng-click="ok()">Tak, chcę</button>
-            <button class="btn btn-primary" type="button" ng-click="cancel()">Nie, jednak nie</button>
-        </div>
-    </script>
-
     <div class="application-header">
 	    <div class="container">
         <button class="glyphicon glyphicon-option-horizontal options-menu"></button>
         <span class="menu-items">
-          <a id="messages-refresh" class="glyphicon glyphicon-repeat utilities" href="javascript:void(0)"></a>
-		      <a class="message-removeall glyphicon glyphicon-trash utilities" href="javascript:void(0)"></a>
+          <a ng-click="refresh()" class="glyphicon glyphicon-repeat utilities" href="javascript:void(0)"></a>
+		      <a ng-click="deleteAllItems()" class="message-removeall glyphicon glyphicon-trash utilities" href="javascript:void(0)"></a>
 		      <% if (locals.downloadLink) { %>
 		        <a class="glyphicon glyphicon-download-alt utilities" href="<%= downloadLink %>"></a>
 		      <% } %>
@@ -61,13 +47,13 @@
     <div class="container application-list">
       <ul class="list-group">
 				<li ng-repeat="msg in data.messages" id="{{msg._id}}" class="list-group-item">
-				  <div class="checkbox message-status">
-				    <input id="unique-{{msg._id}}" type="checkbox" class="message-toggle" data-user-id="{{data.userid}}" data-message-id="{{msg._id}}" {{msg.status}}>
+ 				  <div class="checkbox message-status">
+				    <input ng-checked="msg.status == 'checked'" ng-click="toggleItem(msg)" id="unique-{{msg._id}}" type="checkbox" class="message-toggle" data-user-id="{{data.userid}}" data-message-id="{{msg._id}}">
 				    <label for="unique-{{msg._id}}">
 				    </label>
 				  </div>
-				  <div class="message-main">
-				    <div class="message-text">{{msg.text}}</div>
+      	  <div class="message-main">
+            <div class="message-text">{{msg.text}}</div>
 				    <div class="message-time">{{msg.timestamp}}</div>
 				  </div>
 				  <div class="message-tools">

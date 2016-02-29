@@ -14,74 +14,123 @@ angular.module('Index').config(['$httpProvider', function($httpProvider) {
 }]);
 
 angular.module('Index').controller('Notes', function($scope, $http, $uibModal) {
-	
-	$scope.delNoteText = {value: "text"} ;
+  
+  $scope.delNoteText = {value: "text"} ;
 
-	$scope.getItems = function() {
-		$http.get('/api/messages')
-			.success(function(data) { 
+  $scope.getItems = function() {
+    $http.get('/api/messages')
+      .success(function(data) { 
 
-				data.messages.forEach(function(note) {
-					note.timestamp = getTimeString(note.timestamp);
-				});
+        var filteredItems = [] ;  
+        
+        data.messages
+          .filter(function(message) { return message.status === 'unchecked';})
+          .sort(function(a, b) { return b.timestamp - a.timestamp ; })
+          .forEach(function(msg) {
+            filteredItems.push(msg);
+          }) ;
 
-				data.messages = data.messages.reverse();
+        data.messages
+          .filter(function(message){return message.status === 'checked';})
+          .sort(function(a, b) { return b.timestamp - a.timestamp ; })
+          .forEach(function(msg) {
+            filteredItems.push(msg);  
+          }) ;
 
-				$scope.data = data ;
-			});
-	};
+       filteredItems.forEach(function(note) {
+          note.timestamp = getTimeString(note.timestamp);
+       });
 
-	$scope.addNewItem = function(noteText) {
-		
-		$http
-			.post('/api/message/create', {message:noteText})
-			.success(function(){
-				$scope.getItems() ;
-			});
+       data.messages = filteredItems;
 
-		$scope.noteText = null;
-	};
+        $scope.data = data ;
+      });
+  };
 
-	$scope.deleteItem = function(item) {
-			
-		var messageId = item.currentTarget.getAttribute('data-message-id')
+  $scope.addNewItem = function(noteText) {
+    
+    $http
+      .post('/api/message/create', {message:noteText})
+      .success(function(){
+        $scope.getItems() ;
+      });
 
-		var message = $scope.data.messages.filter(function(item){return item._id.toString() === messageId;})[0] ;
+    $scope.noteText = null;
+  };
 
-		var userId = item.currentTarget.getAttribute('data-user-id')
+  $scope.deleteItem = function(item) {
+      
+    var messageId = item.currentTarget.getAttribute('data-message-id')
+    var message = $scope.data.messages.filter(function(item){return item._id.toString() === messageId;})[0] ;
 
-		$scope.delNoteText.value = messageId ;
+    $scope.delNoteText.value = messageId ;
 
-	    var modalInstance = $uibModal.open({
-	      animation: false,
-	      templateUrl: 'delete-note-template.html',
-	      controller: 'delete-note-controller',
-	      size: 'lg',
-	      resolve: {
-	        note: function () {
-	          return {text: message.text, timestamp: message.timestamp} ;
-	        }
-	      }
-	    });
+    var modalInstance = $uibModal.open({
+      animation: true,
+      templateUrl: 'views/dialog-delete-note.html',
+      controller: 'delete-note-controller',
+      size: 'lg',
+      resolve: {
+        note: function () {
+          return {text: message.text, timestamp: message.timestamp} ;
+        }
+      }
+    });
 
-	    modalInstance.result.then(function () {
-			$http
-				.post('/api/message/delete/' + messageId)
-				.success(function(){
-					$scope.getItems() ;
-				});
-	    });
+    modalInstance.result.then(function () {
+      $http
+      .post('/api/message/delete/' + messageId)
+      .success(function() { $scope.getItems(); });
+    });
+  }
 
+  $scope.deleteAllItems = function() {
+      
+    var modalInstance = $uibModal.open({
+      animation: true,
+      templateUrl: 'views/dialog-delete-all-notes.html',
+      controller: 'delete-all-notes-controller',
+      size: 'lg'
+    });
 
-	}
+    modalInstance.result.then(function () {
+    $http
+      .post('/api/message/removeall')
+      .success(function() { $scope.getItems(); });
+    });
+  }
 
-	$scope.getItems() ;
+  $scope.toggleItem = function(note){
+    var new_status = (note.status === "checked" ? "unchecked" : "checked") ;
+
+    $http
+      .put('/api/message/' + new_status + '/' + note._id)
+      .success(function(){});
+  }
+
+  $scope.refresh = function()
+  {
+    $scope.getItems() ;
+  }
+
+  $scope.getItems() ;
 }) ;
 
 angular.module('Index').controller('delete-note-controller', function ($scope, $uibModalInstance, note)
 {
   $scope.note = note;
 
+  $scope.ok = function () {
+    $uibModalInstance.close();
+  };
+
+  $scope.cancel = function () {
+    $uibModalInstance.dismiss('cancel');
+  };
+});
+
+angular.module('Index').controller('delete-all-notes-controller', function ($scope, $uibModalInstance)
+{
   $scope.ok = function () {
     $uibModalInstance.close();
   };

@@ -76,28 +76,6 @@ function getTimeString(timestamp)
 
 $(document).ready(function() {
 	
-	$('.message-removeall').click(function(e) {
-		$('#remove-all').modal();
-		e.preventDefault();
-	}) ;
-
-	$('#messages-refresh').click(function(e) {
-		//readNotes();
-		e.preventDefault() ;
-	});
-
-    $('#accept-remove-all').click(function(){
-		$.ajax({
-			url: $(this).attr('data-uri'),
-			method: 'POST'
-		}).done(function(){
-			$('.list-group').empty();
-			$('.items-counter').each(function(){
-				$(this).text('0');
-			}) ;
-		}) ;
-    });
-
     $('.application-list').css('margin-top', $('.application-header').outerHeight() + 'px') ;
 
     $('.options-menu').click(function(e){
@@ -116,22 +94,8 @@ $(document).ready(function() {
     	e.preventDefault() ;
     });
 
-    $('#accept-remove-message').click(function(){
-		var userid = $(this).attr('data-user-id') ;
-		var messageid = $(this).attr('data-message-id');
-
-		$.ajax({
-			url: "/api/message/delete/" + messageid,
-			method: 'POST'
-		}).done(function(){
-			//readNotes();
-		})
-    });
-
     $('.menu-items').hide();
 
     // enable tooltips
     $('[data-toggle="tooltip"]').tooltip() ;
-
-    //readNotes();
 }) ;
