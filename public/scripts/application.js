@@ -13,7 +13,7 @@ angular.module('Index').config(['$httpProvider', function($httpProvider) {
     $httpProvider.defaults.headers.get['Pragma'] = 'no-cache';
 }]);
 
-angular.module('Index').controller('Notes', function($scope, $http, $uibModal) {
+angular.module('Index').controller('Notes', function($scope, $http, $location, $uibModal) {
   
   $scope.delNoteText = {value: "text"} ;
 
@@ -37,14 +37,17 @@ angular.module('Index').controller('Notes', function($scope, $http, $uibModal) {
             filteredItems.push(msg);  
           }) ;
 
-       filteredItems.forEach(function(note) {
+        filteredItems.forEach(function(note) {
           note.timestamp = getTimeString(note.timestamp);
-       });
+        });
 
-       data.messages = filteredItems;
+        data.messages = filteredItems;
 
         $scope.data = data ;
-      });
+      })
+      .error(function(data, status) {
+        window.location = '/login' ;
+      }) ;
   };
 
   $scope.addNewItem = function(noteText) {

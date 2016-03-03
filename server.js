@@ -30,12 +30,27 @@ app.use(session({
   saveUninitialized: true
 }));
 
+
+var authorizeAPI = function(req, res, next) {
+  if (req.session.userid !== undefined)
+    return next() ;
+  else
+  {
+    res.writeHead(401);
+    res.end();
+    return res; 
+  }
+};
+
 var authorize = function(req, res, next) {
   console.log('autohrize, session user: %s', req.session.userid)
   if (req.session.userid != undefined)
     return next();
   else
+  {
+    console.log('Redirect to login page');
     return res.redirect('/login');
+  }
 };
 
 app.get('/', authorize, function(req, res) {
@@ -152,7 +167,7 @@ app.post('/login', function(req, res) {
   }
 }) ;
 
-app.get('/api/messages', authorize, function(req, res) {
+app.get('/api/messages', authorizeAPI, function(req, res) {
   console.log('GET: /messages') ;
 
   var userid = req.session.userid;
