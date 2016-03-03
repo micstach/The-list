@@ -14,34 +14,28 @@ angular.module('Index').config(['$httpProvider', function($httpProvider) {
 }]);
 
 angular.module('Index').controller('Notes', function($scope, $http, $location, $uibModal) {
-  
-  $scope.delNoteText = {value: "text"} ;
 
   $scope.getItems = function() {
-    $http.get('/api/messages')
+    $http.get('/api/notes')
       .success(function(data) { 
 
         var filteredItems = [] ;  
         
-        data.messages
-          .filter(function(message) { return message.status === 'unchecked';})
-          .sort(function(a, b) { return b.timestamp - a.timestamp ; })
-          .forEach(function(msg) {
-            filteredItems.push(msg);
-          }) ;
+        data.notes
+          .filter(function(note) { return note.status === 'unchecked';})
+          .sort(function(a, b) { return b.timestamp - a.timestamp;})
+          .forEach(function(note) { filteredItems.push(note);});
 
-        data.messages
-          .filter(function(message){return message.status === 'checked';})
-          .sort(function(a, b) { return b.timestamp - a.timestamp ; })
-          .forEach(function(msg) {
-            filteredItems.push(msg);  
-          }) ;
+        data.notes
+          .filter(function(note){return note.status === 'checked';})
+          .sort(function(a, b) { return b.timestamp - a.timestamp;})
+          .forEach(function(note) { filteredItems.push(note);}) ;
 
         filteredItems.forEach(function(note) {
           note.timestamp = getTimeString(note.timestamp);
         });
 
-        data.messages = filteredItems;
+        data.notes = filteredItems;
 
         $scope.data = data ;
       })
@@ -61,12 +55,9 @@ angular.module('Index').controller('Notes', function($scope, $http, $location, $
     $scope.noteText = null;
   };
 
-  $scope.deleteItem = function(item) {
+  $scope.deleteItem = function(note) {
       
-    var messageId = item.currentTarget.getAttribute('data-message-id')
-    var message = $scope.data.messages.filter(function(item){return item._id.toString() === messageId;})[0] ;
-
-    $scope.delNoteText.value = messageId ;
+    var note = $scope.data.notes.filter(function(x){return x._id === note._id;})[0] ;
 
     var modalInstance = $uibModal.open({
       animation: true,
@@ -75,14 +66,14 @@ angular.module('Index').controller('Notes', function($scope, $http, $location, $
       size: 'lg',
       resolve: {
         note: function () {
-          return {text: message.text, timestamp: message.timestamp} ;
+          return {text: note.text, timestamp: note.timestamp} ;
         }
       }
     });
 
     modalInstance.result.then(function () {
       $http
-      .post('/api/message/delete/' + messageId)
+      .post('/api/message/delete/' + note._id)
       .success(function() { $scope.getItems(); });
     });
   }
@@ -97,17 +88,17 @@ angular.module('Index').controller('Notes', function($scope, $http, $location, $
     });
 
     modalInstance.result.then(function () {
-    $http
-      .post('/api/message/removeall')
-      .success(function() { $scope.getItems(); });
-    });
+      $http
+        .post('/api/message/removeall')
+        .success(function() { $scope.getItems(); });
+      });
   }
 
   $scope.toggleItem = function(note){
-    var new_status = (note.status === "checked" ? "unchecked" : "checked") ;
+    var status = (note.status === "checked" ? "unchecked" : "checked") ;
 
     $http
-      .put('/api/message/' + new_status + '/' + note._id)
+      .put('/api/message/' + status + '/' + note._id)
       .success(function(){});
   }
 

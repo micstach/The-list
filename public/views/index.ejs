@@ -19,7 +19,7 @@
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.0/angular-animate.js"></script>
     <script src="../libs/ui-bootstrap-tpls-1.2.1.min.js"></script>
     <script src="../scripts/index.js"></script>
-    <script src="../scripts/application.js"></script>
+    <script src="../scripts/todo.js"></script>
   </head>
   <body ng-controller="Notes">
     <div class="application-header">
@@ -46,18 +46,18 @@
 
     <div class="container application-list">
       <ul class="list-group">
-				<li ng-repeat="msg in data.messages" id="{{msg._id}}" class="list-group-item">
+				<li ng-repeat="note in data.notes" id="{{note._id}}" class="list-group-item">
  				  <div class="checkbox message-status">
-				    <input ng-checked="msg.status == 'checked'" ng-click="toggleItem(msg)" id="unique-{{msg._id}}" type="checkbox" class="message-toggle" data-user-id="{{data.userid}}" data-message-id="{{msg._id}}">
-				    <label for="unique-{{msg._id}}">
+				    <input ng-click="toggleItem(note)" ng-checked="note.status == 'checked'" id="unique-{{note._id}}" type="checkbox" class="message-toggle">
+				    <label for="unique-{{note._id}}">
 				    </label>
 				  </div>
       	  <div class="message-main">
-            <div class="message-text">{{msg.text}}</div>
-				    <div class="message-time">{{msg.timestamp}}</div>
+            <div class="message-text">{{note.text}}</div>
+				    <div class="message-time">{{note.timestamp}}</div>
 				  </div>
 				  <div class="message-tools">
-			      <button ng-click="deleteItem($event)" type="submit" class="message-delete glyphicon glyphicon-remove" data-user-id="{{data.userid}}" data-message-id="{{msg._id}}"></button>
+			      <button ng-click="deleteItem(note)" type="submit" class="message-delete glyphicon glyphicon-remove"></button>
 				  </div>
 				</li>				
       </ul> 

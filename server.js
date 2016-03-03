@@ -167,8 +167,8 @@ app.post('/login', function(req, res) {
   }
 }) ;
 
-app.get('/api/messages', authorizeAPI, function(req, res) {
-  console.log('GET: /messages') ;
+app.get('/api/notes', authorizeAPI, function(req, res) {
+  console.log('GET: /notes') ;
 
   var userid = req.session.userid;
 
@@ -178,7 +178,7 @@ app.get('/api/messages', authorizeAPI, function(req, res) {
       db.collection('notes').find(query).toArray(function(err, result) {
   
       res.writeHead(200, {'Content-Type': 'application/json'});
-      res.end(JSON.stringify({userid:userid, messages:result}));
+      res.end(JSON.stringify({userid:userid, notes:result}));
 
       db.close();
     });
