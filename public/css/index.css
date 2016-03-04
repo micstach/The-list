@@ -37,6 +37,7 @@ body {
 .message-text
 {
 	font-size: 1.0em;
+	overflow:hidden;
 }
 
 .message-form
