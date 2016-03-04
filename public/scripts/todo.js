@@ -1,4 +1,4 @@
-angular.module('Index', ['ngAnimate', 'ui.bootstrap']) ;
+angular.module('Index', ['ngAnimate', 'ui.bootstrap', 'linkify']) ;
 
 angular.module('Index').config(['$httpProvider', function($httpProvider) {
 
