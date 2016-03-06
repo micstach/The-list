@@ -13,7 +13,7 @@ angular.module('Index').config(['$httpProvider', function($httpProvider) {
     $httpProvider.defaults.headers.get['Pragma'] = 'no-cache';
 }]);
 
-angular.module('Index').controller('Notes', function($scope, $http, $location, $uibModal) {
+angular.module('Index').controller('Notes', function($scope, $timeout, $http, $location, $uibModal) {
 
   $scope.getItems = function() {
     $http.get('/api/notes')
@@ -36,13 +36,27 @@ angular.module('Index').controller('Notes', function($scope, $http, $location, $
           .sort(function(a, b) { return b.timestamp - a.timestamp;})
           .forEach(function(note) { filteredItems.push(note);}) ;
 
+        var refreshDelay = ((1000 * 60) * 60) ; // one hour
+        var lowestRefreshDelay = (1000 * 15) ; 
+
         filteredItems.forEach(function(note) {
+          var delta = Date.now() - (new Date(note.timestamp)) ;
+          if (delta < refreshDelay) {
+            refreshDelay = delta ;
+
+            if (refreshDelay < lowestRefreshDelay)
+              refreshDelay = lowestRefreshDelay ;    
+          }
+
+          // transform unix timestamp into modified time
           note.timestamp = getTimeString(note.timestamp);
         });
 
         data.notes = filteredItems;
 
         $scope.data = data ;
+
+        $timeout($scope.getItems, refreshDelay);
       })
       .error(function(data, status) {
         window.location = '/login' ;
