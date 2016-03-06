@@ -176,7 +176,16 @@ app.get('/api/notes', authorizeAPI, function(req, res) {
       var query = {owner: userid} ;//{users: {$elemMatch: {$eq:userid}}} ;
 
       db.collection('notes').find(query).toArray(function(err, result) {
-  
+    
+      result.forEach(function(note){
+        if (note.pinned === undefined) {
+          note.pinned = false ;
+        }
+        if (note.checked === undefined) {
+          note.checked = false ;
+        }
+      }) ;
+
       res.writeHead(200, {'Content-Type': 'application/json'});
       res.end(JSON.stringify({userid:userid, notes:result}));
 
