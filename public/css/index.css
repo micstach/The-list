@@ -99,10 +99,14 @@ body {
 {
 }
 
- .note-tags {
- 	margin-top: 0.5em;
- 	cursor: pointer;
- }
+.note-tags {
+	margin-top: 0.5em;
+	cursor: pointer;
+}
+
+.note-tag {
+ 	margin-right: 0.35em;
+}
 
 .options-menu
 {
