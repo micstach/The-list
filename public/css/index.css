@@ -99,6 +99,11 @@ body {
 {
 }
 
+ .note-tags {
+ 	margin-top: 0.5em;
+ 	cursor: pointer;
+ }
+
 .options-menu
 {
 	opacity: 0.75;

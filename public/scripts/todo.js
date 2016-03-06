@@ -18,9 +18,37 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   $scope.lastTag = undefined;
   $scope.filterText = undefined;
 
+  $scope.haveTags = function(noteText) {
+    return (noteText.indexOf(':') != -1 && noteText.substr(0, noteText.indexOf(':')).split(',').filter(function(tag) { return tag.trim().indexOf(' ') != -1;}).length == 0)
+  }
+
+  $scope.extractTags = function(text) {
+    var tags = [] ;
+
+    if ($scope.haveTags(text)) {
+      text
+        .substr(0, text.indexOf(':'))
+        .split(',')
+        .forEach(function(tag) { 
+          tags.push(tag.trim().toLowerCase());
+        });
+    }
+
+    return tags ;
+  }
+
+  $scope.extractNoteText = function(noteText) {
+    if ($scope.haveTags(noteText)){
+      var position = noteText.indexOf(':') + 1 ;
+      return noteText.substr(position, noteText.length - position).trim() ;
+    }
+    else
+      return noteText ;
+  }
+
   $scope.filterItems = function() {
     // detect tags
-    if ($scope.noteText.indexOf(':') != -1 && $scope.noteText.substr(0, $scope.noteText.indexOf(':')).split(',').filter(function(tag) { return tag.trim().indexOf(' ') != -1;}).length == 0) {
+    if ($scope.haveTags($scope.noteText)) {
       $scope.filterText = $scope.noteText.substr(0, $scope.noteText.indexOf(':'));
       $scope.getItems();
     }
@@ -30,6 +58,11 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
         $scope.getItems() ;
       }
     }
+  }
+
+  $scope.setTag = function(tag) {
+    $scope.noteText = tag + ":" ;
+    $scope.filterItems() ;
   }
 
   $scope.getItems = function() {
@@ -89,6 +122,9 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
           // transform unix timestamp into modified time
           note.timestamp = getTimeString(note.timestamp);
+
+          note.tags = $scope.extractTags(note.text)  
+          note.text = $scope.extractNoteText(note.text) ;
         });
 
         data.notes = notes;
