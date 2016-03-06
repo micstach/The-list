@@ -57,8 +57,8 @@
               <span class="message-time">{{note.timestamp}}</span>
             </span>
             <span class="message-header-right">
-              <button ng-click="pinItem(note)" ng-class="note.pinned ? 'icon-rotate' : ''" class="message-header-icon glyphicon glyphicon-pushpin"></button>
-              <button ng-click="deleteItem(note)" class="message-header-icon glyphicon glyphicon-trash"></button>
+              <button ng-click="pinItem(note)" ng-class="note.pinned ? 'icon-rotate' : ''" class="message-header-icon-right glyphicon glyphicon-pushpin"></button>
+              <button ng-click="deleteItem(note)" class="message-header-icon-right glyphicon glyphicon-trash"></button>
             </span>  
           </div>
           <div class="message-text" linkify>{{note.text}}</div>

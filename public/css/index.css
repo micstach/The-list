@@ -37,7 +37,7 @@ body {
 	margin: 10px 0px 10px 0px;
 }
 
-.message-header-icon
+.message-header-icon, .message-header-icon-right
 {
 	opacity: 0.45;
 	background-color: transparent;
@@ -49,6 +49,11 @@ body {
     padding:0px;
     margin:0px;
     height: 17px;
+}
+
+.message-header-icon-right
+{
+	margin-left: 5px;
 }
 
 .message-header-right

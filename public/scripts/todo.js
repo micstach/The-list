@@ -113,7 +113,7 @@ angular.module('Index').controller('Notes', function($scope, $http, $location, $
     $http
       .put('/api/message/pin/' + note._id + '/' + state)
       .success(function(){
-            note.pinned = state ;
+            $scope.getItems();
       });
   };
 

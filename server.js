@@ -263,7 +263,6 @@ app.put('/api/message/pin/:id/:state', authorize, function(req, res){
   MongoClient.connect(environment.config.db(), function(err, db) {
     db.collection('notes').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, item){
       item.pinned = (req.params.state === "true") ;
-      item.timestamp = moment().valueOf() ;
       db.collection('notes').save(item) ;
       db.close() ;
       res.sendStatus(200); 
