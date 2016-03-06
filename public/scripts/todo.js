@@ -22,12 +22,17 @@ angular.module('Index').controller('Notes', function($scope, $http, $location, $
         var filteredItems = [] ;  
         
         data.notes
-          .filter(function(note) { return note.status === 'unchecked';})
+          .filter(function(note) { return note.pinned === true;})
+          .sort(function(a, b) { return b.timestamp - a.timestamp;})
+          .forEach(function(note) { filteredItems.push(note); });
+
+        data.notes
+          .filter(function(note) { return note.checked === false && note.pinned === false;})
           .sort(function(a, b) { return b.timestamp - a.timestamp;})
           .forEach(function(note) { filteredItems.push(note);});
 
         data.notes
-          .filter(function(note){return note.status === 'checked';})
+          .filter(function(note){return note.checked === true && note.pinned === false;})
           .sort(function(a, b) { return b.timestamp - a.timestamp;})
           .forEach(function(note) { filteredItems.push(note);}) ;
 
@@ -57,8 +62,6 @@ angular.module('Index').controller('Notes', function($scope, $http, $location, $
 
   $scope.deleteItem = function(note) {
       
-    var note = $scope.data.notes.filter(function(x){return x._id === note._id;})[0] ;
-
     var modalInstance = $uibModal.open({
       animation: true,
       templateUrl: 'views/dialog-delete-note.html',
@@ -66,8 +69,8 @@ angular.module('Index').controller('Notes', function($scope, $http, $location, $
       size: 'lg',
       resolve: {
         note: function () {
-          return {text: note.text, timestamp: note.timestamp} ;
-        }
+          return note;
+         }
       }
     });
 
@@ -95,12 +98,24 @@ angular.module('Index').controller('Notes', function($scope, $http, $location, $
   }
 
   $scope.toggleItem = function(note){
-    var status = (note.status === "checked" ? "unchecked" : "checked") ;
+    var state = (note.checked !== undefined) ? !note.checked : true ;
+    
+    $http
+      .put('/api/message/check/' + note._id + '/' + state)
+      .success(function(){
+            note.checked = state ;
+      });
+  }
+
+  $scope.pinItem = function(note) {
+    var state = (note.pinned !== undefined) ? !note.pinned : true;
 
     $http
-      .put('/api/message/' + status + '/' + note._id)
-      .success(function(){});
-  }
+      .put('/api/message/pin/' + note._id + '/' + state)
+      .success(function(){
+            note.pinned = state ;
+      });
+  };
 
   $scope.refresh = function()
   {

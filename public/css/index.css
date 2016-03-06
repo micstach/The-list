@@ -25,18 +25,10 @@ body {
 	display: inline-block;
 }
 
-.message-main
-{
-	width: 90%;
-	width: -webkit-calc(100% - 40px);
-	width: -moz-calc(100% - 40px);
-	width: calc(100% - 40px);
-	display:inline-block;
-}
-
 .message-text
 {
-	font-size: 1.0em;
+	margin-top: 0.5em;
+	font-size: 1.1em;
 	overflow:hidden;
 }
 
@@ -45,7 +37,7 @@ body {
 	margin: 10px 0px 10px 0px;
 }
 
-.message-delete
+.message-header-icon
 {
 	opacity: 0.45;
 	background-color: transparent;
@@ -56,6 +48,12 @@ body {
     outline:none;
     padding:0px;
     margin:0px;
+    height: 17px;
+}
+
+.message-header-right
+{
+	float:right;
 }
 
 .message-delete:hover
@@ -63,35 +61,32 @@ body {
 	opacity: 1.0;
 }
 
-.message-toggle
+.icon-rotate
 {
-	background-color: transparent;
-    cursor: pointer;
-    overflow: hidden;
-    outline:none;
-	border: none;
-	display:inline;
-    padding:0px;
-    margin:0px;
+	transform: rotate(-45deg);
+	color: rgb(0, 0, 0);
+	opacity: 1.0;
 }
 
 .message-time
 {
 	color: rgb(162, 162, 205);
 	width: 100px;
-	font-size: 0.70em;
+	font-size: 0.75em;
 }
 
 .message-status
 {
-	margin-top: 0.15em;
-	float:left;
+	margin-top: 0.0em;
 }
 
-.message-tools
+.message-header
 {
-	margin-top: 0.15em;
-	float:right;
+}
+
+.pinned
+{
+	background-color: rgb(256, 256, 216);
 }
 
 .options-menu

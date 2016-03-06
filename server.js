@@ -198,7 +198,8 @@ app.post('/api/message/create', authorize, function(req, res){
     MongoClient.connect(environment.config.db(), function(err, db) {
       db.collection('notes').save({
         text: text, 
-        status: 'unchecked',
+        checked: false,
+        pinned: false,
         owner: userid,
         users: [userid],
         timestamp: moment().valueOf() 
@@ -240,13 +241,28 @@ app.post('/api/message/removeall', authorize, function(req, res){
   }) ;
 }) ;
 
-app.put('/api/message/:status/:id', authorize, function(req, res){
-  console.log("api: message status: " + JSON.stringify(req.params));
+app.put('/api/message/check/:id/:state', authorize, function(req, res){
+  console.log("api: message check: " + JSON.stringify(req.params));
   var userid = req.session.userid ;
 
   MongoClient.connect(environment.config.db(), function(err, db) {
     db.collection('notes').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, item){
-      item.status = req.params.status ;
+      item.checked = (req.params.state === "true") ;
+      item.timestamp = moment().valueOf() ;
+      db.collection('notes').save(item) ;
+      db.close() ;
+      res.sendStatus(200); 
+    }) ;
+  }) ;
+});
+
+app.put('/api/message/pin/:id/:state', authorize, function(req, res){
+  console.log("api: message pin: " + JSON.stringify(req.params));
+  var userid = req.session.userid ;
+
+  MongoClient.connect(environment.config.db(), function(err, db) {
+    db.collection('notes').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, item){
+      item.pinned = (req.params.state === "true") ;
       item.timestamp = moment().valueOf() ;
       db.collection('notes').save(item) ;
       db.close() ;

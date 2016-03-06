@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta http-equiv="cache-control" content="no-cache" />
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
     <link rel="icon" type="image/png" sizes="16x16" href="/res/todo_16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/res/todo_32.png">
@@ -49,20 +50,19 @@
 
     <div class="container application-list">
       <ul class="list-group">
-				<li ng-repeat="note in data.notes" id="{{note._id}}" class="list-group-item">
- 				  <div class="checkbox message-status">
-				    <input ng-click="toggleItem(note)" ng-checked="note.status == 'checked'" id="unique-{{note._id}}" type="checkbox" class="message-toggle">
-				    <label for="unique-{{note._id}}">
-				    </label>
-				  </div>
-      	  <div class="message-main">
-            <div class="message-text" linkify>{{note.text}}</div>
-				    <div class="message-time">{{note.timestamp}}</div>
-				  </div>
-				  <div class="message-tools">
-			      <button ng-click="deleteItem(note)" type="submit" class="message-delete glyphicon glyphicon-remove"></button>
-				  </div>
-				</li>				
+        <li ng-repeat="note in data.notes" ng-class="note.pinned ? 'pinned' : ''" id="{{note._id}}" class="list-group-item">
+          <div class="message-header">
+            <span class="message-header-left">
+              <button ng-click="toggleItem(note)" ng-class="note.checked ? 'glyphicon-check' : 'glyphicon-unchecked'" class="message-header-icon glyphicon"></button>
+              <span class="message-time">{{note.timestamp}}</span>
+            </span>
+            <span class="message-header-right">
+              <button ng-click="pinItem(note)" ng-class="note.pinned ? 'icon-rotate' : ''" class="message-header-icon glyphicon glyphicon-pushpin"></button>
+              <button ng-click="deleteItem(note)" class="message-header-icon glyphicon glyphicon-trash"></button>
+            </span>  
+          </div>
+          <div class="message-text" linkify>{{note.text}}</div>
+        </li>
       </ul> 
     </div>
   </body>

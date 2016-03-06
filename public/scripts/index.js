@@ -98,4 +98,5 @@ $(document).ready(function() {
 
     // enable tooltips
     $('[data-toggle="tooltip"]').tooltip() ;
+    $('#message-create-text').attr('autocomplete','off');
 }) ;
