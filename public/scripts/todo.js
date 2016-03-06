@@ -19,7 +19,13 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   $scope.filterText = undefined;
 
   $scope.haveTags = function(noteText) {
-    return (noteText.indexOf(':') != -1 && noteText.substr(0, noteText.indexOf(':')).split(',').filter(function(tag) { return tag.trim().indexOf(' ') != -1;}).length == 0)
+    return (noteText.indexOf(': ') > 0 && 
+            noteText
+              .substr(0, noteText.indexOf(': '))
+              .split(',')
+              .filter(function(tag) { 
+                return tag.trim().indexOf(' ') != -1;
+              }).length == 0)
   }
 
   $scope.extractTags = function(text) {
@@ -27,7 +33,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
     if ($scope.haveTags(text)) {
       text
-        .substr(0, text.indexOf(':'))
+        .substr(0, text.indexOf(': '))
         .split(',')
         .forEach(function(tag) { 
           tags.push(tag.trim().toLowerCase());
@@ -39,7 +45,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
   $scope.extractNoteText = function(noteText) {
     if ($scope.haveTags(noteText)){
-      var position = noteText.indexOf(':') + 1 ;
+      var position = noteText.indexOf(': ') + 1 ;
       return noteText.substr(position, noteText.length - position).trim() ;
     }
     else
@@ -49,7 +55,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   $scope.filterItems = function() {
     // detect tags
     if ($scope.haveTags($scope.noteText)) {
-      $scope.filterText = $scope.noteText.substr(0, $scope.noteText.indexOf(':'));
+      $scope.filterText = $scope.noteText.substr(0, $scope.noteText.indexOf(': '));
       $scope.getItems();
     }
     else {
@@ -61,7 +67,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   }
 
   $scope.setTag = function(tag) {
-    $scope.noteText = tag + ":" ;
+    $scope.noteText = tag + ": " ;
     $scope.filterItems() ;
   }
 
@@ -146,7 +152,11 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
         $scope.getItems() ;
       });
 
-    $scope.noteText = $scope.filterText + ': ' ;
+    if ($scope.filterText !== undefined) {
+      $scope.noteText = $scope.filterText + ': ' ;
+    }
+    else
+      $scope.noteText = '';
   };
 
   $scope.deleteItem = function(note) {

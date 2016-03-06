@@ -43,7 +43,7 @@
 		      <% } %>
 		    </span>
 	      <form ng-submit="addNewItem(noteText)" id="message-create" class="message-form">
-	        <input ng-model="noteText" ng-change="filterItems()" id="message-create-text" type="text" name="message" class="form-control input-default" placeholder="Zanotujmy coś..." autofocus>
+	        <input ng-model="noteText" ng-change="filterItems()" ng-trim="false" id="message-create-text" type="text" name="message" class="form-control input-default" placeholder="Zanotujmy coś..." autofocus>
 	      </form>
 	    </div>
 		</div>
