@@ -43,14 +43,14 @@
 		      <% } %>
 		    </span>
 	      <form ng-submit="addNewItem(noteText)" id="message-create" class="message-form">
-	        <input ng-model="noteText" id="message-create-text" type="text" name="message" class="form-control input-default" placeholder="Zanotujmy coś..." autofocus>
+	        <input ng-model="noteText" ng-change="filterItems()" id="message-create-text" type="text" name="message" class="form-control input-default" placeholder="Zanotujmy coś..." autofocus>
 	      </form>
 	    </div>
 		</div>
 
     <div class="container application-list">
       <ul class="list-group">
-        <li ng-repeat="note in data.notes" ng-class="note.pinned ? 'pinned' : ''" id="{{note._id}}" class="list-group-item">
+        <li ng-repeat="note in data.notes" ng-class="note.pinned ? 'message-pinned' : (note.checked ? 'message-checked' : '')" id="{{note._id}}" class="list-group-item">
           <div class="message-header">
             <span class="message-header-left">
               <button ng-click="toggleItem(note)" ng-class="note.checked ? 'glyphicon-check' : 'glyphicon-unchecked'" class="message-header-icon glyphicon"></button>

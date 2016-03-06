@@ -28,7 +28,7 @@ body {
 .message-text
 {
 	margin-top: 0.5em;
-	font-size: 1.1em;
+	font-size: 1.0em;
 	overflow:hidden;
 }
 
@@ -49,6 +49,16 @@ body {
     padding:0px;
     margin:0px;
     height: 17px;
+}
+
+.message-checked
+{
+	background-color: rgb(236, 256, 236);	
+}
+
+.message-pinned
+{
+	background-color: rgb(256, 256, 226);
 }
 
 .message-header-icon-right
@@ -87,11 +97,6 @@ body {
 
 .message-header
 {
-}
-
-.pinned
-{
-	background-color: rgb(256, 256, 216);
 }
 
 .options-menu

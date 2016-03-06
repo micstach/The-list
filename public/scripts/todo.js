@@ -15,31 +15,70 @@ angular.module('Index').config(['$httpProvider', function($httpProvider) {
 
 angular.module('Index').controller('Notes', function($scope, $timeout, $http, $location, $uibModal) {
 
+  $scope.lastTag = undefined;
+  $scope.filterText = undefined;
+
+  $scope.filterItems = function() {
+    // detect tags
+    if ($scope.noteText.indexOf(':') != -1 && $scope.noteText.substr(0, $scope.noteText.indexOf(':')).split(',').filter(function(tag) { return tag.trim().indexOf(' ') != -1;}).length == 0) {
+      $scope.filterText = $scope.noteText.substr(0, $scope.noteText.indexOf(':'));
+      $scope.getItems();
+    }
+    else {
+      if ($scope.filterText !== undefined) {
+        $scope.filterText = undefined ;
+        $scope.getItems() ;
+      }
+    }
+  }
+
   $scope.getItems = function() {
     $http.get('/api/notes')
       .success(function(data) { 
 
-        var filteredItems = [] ;  
-        
-        data.notes
+        var filteredNotes = [] ;
+
+        if ($scope.filterText !== undefined) {       
+          var tags = [] ;
+          $scope.filterText.split(',').forEach(function(tag) { tags.push(tag.trim().toLowerCase());});
+
+          data.notes.forEach(function(note) {
+            
+            var tagsFound = tags.filter(function(tag){
+              var tagPosition = note.text.toLowerCase().indexOf(tag) ;
+              return (0 <= tagPosition && tagPosition < note.text.indexOf(':')) ;
+            }).length ;    
+
+            if (tagsFound > 0)
+              filteredNotes.push(note) ;
+
+          }) ;
+        }
+        else
+        {
+          data.notes.forEach(function(note) { filteredNotes.push(note) ;}) ;
+        }
+
+        var notes = [] ;  
+        filteredNotes
           .filter(function(note) { return note.pinned === true;})
           .sort(function(a, b) { return b.timestamp - a.timestamp;})
-          .forEach(function(note) { filteredItems.push(note); });
+          .forEach(function(note) { notes.push(note); });
 
-        data.notes
+        filteredNotes
           .filter(function(note) { return note.checked === false && note.pinned === false;})
           .sort(function(a, b) { return b.timestamp - a.timestamp;})
-          .forEach(function(note) { filteredItems.push(note);});
+          .forEach(function(note) { notes.push(note);});
 
-        data.notes
+        filteredNotes
           .filter(function(note){return note.checked === true && note.pinned === false;})
           .sort(function(a, b) { return b.timestamp - a.timestamp;})
-          .forEach(function(note) { filteredItems.push(note);}) ;
+          .forEach(function(note) { notes.push(note);}) ;
 
         var refreshDelay = ((1000 * 60) * 60) ; // one hour
         var lowestRefreshDelay = (1000 * 15) ; 
 
-        filteredItems.forEach(function(note) {
+        notes.forEach(function(note) {
           var delta = Date.now() - (new Date(note.timestamp)) ;
           if (delta < refreshDelay) {
             refreshDelay = delta ;
@@ -52,7 +91,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
           note.timestamp = getTimeString(note.timestamp);
         });
 
-        data.notes = filteredItems;
+        data.notes = notes;
 
         $scope.data = data ;
 
@@ -64,14 +103,14 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   };
 
   $scope.addNewItem = function(noteText) {
-    
+
     $http
-      .post('/api/message/create', {message:noteText})
+      .post('/api/message/create', {message: noteText})
       .success(function(){
         $scope.getItems() ;
       });
 
-    $scope.noteText = null;
+    $scope.noteText = $scope.filterText + ': ' ;
   };
 
   $scope.deleteItem = function(note) {
@@ -118,6 +157,8 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       .put('/api/message/check/' + note._id + '/' + state)
       .success(function(){
             note.checked = state ;
+            note.timestamp = getTimeString(Date.now());
+            //$scope.getItems();
       });
   }
 
