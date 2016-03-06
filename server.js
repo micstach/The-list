@@ -194,11 +194,11 @@ app.get('/api/notes', authorizeAPI, function(req, res) {
   }) ;
 }) ;
 
-app.post('/api/message/create', authorize, function(req, res){
-  console.log("api: message delete");
+app.post('/api/note/create', authorize, function(req, res){
+  console.log("api: note delete");
    
   var userid = req.session.userid ;
-  var text = req.body.message;
+  var text = req.body.text;
   
   if (text.length == 0) {
     res.redirect('/') ;
@@ -233,6 +233,24 @@ app.post('/api/message/delete/:id', authorize, function(req, res){
     res.writeHead(200);
     res.end();
   }) ;
+}) ;
+
+app.put('/api/note/update/:id', authorize, function(req, res){
+  console.log("api: update message: %d", req.params.id) ;
+
+  var mongoUrl = environment.config.db() ;  
+  var userid = req.session.userid ;
+
+  MongoClient.connect(environment.config.db(), function(err, db) {
+    db.collection('notes').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, item){
+      item.text = req.body.text ;
+      item.timestamp = moment().valueOf() ;
+      db.collection('notes').save(item) ;
+      db.close() ;
+      res.sendStatus(200); 
+    }) ;
+  }) ;
+
 }) ;
 
 app.post('/api/message/removeall', authorize, function(req, res){

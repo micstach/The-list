@@ -25,11 +25,22 @@ body {
 	display: inline-block;
 }
 
-.message-text
+.note-edit-form
+{
+}
+
+.note-edit-input
+{
+	width: 100%;
+	padding: 5px;
+}
+
+.note-text
 {
 	margin-top: 0.5em;
 	font-size: 1.0em;
 	overflow:hidden;
+	cursor: pointer;
 }
 
 .message-form

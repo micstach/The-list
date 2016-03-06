@@ -51,7 +51,7 @@
     <div class="container application-list">
       <ul class="list-group">
         <li ng-repeat="note in data.notes" ng-class="note.pinned ? 'message-pinned' : (note.checked ? 'message-checked' : '')" id="{{note._id}}" class="list-group-item">
-          <div class="message-header">
+          <div ng-show="!note.editMode" class="message-header">
             <span class="message-header-left">
               <button ng-click="toggleItem(note)" ng-class="note.checked ? 'glyphicon-check' : 'glyphicon-unchecked'" class="message-header-icon glyphicon"></button>
               <span class="message-time">{{note.timestamp}}</span>
@@ -61,7 +61,10 @@
               <button ng-click="deleteItem(note)" class="message-header-icon-right glyphicon glyphicon-trash"></button>
             </span>  
           </div>
-          <div class="message-text" linkify>{{note.text}}</div>
+          <div ng-show="!note.editMode" ng-click="note.editMode = (!note.editMode && !note.checked)" class="note-text" linkify>{{note.text}}</div>
+          <form ng-show="note.editMode" ng-submit="modifyItem(note)" ng-keyup="cancelEdit($event, note)" class="note-edit-form">
+            <input ng-model="note.originalText" value="{{note.originalText}}" class="note-edit-input">
+          </form>
           <div class="note-tags">
             <span ng-click="setTag(tag)" ng-repeat="tag in note.tags" class="label label-primary note-tag">{{tag}}</span>
           </div>

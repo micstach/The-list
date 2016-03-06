@@ -128,9 +128,10 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
           // transform unix timestamp into modified time
           note.timestamp = getTimeString(note.timestamp);
-
+          note.originalText = note.text;
           note.tags = $scope.extractTags(note.text)  
           note.text = $scope.extractNoteText(note.text) ;
+          note.editMode = false ;
         });
 
         data.notes = notes;
@@ -147,7 +148,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   $scope.addNewItem = function(noteText) {
 
     $http
-      .post('/api/message/create', {message: noteText})
+      .post('/api/note/create', {text: noteText})
       .success(function(){
         $scope.getItems() ;
       });
@@ -158,6 +159,21 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     else
       $scope.noteText = '';
   };
+
+  $scope.modifyItem = function(note){
+
+    $http
+      .put('/api/note/update/' + note._id, {text: note.originalText})
+      .success(function(){
+        note.editMode = false ;
+        $scope.getItems() ;
+      });
+  };
+
+  $scope.cancelEdit = function($event, note){
+    if ($event.keyCode == 27)
+      note.editMode = false ;
+  }
 
   $scope.deleteItem = function(note) {
       
