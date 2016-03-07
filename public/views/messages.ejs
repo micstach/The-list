@@ -1,6 +1,0 @@
-<% messages.filter(function(message){return message.status === 'unchecked';}).sort(function(a, b) { return b.timestamp - a.timestamp ; }).forEach(function(msg) { %>
-  <% include partials/message %>
-<% }) %>
-<% messages.filter(function(message){return message.status === 'checked';}).sort(function(a, b) { return b.timestamp - a.timestamp ; }).forEach(function(msg) { %>
-  <% include partials/message %>
-<% }) %>

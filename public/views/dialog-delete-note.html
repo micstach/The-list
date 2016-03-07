@@ -1,0 +1,16 @@
+<div class="modal-header">
+  <strong>Czy chcesz usunać notatkę ?</strong>
+</div>
+<div class="modal-body">
+  <div class="message-header">
+    <span class="message-header-left">
+      <button ng-click="toggleItem(note)" ng-class="(note.status == 'checked') ? 'glyphicon-check' : 'glyphicon-unchecked'" class="message-header-icon glyphicon"></button>
+      <span class="message-time">{{note.timestamp}}</span>
+    </span> 
+  </div>
+  <div class="note-text" linkify>{{note.text}}</div>
+</div>
+<div class="modal-footer">
+  <button class="btn btn-default" type="button" ng-click="ok()">Tak, chcę</button>
+  <button class="btn btn-primary" type="button" ng-click="cancel()">Nie, jednak nie</button>
+</div>

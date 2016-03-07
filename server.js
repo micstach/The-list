@@ -30,12 +30,27 @@ app.use(session({
   saveUninitialized: true
 }));
 
+
+var authorizeAPI = function(req, res, next) {
+  if (req.session.userid !== undefined)
+    return next() ;
+  else
+  {
+    res.writeHead(401);
+    res.end();
+    return res; 
+  }
+};
+
 var authorize = function(req, res, next) {
   console.log('autohrize, session user: %s', req.session.userid)
   if (req.session.userid != undefined)
     return next();
   else
+  {
+    console.log('Redirect to login page');
     return res.redirect('/login');
+  }
 };
 
 app.get('/', authorize, function(req, res) {
@@ -152,26 +167,38 @@ app.post('/login', function(req, res) {
   }
 }) ;
 
-app.get('/api/messages', authorize, function(req, res) {
-  console.log('GET: /messages') ;
+app.get('/api/notes', authorizeAPI, function(req, res) {
+  console.log('GET: /notes') ;
 
   var userid = req.session.userid;
 
   MongoClient.connect(environment.config.db(), function(err, db) {
       var query = {owner: userid} ;//{users: {$elemMatch: {$eq:userid}}} ;
 
-      db.collection('notes').find(query).toArray(function(err, result){
-      res.render('messages', {userid:userid, messages:result}) ;
+      db.collection('notes').find(query).toArray(function(err, result) {
+    
+      result.forEach(function(note){
+        if (note.pinned === undefined) {
+          note.pinned = false ;
+        }
+        if (note.checked === undefined) {
+          note.checked = false ;
+        }
+      }) ;
+
+      res.writeHead(200, {'Content-Type': 'application/json'});
+      res.end(JSON.stringify({userid:userid, notes:result}));
+
       db.close();
     });
   }) ;
 }) ;
 
-app.post('/api/message/create', authorize, function(req, res){
-  console.log("api: message delete");
+app.post('/api/note/create', authorize, function(req, res){
+  console.log("api: note delete");
    
   var userid = req.session.userid ;
-  var text = req.body.message;
+  var text = req.body.text;
   
   if (text.length == 0) {
     res.redirect('/') ;
@@ -180,13 +207,15 @@ app.post('/api/message/create', authorize, function(req, res){
     MongoClient.connect(environment.config.db(), function(err, db) {
       db.collection('notes').save({
         text: text, 
-        status: 'unchecked',
+        checked: false,
+        pinned: false,
         owner: userid,
         users: [userid],
         timestamp: moment().valueOf() 
       }) ;
       db.close() ;
-      res.redirect('/');
+      res.writeHead(200);
+      res.end();
     }) ;
   }
 }) ;
@@ -200,8 +229,28 @@ app.post('/api/message/delete/:id', authorize, function(req, res){
   MongoClient.connect(mongoUrl, function(err, db) {
     db.collection('notes').remove({_id: mongodb.ObjectID(req.params.id)}) ;
     db.close() ;
-    res.redirect('/');
+    
+    res.writeHead(200);
+    res.end();
   }) ;
+}) ;
+
+app.put('/api/note/update/:id', authorize, function(req, res){
+  console.log("api: update message: %d", req.params.id) ;
+
+  var mongoUrl = environment.config.db() ;  
+  var userid = req.session.userid ;
+
+  MongoClient.connect(environment.config.db(), function(err, db) {
+    db.collection('notes').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, item){
+      item.text = req.body.text ;
+      //item.timestamp = moment().valueOf() ;
+      db.collection('notes').save(item) ;
+      db.close() ;
+      res.sendStatus(200); 
+    }) ;
+  }) ;
+
 }) ;
 
 app.post('/api/message/removeall', authorize, function(req, res){
@@ -219,14 +268,28 @@ app.post('/api/message/removeall', authorize, function(req, res){
   }) ;
 }) ;
 
-app.put('/api/message/:status/:id', authorize, function(req, res){
-  console.log("api: message status: " + JSON.stringify(req.params));
+app.put('/api/message/check/:id/:state', authorize, function(req, res){
+  console.log("api: message check: " + JSON.stringify(req.params));
   var userid = req.session.userid ;
 
   MongoClient.connect(environment.config.db(), function(err, db) {
     db.collection('notes').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, item){
-      item.status = req.params.status ;
+      item.checked = (req.params.state === "true") ;
       item.timestamp = moment().valueOf() ;
+      db.collection('notes').save(item) ;
+      db.close() ;
+      res.sendStatus(200); 
+    }) ;
+  }) ;
+});
+
+app.put('/api/message/pin/:id/:state', authorize, function(req, res){
+  console.log("api: message pin: " + JSON.stringify(req.params));
+  var userid = req.session.userid ;
+
+  MongoClient.connect(environment.config.db(), function(err, db) {
+    db.collection('notes').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, item){
+      item.pinned = (req.params.state === "true") ;
       db.collection('notes').save(item) ;
       db.close() ;
       res.sendStatus(200); 
