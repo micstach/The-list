@@ -61,8 +61,8 @@
               <button ng-click="deleteItem(note)" class="message-header-icon-right glyphicon glyphicon-trash"></button>
             </span>  
           </div>
-          <div ng-show="!note.editMode" ng-click="note.editMode = (!note.editMode && !note.checked)" class="note-text" linkify>{{note.text}}</div>
-          <form ng-show="note.editMode" ng-submit="modifyItem(note)" ng-keyup="cancelEdit($event, note)" class="note-edit-form">
+          <div ng-show="!note.editMode" ng-click="enterModifyMode(note)" class="note-text" linkify>{{note.text}}</div>
+          <form ng-show="note.editMode" ng-submit="modifyItem(note)" ng-keyup="cancelModifyMode($event, note)" class="note-edit-form">
             <input ng-model="note.originalText" value="{{note.originalText}}" class="note-edit-input">
           </form>
           <div class="note-tags">

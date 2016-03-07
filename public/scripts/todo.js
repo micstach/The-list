@@ -17,6 +17,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
   $scope.lastTag = undefined;
   $scope.filterText = undefined;
+  $scope.autoRefreshTimer = null;
 
   $scope.haveTags = function(noteText) {
     return (noteText.indexOf(': ') > 0 && 
@@ -138,7 +139,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
         $scope.data = data ;
 
-        $timeout($scope.getItems, refreshDelay);
+        $scope.autoRefreshTimer = $timeout($scope.getItems, refreshDelay);
       })
       .error(function(data, status) {
         window.location = '/login' ;
@@ -160,8 +161,16 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       $scope.noteText = '';
   };
 
-  $scope.modifyItem = function(note){
+  $scope.enterModifyMode = function(note) {
+    note.editMode = true ;
 
+    if ($scope.autoRefreshTimer != null) {
+      $timeout.cancel($scope.autoRefreshTimer) ;
+      $scope.autoRefreshTimer = null ;
+    } 
+  }
+
+  $scope.modifyItem = function(note){
     $http
       .put('/api/note/update/' + note._id, {text: note.originalText})
       .success(function(){
@@ -170,9 +179,10 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       });
   };
 
-  $scope.cancelEdit = function($event, note){
-    if ($event.keyCode == 27)
+  $scope.cancelModifyMode = function($event, note){
+    if ($event.keyCode == 27) {
       note.editMode = false ;
+    }
   }
 
   $scope.deleteItem = function(note) {
