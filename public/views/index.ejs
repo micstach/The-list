@@ -51,7 +51,7 @@
     <div class="container application-list">
       <ul class="list-group">
         <li ng-repeat="note in data.notes" ng-class="note.pinned ? 'message-pinned' : (note.checked ? 'message-checked' : '')" id="{{note._id}}" class="list-group-item">
-          <div ng-show="!note.editMode" class="message-header">
+          <div class="message-header">
             <span class="message-header-left">
               <button ng-click="toggleItem(note)" ng-class="note.checked ? 'glyphicon-check' : 'glyphicon-unchecked'" class="message-header-icon glyphicon"></button>
               <span class="message-time">{{note.timestamp}}</span>
@@ -63,10 +63,10 @@
           </div>
           <div ng-show="!note.editMode" ng-click="enterModifyMode(note)" class="note-text" linkify>{{note.text}}</div>
           <form ng-show="note.editMode" ng-submit="modifyItem(note)" ng-keyup="cancelModifyMode($event, note)" class="note-edit-form">
-            <input ng-model="note.originalText" value="{{note.originalText}}" class="note-edit-input">
+            <input ng-model="note.originalText" value="{{note.originalText}}" class="form-control input-default note-edit-input" focus-me="note.editMode">
           </form>
           <div class="note-tags">
-            <span ng-click="setTag(tag)" ng-repeat="tag in note.tags" class="label label-primary note-tag">{{tag}}</span>
+            <span ng-click="setTag(tag)" ng-repeat="tag in note.tags" class="label label-primary note-tag">{{tag}}<!-- <span ng-show="note.editMode" class="glyphicon glyphicon-remove" style="padding-left:5px;"></span> --></span>
           </div>
         </li>
       </ul> 

@@ -252,6 +252,21 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   $scope.getItems() ;
 }) ;
 
+angular.module('Index').directive('focusMe', function($timeout, $parse) {
+  return {
+    link: function(scope, element, attrs) {
+      var model = $parse(attrs.focusMe);
+      scope.$watch(model, function(value) {
+        if(value === true) { 
+          $timeout(function() {
+            element[0].focus(); 
+          });
+        }
+      });
+    }
+  };
+});
+
 angular.module('Index').controller('delete-note-controller', function ($scope, $uibModalInstance, note)
 {
   $scope.note = note;
