@@ -164,6 +164,11 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   $scope.enterModifyMode = function(note) {
     note.editMode = true ;
 
+    $scope.data.notes.forEach(function(n){
+      if (note._id != n._id)
+          n.editMode = false ;
+    });
+
     if ($scope.autoRefreshTimer != null) {
       $timeout.cancel($scope.autoRefreshTimer) ;
       $scope.autoRefreshTimer = null ;
@@ -263,6 +268,9 @@ angular.module('Index').directive('focusMe', function($timeout, $parse) {
           });
         }
       });
+      // element.bind('blur', function() {
+      //    scope.$apply(model.assign(scope, false));
+      // });
     }
   };
 });
