@@ -42,7 +42,7 @@
 		        <a class="glyphicon glyphicon-log-out utilities-user" data-toggle="tooltip" data-placement="bottom" title="Kliknij aby się wylogować" href="/logoff"></a>
 		      <% } %>
 		    </span>
-	      <form ng-submit="addNewItem(noteText)" id="message-create" class="message-form">
+	      <form ng-submit="createNote(noteText)" id="message-create" class="message-form">
 	        <input ng-model="noteText" ng-change="filterItems()" ng-trim="false" id="message-create-text" type="text" name="message" class="form-control input-default" placeholder="Zanotujmy coś..." autofocus>
 	      </form>
 	    </div>
@@ -62,11 +62,15 @@
             </span>  
           </div>
           <div ng-show="!note.editMode" ng-click="enterModifyMode(note)" class="note-text" linkify>{{note.text}}</div>
-          <form ng-show="note.editMode" ng-submit="modifyItem(note)" ng-keyup="cancelModifyMode($event, note)" class="note-edit-form">
-            <input ng-model="note.originalText" value="{{note.originalText}}" class="form-control input-default note-edit-input" focus-me="note.editMode">
+          <form ng-show="note.editMode" ng-keyup="cancelModifyMode($event, note)" class="form-inline">
+            <textarea ng-model="note.text" ng-change="noteTextChanged(note)" ng-trim="false" class="form-control input-default note-edit-input" focus="note.editMode"></textarea>
+            <!-- <div class="edit-tools"> -->
+              <button ng-disabled="!note.modified" ng-click="modifyItem(note)" ng-class="note.modified ? 'note-edit-accept' : 'note-edit-accept-disabled'" class="glyphicon glyphicon-ok-sign"></button> 
+              <button ng-click="cancelModifyMode(null, note)" class="note-edit-cancel glyphicon glyphicon-remove-sign"></button> 
+            <!-- </div> -->
           </form>
           <div class="note-tags">
-            <span ng-click="setTag(tag)" ng-repeat="tag in note.tags" class="label label-primary note-tag">{{tag}}<!-- <span ng-show="note.editMode" class="glyphicon glyphicon-remove" style="padding-left:5px;"></span> --></span>
+            <div ng-repeat="tag in (note.newTags || note.tags) track by $index" ng-click="setTag(tag)" class="label label-primary note-tag">{{tag}}<span ng-show="note.editMode" class="tag-remove"><strong>x</strong></span></div>
           </div>
         </li>
       </ul> 

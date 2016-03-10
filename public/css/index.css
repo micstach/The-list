@@ -25,6 +25,11 @@ body {
 	display: inline-block;
 }
 
+.tag-remove
+{
+	padding-left: 7px; 
+}
+
 .note-edit-form
 {
 	margin-top: 0.4em;	
@@ -37,26 +42,9 @@ body {
 	border-style: solid;
 	border-width: 2px;
 	border-color: rgb(0,0,0);
-	width: 100%;
 	padding: 5px;
 }
 
-.note-edit-input
-{
-/*	background-color: rgb(255,0,0);
-	border:0px;
-	border-style: none;
-	margin-top:5px;
-*/	width:100%;
-}
-/*.note-edit-input:focus
-{
-	border: 0px;
-	border-width: 0px;
-	box-shadow: 0px;
-	outline: none;
-}
-*/
 .note-text
 {
 	margin-top: 0.5em;
@@ -70,7 +58,7 @@ body {
 	margin: 10px 0px 10px 0px;
 }
 
-.message-header-icon, .message-header-icon-right
+.message-header-icon, .message-header-icon-right, .note-edit-accept, .note-edit-cancel, .note-edit-accept-disabled, .note-edit-cancel-disabled
 {
 	opacity: 0.45;
 	background-color: transparent;
@@ -84,6 +72,45 @@ body {
     height: 17px;
 }
 
+.edit-tools
+{
+	display: inline-block;
+	float:right;
+	width: 20px;
+}
+
+.note-edit-accept
+{
+	color:rgba(0,128,0,1.0);
+	margin-top: 5px;
+	float:right;
+}
+
+.note-edit-cancel
+{
+	color:rgba(128,0,0,1.0);
+	margin-top: 5px;
+}
+
+.note-edit-accept-disabled
+{
+	color:rgba(128,128,128,1.0);
+	margin-top: 5px;
+	float:right;
+}
+
+.note-edit-input
+{
+	margin-top: 5px;
+	display: inline-block;
+/*	background-color: rgb(255,0,0);
+	border:0px;
+	border-style: none;
+	margin-top:5px;
+*/
+	min-width: calc(100% - 0px);
+	max-width: calc(100% - 0px);
+}
 .message-checked
 {
 	background-color: rgb(236, 256, 236);	
@@ -134,11 +161,13 @@ body {
 
 .note-tags {
 	margin-top: 0.5em;
-	cursor: pointer;
+	width:100%;
 }
 
 .note-tag {
  	margin-right: 0.35em;
+ 	cursor: pointer;	
+ 	display: inline-block;
 }
 
 .options-menu

@@ -74,6 +74,12 @@ function getTimeString(timestamp)
 	return timeString ;
 }
 
+function resizeTextArea(className) {
+	$('.note-edit-input').each(function () {
+        $(this).height(0).height(this.scrollHeight);
+    });
+}
+
 $(document).ready(function() {
 	
     $('.application-list').css('margin-top', $('.application-header').outerHeight() + 'px') ;
@@ -100,4 +106,5 @@ $(document).ready(function() {
     $('[data-toggle="tooltip"]').tooltip() ;
     
     $('#message-create-text').attr('autocomplete','off');
+
 }) ;

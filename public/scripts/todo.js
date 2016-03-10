@@ -16,59 +16,51 @@ angular.module('Index').config(['$httpProvider', function($httpProvider) {
 angular.module('Index').controller('Notes', function($scope, $timeout, $http, $location, $uibModal) {
 
   $scope.lastTag = undefined;
-  $scope.filterText = undefined;
+  $scope.filterTags = [];
   $scope.autoRefreshTimer = null;
 
-  $scope.haveTags = function(noteText) {
-    return (noteText.indexOf(': ') > 0 && 
-            noteText
-              .substr(0, noteText.indexOf(': '))
-              .split(',')
-              .filter(function(tag) { 
-                return tag.trim().indexOf(' ') != -1;
-              }).length == 0)
+  $scope.removeTags = function(text, tags) {
+
+    tags.forEach(function(tag){
+      text = text.replace('#' + tag + ' ', '') ;
+      text = text.replace(' #' + tag, '') ;
+    }) ;
+
+    return text ;
   }
 
-  $scope.extractTags = function(text) {
-    var tags = [] ;
+  $scope.extractHashTags = function(text) {
+    var tags = text.match(/([#][a-z\d-]+)/g) ;
 
-    if ($scope.haveTags(text)) {
-      text
-        .substr(0, text.indexOf(': '))
-        .split(',')
-        .forEach(function(tag) { 
-          tags.push(tag.trim().toLowerCase());
-        });
+    if (tags == null)
+      return [];
+    else {
+      for (var i=0; i<tags.length; i++)
+        tags[i] = tags[i].replace('#', '');
+
+      return tags;
     }
-
-    return tags ;
   }
 
-  $scope.extractNoteText = function(noteText) {
-    if ($scope.haveTags(noteText)){
-      var position = noteText.indexOf(': ') + 1 ;
-      return noteText.substr(position, noteText.length - position).trim() ;
-    }
-    else
-      return noteText ;
-  }
-
-  $scope.filterItems = function() {
-    // detect tags
-    if ($scope.haveTags($scope.noteText)) {
-      $scope.filterText = $scope.noteText.substr(0, $scope.noteText.indexOf(': '));
-      $scope.getItems();
+  $scope.noteTextChanged = function(note) {
+    note.modified = true ;
+    if (note.tags !== undefined) {
+      note.newTags = note.tags.concat($scope.extractHashTags(note.text)) ;
+      note.newTags = note.newTags.filter(function(item, pos) { return note.newTags.indexOf(item) == pos}) ;
     }
     else {
-      if ($scope.filterText !== undefined) {
-        $scope.filterText = undefined ;
-        $scope.getItems() ;
-      }
+      note.newTags = $scope.extractHashTags(note.text) ;
     }
+    resizeTextArea('.note-edit-input') ;
+  }
+  
+  $scope.filterItems = function() {
+    $scope.filterTags = $scope.extractHashTags($scope.noteText)  ;
+    $scope.getItems();
   }
 
   $scope.setTag = function(tag) {
-    $scope.noteText = tag + ": " ;
+    $scope.noteText = '#' + tag + ' ';  
     $scope.filterItems() ;
   }
 
@@ -78,15 +70,14 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
         var filteredNotes = [] ;
 
-        if ($scope.filterText !== undefined) {       
-          var tags = [] ;
-          $scope.filterText.split(',').forEach(function(tag) { tags.push(tag.trim().toLowerCase());});
-
+        if ($scope.filterTags.length > 0) {       
           data.notes.forEach(function(note) {
             
-            var tagsFound = tags.filter(function(tag){
-              var tagPosition = note.text.toLowerCase().indexOf(tag) ;
-              return (0 <= tagPosition && tagPosition < note.text.indexOf(':')) ;
+            var tagsFound = $scope.filterTags.filter(function(tag) {
+              if (note.tags === undefined)
+                return false ;
+              else
+                return (note.tags.indexOf(tag) != -1) ;
             }).length ;    
 
             if (tagsFound > 0)
@@ -129,10 +120,10 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
           // transform unix timestamp into modified time
           note.timestamp = getTimeString(note.timestamp);
-          note.originalText = note.text;
-          note.tags = $scope.extractTags(note.text)  
-          note.text = $scope.extractNoteText(note.text) ;
+
+          // expand model
           note.editMode = false ;
+          note.modified = false ;
         });
 
         data.notes = notes;
@@ -146,10 +137,13 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       }) ;
   };
 
-  $scope.addNewItem = function(noteText) {
+  $scope.createNote = function(noteText) {
+
+    var tags = $scope.extractHashTags(noteText) ;
+    var text = $scope.removeTags(noteText, tags);
 
     $http
-      .post('/api/note/create', {text: noteText})
+      .post('/api/note/create', {text: text, tags: tags})
       .success(function(){
         $scope.getItems() ;
       });
@@ -175,18 +169,27 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     } 
   }
 
-  $scope.modifyItem = function(note){
+  $scope.modifyItem = function(note) {
+
+    note.text = $scope.removeTags(note.text, note.newTags) ;
+
     $http
-      .put('/api/note/update/' + note._id, {text: note.originalText})
-      .success(function(){
+      .put('/api/note/update/' + note._id, {text: note.text, tags: note.newTags})
+      .success(function() {
         note.editMode = false ;
-        $scope.getItems() ;
+        note.modified = false ;
       });
   };
 
   $scope.cancelModifyMode = function($event, note){
-    if ($event.keyCode == 27) {
+   
+    if ($event == null) {
       note.editMode = false ;
+      note.modified = false ;
+    }
+    else if ($event.keyCode == 27) {
+      note.editMode = false ;
+      note.modified = false ;
     }
   }
 
@@ -206,8 +209,10 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
     modalInstance.result.then(function () {
       $http
-      .post('/api/message/delete/' + note._id)
-      .success(function() { $scope.getItems(); });
+      .post('/api/note/delete/' + note._id)
+      .success(function() { 
+        $scope.getItems(); 
+      });
     });
   }
 
@@ -257,15 +262,16 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   $scope.getItems() ;
 }) ;
 
-angular.module('Index').directive('focusMe', function($timeout, $parse) {
+angular.module('Index').directive('focus', function($timeout, $parse) {
   return {
     link: function(scope, element, attrs) {
-      var model = $parse(attrs.focusMe);
+      var model = $parse(attrs.focus);
       scope.$watch(model, function(value) {
         if(value === true) { 
           $timeout(function() {
             element[0].focus(); 
-          });
+            resizeTextArea('.note-edit-input');
+          }, 1);
         }
       });
       // element.bind('blur', function() {
@@ -274,6 +280,24 @@ angular.module('Index').directive('focusMe', function($timeout, $parse) {
     }
   };
 });
+
+// angular.module('Index').directive('elastic', [
+//     '$timeout',
+//     function($timeout) {
+//         return {
+//             restrict: 'A',
+//             link: function($scope, element) {
+//               $scope.initialHeight = $scope.initialHeight || element[0].style.height; 
+//               var resize = function() { 
+//                 element[0].style.height = $scope.initialHeight; 
+//                 element[0].style.height = "" + element[0].scrollHeight + "px"; 
+//               }; 
+
+//               element.on("blur keyup change", resize); $timeout(resize, 0); 
+//             }
+//         };
+//     }
+// ]);
 
 angular.module('Index').controller('delete-note-controller', function ($scope, $uibModalInstance, note)
 {

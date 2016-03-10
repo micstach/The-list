@@ -195,11 +195,12 @@ app.get('/api/notes', authorizeAPI, function(req, res) {
 }) ;
 
 app.post('/api/note/create', authorize, function(req, res){
-  console.log("api: note delete");
+  console.log("api: note create:" + JSON.stringify(req.body));
    
   var userid = req.session.userid ;
-  var text = req.body.text;
-  
+  var text = req.body.text ;
+  var tags = req.body.tags ;
+
   if (text.length == 0) {
     res.redirect('/') ;
   }
@@ -211,6 +212,7 @@ app.post('/api/note/create', authorize, function(req, res){
         pinned: false,
         owner: userid,
         users: [userid],
+        tags: tags,
         timestamp: moment().valueOf() 
       }) ;
       db.close() ;
@@ -220,8 +222,8 @@ app.post('/api/note/create', authorize, function(req, res){
   }
 }) ;
 
-app.post('/api/message/delete/:id', authorize, function(req, res){
-  console.log("api: delete message: %d", req.params.id) ;
+app.post('/api/note/delete/:id', authorize, function(req, res){
+  console.log("api: delete message: " + req.params.id) ;
 
   var mongoUrl = environment.config.db() ;  
   var userid = req.session.userid ;
@@ -236,7 +238,7 @@ app.post('/api/message/delete/:id', authorize, function(req, res){
 }) ;
 
 app.put('/api/note/update/:id', authorize, function(req, res){
-  console.log("api: update message: %d", req.params.id) ;
+  console.log("api: update message: " + req.params.id) ;
 
   var mongoUrl = environment.config.db() ;  
   var userid = req.session.userid ;
@@ -244,7 +246,7 @@ app.put('/api/note/update/:id', authorize, function(req, res){
   MongoClient.connect(environment.config.db(), function(err, db) {
     db.collection('notes').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, item){
       item.text = req.body.text ;
-      //item.timestamp = moment().valueOf() ;
+      item.tags = req.body.tags ;
       db.collection('notes').save(item) ;
       db.close() ;
       res.sendStatus(200); 
