@@ -25,9 +25,30 @@ body {
 	display: inline-block;
 }
 
-.tag-remove
+.note-tags 
+{
+	margin-top: 0.5em;
+	width:100%;
+}
+
+.note-tag-inactive
+{
+ 	margin-right: 0.35em;
+ 	display: inline-block;
+ 	cursor: default;	 	
+}
+
+.note-tag-active 
+{
+ 	margin-right: 0.35em;
+ 	display: inline-block;
+ 	cursor: pointer;	
+}
+
+.note-tag-remove
 {
 	padding-left: 7px; 
+ 	cursor: pointer;	
 }
 
 .note-edit-form
@@ -75,27 +96,27 @@ body {
 .edit-tools
 {
 	display: inline-block;
-	float:right;
-	width: 20px;
+	width: 100%;
+	height: 10px;
 }
 
 .note-edit-accept
 {
 	color:rgba(0,128,0,1.0);
-	margin-top: 5px;
 	float:right;
+	margin-left: 15px;
 }
 
 .note-edit-cancel
 {
 	color:rgba(128,0,0,1.0);
-	margin-top: 5px;
+	margin-left: 5px;
+	float: right;
 }
 
 .note-edit-accept-disabled
 {
 	color:rgba(128,128,128,1.0);
-	margin-top: 5px;
 	float:right;
 }
 
@@ -153,21 +174,6 @@ body {
 .message-status
 {
 	margin-top: 0.0em;
-}
-
-.message-header
-{
-}
-
-.note-tags {
-	margin-top: 0.5em;
-	width:100%;
-}
-
-.note-tag {
- 	margin-right: 0.35em;
- 	cursor: pointer;	
- 	display: inline-block;
 }
 
 .options-menu

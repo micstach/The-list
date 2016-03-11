@@ -55,22 +55,20 @@
             <span class="message-header-left">
               <button ng-click="toggleItem(note)" ng-class="note.checked ? 'glyphicon-check' : 'glyphicon-unchecked'" class="message-header-icon glyphicon"></button>
               <span class="message-time">{{note.timestamp}}</span>
+              <button ng-click="pinItem(note)" ng-class="note.pinned ? 'icon-rotate' : ''" class="message-header-icon glyphicon glyphicon-pushpin"></button>
             </span>
             <span class="message-header-right">
-              <button ng-click="pinItem(note)" ng-class="note.pinned ? 'icon-rotate' : ''" class="message-header-icon-right glyphicon glyphicon-pushpin"></button>
-              <button ng-click="deleteItem(note)" class="message-header-icon-right glyphicon glyphicon-trash"></button>
+              <button ng-show="!note.editMode" ng-click="deleteItem(note)" class="message-header-icon-right glyphicon glyphicon-trash"></button>
+              <button ng-show="note.editMode" ng-click="cancelChanges(null, note)" class="note-edit-cancel glyphicon glyphicon-remove-sign"></button> 
+              <button ng-show="note.editMode" ng-disabled="!note.modified" ng-click="acceptChanges(note)" ng-class="note.modified ? 'note-edit-accept' : 'note-edit-accept-disabled'" class="glyphicon glyphicon-ok-sign"></button> 
             </span>  
           </div>
           <div ng-show="!note.editMode" ng-click="enterModifyMode(note)" class="note-text" linkify>{{note.text}}</div>
           <form ng-show="note.editMode" ng-keyup="cancelModifyMode($event, note)" class="form-inline">
             <textarea ng-model="note.text" ng-change="noteTextChanged(note)" ng-trim="false" class="form-control input-default note-edit-input" focus="note.editMode"></textarea>
-            <!-- <div class="edit-tools"> -->
-              <button ng-disabled="!note.modified" ng-click="modifyItem(note)" ng-class="note.modified ? 'note-edit-accept' : 'note-edit-accept-disabled'" class="glyphicon glyphicon-ok-sign"></button> 
-              <button ng-click="cancelModifyMode(null, note)" class="note-edit-cancel glyphicon glyphicon-remove-sign"></button> 
-            <!-- </div> -->
           </form>
           <div class="note-tags">
-            <div ng-repeat="tag in (note.newTags || note.tags) track by $index" ng-click="setTag(tag)" class="label label-primary note-tag">{{tag}}<span ng-show="note.editMode" class="tag-remove"><strong>x</strong></span></div>
+            <div ng-repeat="tag in (note.newTags || note.tags) track by $index" ng-click="!note.editMode && setTag(tag)" ng-class="note.editMode ? ' note-tag-inactive' : 'note-tag-active'" class="label label-primary">{{tag}}<span ng-show="note.editMode" ng-click="deleteTag(note, tag)" class="note-tag-remove"><strong>x</strong></span></div>
           </div>
         </li>
       </ul> 

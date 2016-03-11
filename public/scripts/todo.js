@@ -76,8 +76,11 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
             var tagsFound = $scope.filterTags.filter(function(tag) {
               if (note.tags === undefined)
                 return false ;
-              else
+              else if (note.tags != null) {
                 return (note.tags.indexOf(tag) != -1) ;
+              }
+              else
+                return false ;
             }).length ;    
 
             if (tagsFound > 0)
@@ -124,6 +127,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
           // expand model
           note.editMode = false ;
           note.modified = false ;
+          note.removedTags = [] ;
         });
 
         data.notes = notes;
@@ -169,20 +173,33 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     } 
   }
 
-  $scope.modifyItem = function(note) {
+  $scope.acceptChanges = function(note) {
 
-    note.text = $scope.removeTags(note.text, note.newTags) ;
+    var tags = note.tags ;
+    if (note.newTags !== undefined)
+    {
+      tags = note.newTags ;
+      note.text = $scope.removeTags(note.text, note.newTags) ;
+    }
+
+    note.removedTags = [] ;
 
     $http
-      .put('/api/note/update/' + note._id, {text: note.text, tags: note.newTags})
+      .put('/api/note/update/' + note._id, {text: note.text, tags: tags})
       .success(function() {
         note.editMode = false ;
         note.modified = false ;
       });
   };
 
-  $scope.cancelModifyMode = function($event, note){
-   
+  $scope.cancelChanges = function($event, note){
+    
+    // restore removedTags
+    if (note.removedTags.length > 0) {
+      note.tags = note.tags.concat(note.removedTags) ;
+      note.removedTags = [];
+    }
+
     if ($event == null) {
       note.editMode = false ;
       note.modified = false ;
@@ -191,6 +208,12 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       note.editMode = false ;
       note.modified = false ;
     }
+  }
+
+  $scope.deleteTag = function(note, tag) {
+    note.removedTags.push(tag);
+    note.tags.splice(note.tags.indexOf(tag), 1) ;
+    note.modified = true ;
   }
 
   $scope.deleteItem = function(note) {
