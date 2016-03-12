@@ -48,12 +48,20 @@ var authorize = function(req, res, next) {
     return next();
   else
   {
-    console.log('Redirect to login page');
     return res.redirect('/login');
   }
 };
 
 app.get('/', authorize, function(req, res) {
+  if (req.session.userid === undefined) {
+    res.redirect('/login') ;
+  }
+  else {
+    res.redirect('/home') ;
+  }
+});
+
+app.get('/home', authorize, function(req, res) {
   if (req.session.userid === undefined) {
     res.redirect('/login') ;
   }
@@ -77,7 +85,7 @@ app.get('/', authorize, function(req, res) {
 
     MongoClient.connect(mongoUrl, function(err, db) {
       db.collection('users').findOne({_id: mongodb.ObjectID(userid)}, function(err, user){
-        res.render('index', {desktopClient: desktopClient, downloadLink:downloadLink, username: user.name, userid:userid}) ;
+        res.render('notes', {desktopClient: desktopClient, downloadLink:downloadLink, username: user.name, userid:userid}) ;
         db.close();
       }) ;
     });
@@ -154,7 +162,7 @@ app.post('/login', function(req, res) {
 
           if (user !== null) {
             req.session.userid = user._id ;
-            res.redirect('/');
+            res.redirect('/home');
           }
           else {
             console.log("user not verified !") ;

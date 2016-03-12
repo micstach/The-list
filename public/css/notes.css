@@ -159,7 +159,7 @@ body {
 
 .icon-rotate
 {
-	/*transform: rotate(-45deg);*/
+	transform: rotate(-45deg);
 	color: rgb(0, 0, 0);
 	opacity: 1.0;
 }

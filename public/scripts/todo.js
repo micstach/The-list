@@ -135,6 +135,13 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     return {refreshDelay: refreshDelay, notes: filteredNotes} ;
   }
 
+  $scope.cancelTimer = function(timer) {
+    if (timer !== null) {
+      $timeout.cancel(timer) ;
+      timer = null ;
+    } 
+  }
+
   $scope.getItems = function() {
 
     $http.get('/api/notes')
@@ -142,6 +149,8 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
         var filteredNotes = $scope.filterNotes(data.notes, true) ;
         $scope.userid = data.userid; 
         $scope.notes = filteredNotes.notes ;
+
+        $scope.cancelTimer($scope.autoRefreshTimer) ;       
         $scope.autoRefreshTimer = $timeout($scope.getItems, filteredNotes.refreshDelay) ;
       })
       .error(function(data, status) {
@@ -150,6 +159,8 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   };
 
   $scope.createNewNote = function() {
+    $scope.cancelTimer($scope.autoRefreshTimer) ;  
+
     var note = {
         _id: "0",
         text: '', 
@@ -165,11 +176,11 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
       note.timeVerbose = getTimeString(note.timestamp) ;
 
+      // insert note stub
       $scope.notes.splice(0, 0, note);
-      // $scope.notes = $scope.filterNotes($scope.notes, false) ;
   }
 
-  $scope.enterModifyMode = function(note) {
+  $scope.enterEditingMode = function(note) {
     note.editing = true ;
 
     $scope.notes.forEach(function(item){
@@ -177,10 +188,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
           item.editing = false ;
     });
 
-    if ($scope.autoRefreshTimer != null) {
-      $timeout.cancel($scope.autoRefreshTimer) ;
-      $scope.autoRefreshTimer = null ;
-    } 
+    $scope.cancelTimer($scope.autoRefreshTimer) ;  
   }
 
   $scope.acceptChanges = function(note) {

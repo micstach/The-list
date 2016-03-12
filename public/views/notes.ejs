@@ -14,7 +14,7 @@
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
     <link href="../css/checkboxes-nojs.css" rel="stylesheet" type="text/css">
-    <link href="../css/index.css" rel="stylesheet" type="text/css">
+    <link href="../css/notes.css" rel="stylesheet" type="text/css">
 
     <script src="../libs/jquery.min.js"></script>
     <script src="../libs/bootstrap.min.js"></script>
@@ -22,7 +22,7 @@
     <script src="../libs/angular-animate.js"></script>
     <script src="../libs/angular-linkify.min.js "></script>    
     <script src="../libs/ui-bootstrap-tpls-1.2.1.min.js"></script>
-    <script src="../scripts/index.js"></script>
+    <script src="../scripts/notes.js"></script>
     <script src="../scripts/todo.js"></script>
   </head>
   <body ng-controller="Notes">
@@ -60,7 +60,7 @@
               <button ng-show="note.editing" ng-click="cancelChanges(null, note)" class="note-header-icon  note-edit-cancel glyphicon glyphicon-remove-sign"></button> 
             </span>  
           </div>
-          <div ng-show="!note.editing" ng-click="enterModifyMode(note)" ng-class="note.pinned ? 'note-text-pinned' : 'note-text'" linkify>{{note.text}}</div>
+          <div ng-show="!note.editing" ng-click="enterEditingMode(note)" ng-class="note.pinned ? 'note-text-pinned' : 'note-text'" linkify>{{note.text}}</div>
           <form ng-show="note.editing" ng-keyup="cancelModifyMode($event, note)" class="form-inline">
             <textarea ng-model="note.text" ng-change="noteTextChanged(note)" ng-trim="false" class="form-control input-default note-edit-input" focus="note.editing" placeholder="Zanotujmy cokolwiek..."></textarea>
           </form>
