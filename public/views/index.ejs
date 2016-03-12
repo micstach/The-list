@@ -42,9 +42,6 @@
 		        <a class="glyphicon glyphicon-log-out utilities-user" data-toggle="tooltip" data-placement="bottom" title="Kliknij aby się wylogować" href="/logoff"></a>
 		      <% } %>
 		    </span>
-	      <form ng-submit="createNote(noteText)" id="message-create" class="message-form">
-	        <input ng-model="noteText" ng-change="filterItems()" ng-trim="false" id="message-create-text" type="text" name="message" class="form-control input-default" placeholder="Zanotujmy coś..." autofocus>
-	      </form>
 	    </div>
 		</div>
 
@@ -57,7 +54,7 @@
             </span>
             <span class="message-header-right">
               <button ng-show="!note.editing" ng-click="deleteItem(note)" class="note-header-icon glyphicon glyphicon-trash"></button>
-              <button ng-show="!note.editing" ng-click="pinItem(note)" ng-class="note.pinned ? 'icon-rotate' : ''" class="note-header-icon glyphicon glyphicon-pushpin"></button>
+              <button ng-show="note.editing" ng-click="pinItem(note)" ng-class="note.pinned ? 'icon-rotate' : ''" class="note-header-icon glyphicon glyphicon-pushpin"></button>
               <button ng-show="!note.editing" ng-click="toggleItem(note)" ng-class="note.checked ? 'glyphicon-check' : 'glyphicon-unchecked'" class="note-header-icon glyphicon"></button>
               <button ng-show="note.editing" ng-click="acceptChanges(note)"  ng-disabled="!note.modified" ng-class="note.modified ? 'note-edit-accept' : 'note-edit-accept-disabled'" class="note-header-icon glyphicon glyphicon-ok-sign"></button> 
               <button ng-show="note.editing" ng-click="cancelChanges(null, note)" class="note-header-icon  note-edit-cancel glyphicon glyphicon-remove-sign"></button> 

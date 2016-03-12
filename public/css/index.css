@@ -249,6 +249,11 @@ body {
     padding-bottom: 0px;
 }
 
+.application-list
+{
+	margin-top: 20px;
+}
+
 /* bootstrap ui override */
 .modal {
     display: block;

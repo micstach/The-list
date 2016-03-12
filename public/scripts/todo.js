@@ -169,24 +169,6 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       // $scope.notes = $scope.filterNotes($scope.notes, false) ;
   }
 
-  $scope.createNote = function(noteText) {
-
-    var tags = $scope.extractHashTags(noteText) ;
-    var text = $scope.removeTags(noteText, tags);
-
-    $http
-      .post('/api/note/create', {text: text, tags: tags})
-      .success(function(){
-        $scope.getItems() ;
-      });
-
-    if ($scope.filterText !== undefined) {
-      $scope.noteText = $scope.filterText + ': ' ;
-    }
-    else
-      $scope.noteText = '';
-  };
-
   $scope.enterModifyMode = function(note) {
     note.editing = true ;
 
