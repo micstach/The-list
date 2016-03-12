@@ -152,7 +152,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   $scope.createNewNote = function() {
     var note = {
         _id: "0",
-        text: 'Zanotujmy coś...', 
+        text: '', 
         checked: false,
         pinned: false,
         tags: [],
@@ -190,7 +190,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       var text = $scope.removeTags(note.text, tags);
 
       $http
-        .post('/api/note/create', {text: text, tags: tags})
+        .post('/api/note/create', {text: text, tags: tags, pinned: note.pinned})
         .success(function(){
           $scope.getItems() ;
         });
@@ -291,18 +291,23 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       .success(function(){
             note.checked = state ;
             note.timestamp = getTimeString(Date.now());
-            //$scope.getItems();
       });
   }
 
   $scope.pinItem = function(note) {
-    var state = (note.pinned !== undefined) ? !note.pinned : true;
 
-    $http
-      .put('/api/message/pin/' + note._id + '/' + state)
-      .success(function(){
-            $scope.getItems();
-      });
+    if (note.isNew !== undefined && note.isNew == true) {
+      note.pinned = !note.pinned ;
+    }
+    else {
+      var state = (note.pinned !== undefined) ? !note.pinned : true;
+
+      $http
+        .put('/api/message/pin/' + note._id + '/' + state)
+        .success(function(){
+              $scope.getItems();
+        });
+    }
   };
 
   $scope.refresh = function()

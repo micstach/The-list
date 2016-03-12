@@ -198,21 +198,19 @@ app.post('/api/note/create', authorize, function(req, res){
   console.log("api: note create:" + JSON.stringify(req.body));
    
   var userid = req.session.userid ;
-  var text = req.body.text ;
-  var tags = req.body.tags ;
 
-  if (text.length == 0) {
+  if (req.body.text.length == 0) {
     res.redirect('/') ;
   }
   else {
     MongoClient.connect(environment.config.db(), function(err, db) {
       db.collection('notes').save({
-        text: text, 
+        text: req.body.text, 
         checked: false,
-        pinned: false,
+        pinned: req.body.pinned,
         owner: userid,
         users: [userid],
-        tags: tags,
+        tags: req.body.tags,
         timestamp: moment().valueOf() 
       }) ;
       db.close() ;

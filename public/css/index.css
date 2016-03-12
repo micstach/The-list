@@ -99,7 +99,7 @@ body {
 
 .note-header-icon, .note-edit-accept, .note-edit-cancel, .note-edit-accept-disabled, .note-edit-cancel-disabled
 {
-    margin-left: 5px;
+    margin-left: 7px;
 }
 
 .glyph-menu-button
@@ -246,12 +246,12 @@ body {
     width: calc(100% - 20px);
     z-index:100;
     padding-top: 1em;
-    padding-bottom: 0px;
+    padding-bottom: 1em;
 }
 
 .application-list
 {
-	margin-top: 20px;
+	margin-top: 50px;
 }
 
 /* bootstrap ui override */
