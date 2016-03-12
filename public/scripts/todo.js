@@ -15,6 +15,7 @@ angular.module('Index').config(['$httpProvider', function($httpProvider) {
 
 angular.module('Index').controller('Notes', function($scope, $timeout, $http, $location, $uibModal) {
 
+  $scope.userid = "";
   $scope.lastTag = undefined;
   $scope.filterTags = [];
   $scope.autoRefreshTimer = null;
@@ -64,82 +65,109 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     $scope.filterItems() ;
   }
 
+  $scope.filterNotes = function(notes, fromServer) {
+    var taggedNotes = [] ;
+
+    if ($scope.filterTags.length > 0) {       
+      notes.forEach(function(note) {
+        
+        var tagsFound = $scope.filterTags.filter(function(tag) {
+          if (note.tags === undefined)
+            return false ;
+          else if (note.tags != null) {
+            return (note.tags.indexOf(tag) != -1) ;
+          }
+          else
+            return false ;
+        }).length ;    
+
+        if (tagsFound > 0)
+          taggedNotes.push(note) ;
+
+      }) ;
+    }
+    else
+    {
+      notes.forEach(function(note) { taggedNotes.push(note) ;}) ;
+    }
+
+    var filteredNotes = [] ;  
+    taggedNotes
+      .filter(function(note) { return (note.isNew !== undefined && note.isNew === true);})
+      .forEach(function(note) { filteredNotes.push(note); });
+
+    taggedNotes
+      .filter(function(note) { return note.pinned === true;})
+      .sort(function(a, b) { return b.timestamp - a.timestamp;})
+      .forEach(function(note) { filteredNotes.push(note); });
+
+    taggedNotes
+      .filter(function(note) { return note.checked === false && note.pinned === false;})
+      .sort(function(a, b) { return b.timestamp - a.timestamp;})
+      .forEach(function(note) { filteredNotes.push(note);});
+
+    taggedNotes
+      .filter(function(note){return note.checked === true && note.pinned === false;})
+      .sort(function(a, b) { return b.timestamp - a.timestamp;})
+      .forEach(function(note) { filteredNotes.push(note);}) ;
+
+    var refreshDelay = ((1000 * 60) * 60) ; // one hour
+    var lowestRefreshDelay = (1000 * 15) ; 
+
+    filteredNotes.forEach(function(note) {
+      var delta = Date.now() - (new Date(note.timestamp)) ;
+      if (delta < refreshDelay) {
+        refreshDelay = delta ;
+
+        if (refreshDelay < lowestRefreshDelay)
+          refreshDelay = lowestRefreshDelay ;    
+      }
+
+      // extend model
+      if (fromServer) {
+        note.editing = false ;
+        note.modified = false ;
+        note.removedTags = [] ;
+      }
+      note.timeVerbose = getTimeString(note.timestamp);
+    });
+
+    return {refreshDelay: refreshDelay, notes: filteredNotes} ;
+  }
+
   $scope.getItems = function() {
+
     $http.get('/api/notes')
       .success(function(data) { 
-
-        var filteredNotes = [] ;
-
-        if ($scope.filterTags.length > 0) {       
-          data.notes.forEach(function(note) {
-            
-            var tagsFound = $scope.filterTags.filter(function(tag) {
-              if (note.tags === undefined)
-                return false ;
-              else if (note.tags != null) {
-                return (note.tags.indexOf(tag) != -1) ;
-              }
-              else
-                return false ;
-            }).length ;    
-
-            if (tagsFound > 0)
-              filteredNotes.push(note) ;
-
-          }) ;
-        }
-        else
-        {
-          data.notes.forEach(function(note) { filteredNotes.push(note) ;}) ;
-        }
-
-        var notes = [] ;  
-        filteredNotes
-          .filter(function(note) { return note.pinned === true;})
-          .sort(function(a, b) { return b.timestamp - a.timestamp;})
-          .forEach(function(note) { notes.push(note); });
-
-        filteredNotes
-          .filter(function(note) { return note.checked === false && note.pinned === false;})
-          .sort(function(a, b) { return b.timestamp - a.timestamp;})
-          .forEach(function(note) { notes.push(note);});
-
-        filteredNotes
-          .filter(function(note){return note.checked === true && note.pinned === false;})
-          .sort(function(a, b) { return b.timestamp - a.timestamp;})
-          .forEach(function(note) { notes.push(note);}) ;
-
-        var refreshDelay = ((1000 * 60) * 60) ; // one hour
-        var lowestRefreshDelay = (1000 * 15) ; 
-
-        notes.forEach(function(note) {
-          var delta = Date.now() - (new Date(note.timestamp)) ;
-          if (delta < refreshDelay) {
-            refreshDelay = delta ;
-
-            if (refreshDelay < lowestRefreshDelay)
-              refreshDelay = lowestRefreshDelay ;    
-          }
-
-          // transform unix timestamp into modified time
-          note.timestamp = getTimeString(note.timestamp);
-
-          // expand model
-          note.editMode = false ;
-          note.modified = false ;
-          note.removedTags = [] ;
-        });
-
-        data.notes = notes;
-
-        $scope.data = data ;
-
-        $scope.autoRefreshTimer = $timeout($scope.getItems, refreshDelay);
+        var filteredNotes = $scope.filterNotes(data.notes, true) ;
+        $scope.userid = data.userid; 
+        $scope.notes = filteredNotes.notes ;
+        $scope.autoRefreshTimer = $timeout($scope.getItems, filteredNotes.refreshDelay) ;
       })
       .error(function(data, status) {
         window.location = '/login' ;
       }) ;
   };
+
+  $scope.createNewNote = function() {
+    var note = {
+        _id: "0",
+        text: 'Zanotujmy coś...', 
+        checked: false,
+        pinned: false,
+        tags: [],
+        timestamp: Date.now(),
+        editing: true,
+        isNew: true,
+        owner: $scope.userid,
+        users: []
+      } ;
+
+      note.timeVerbose = getTimeString(note.timestamp) ;
+
+      $scope.notes.splice(0, 0, note);
+      // $scope.notes = $scope.filterNotes($scope.notes, false) ;
+  }
 
   $scope.createNote = function(noteText) {
 
@@ -160,11 +188,11 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   };
 
   $scope.enterModifyMode = function(note) {
-    note.editMode = true ;
+    note.editing = true ;
 
-    $scope.data.notes.forEach(function(n){
-      if (note._id != n._id)
-          n.editMode = false ;
+    $scope.notes.forEach(function(item){
+      if (note._id != item._id)
+          item.editing = false ;
     });
 
     if ($scope.autoRefreshTimer != null) {
@@ -175,38 +203,56 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
   $scope.acceptChanges = function(note) {
 
-    var tags = note.tags ;
-    if (note.newTags !== undefined)
-    {
-      tags = note.newTags ;
-      note.text = $scope.removeTags(note.text, note.newTags) ;
+    if (note.isNew !== undefined && note.isNew == true) {
+      var tags = $scope.extractHashTags(note.text) ;
+      var text = $scope.removeTags(note.text, tags);
+
+      $http
+        .post('/api/note/create', {text: text, tags: tags})
+        .success(function(){
+          $scope.getItems() ;
+        });
+
     }
+    else {
+      var tags = note.tags ;
+      if (note.newTags !== undefined)
+      {
+        tags = note.newTags ;
+        note.text = $scope.removeTags(note.text, note.newTags) ;
+      }
 
-    note.removedTags = [] ;
+      note.removedTags = [] ;
 
-    $http
-      .put('/api/note/update/' + note._id, {text: note.text, tags: tags})
-      .success(function() {
-        note.editMode = false ;
-        note.modified = false ;
-      });
+      $http
+        .put('/api/note/update/' + note._id, {text: note.text, tags: tags})
+        .success(function() {
+          note.editing = false ;
+          note.modified = false ;
+        });
+    }
   };
 
   $scope.cancelChanges = function($event, note){
     
-    // restore removedTags
-    if (note.removedTags.length > 0) {
-      note.tags = note.tags.concat(note.removedTags) ;
-      note.removedTags = [];
+    if (note.isNew !== undefined && note.isNew == true) {
+      $scope.notes.splice($scope.notes.indexOf(note), 1) ;
     }
+    else {
+      // restore removedTags
+      if (note.removedTags !== undefined && note.removedTags.length > 0) {
+        note.tags = note.tags.concat(note.removedTags) ;
+        note.removedTags = [];
+      }
 
-    if ($event == null) {
-      note.editMode = false ;
-      note.modified = false ;
-    }
-    else if ($event.keyCode == 27) {
-      note.editMode = false ;
-      note.modified = false ;
+      if ($event == null) {
+        note.editing = false ;
+        note.modified = false ;
+      }
+      else if ($event.keyCode == 27) {
+        note.editing = false ;
+        note.modified = false ;
+      }
     }
   }
 

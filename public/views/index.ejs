@@ -28,12 +28,12 @@
   <body ng-controller="Notes">
     <div class="application-header">
 	    <div class="container">
-        <button class="glyphicon glyphicon-option-horizontal options-menu"></button>
         <span class="menu-items">
-          <a ng-click="refresh()" class="glyphicon glyphicon-repeat utilities" href="javascript:void(0)"></a>
-		      <a ng-click="deleteAllItems()" class="message-removeall glyphicon glyphicon-trash utilities" href="javascript:void(0)"></a>
+          <button ng-click="createNewNote()" class="glyph-menu-button glyphicon glyphicon-plus-sign"></button>
+          <button ng-click="refresh()" class="glyph-menu-button glyphicon glyphicon-repeat"></button>
+		      <button ng-click="deleteAllItems()" class="glyph-menu-button glyphicon glyphicon-trash"></button>
 		      <% if (locals.downloadLink) { %>
-		        <a class="glyphicon glyphicon-download-alt utilities" href="<%= downloadLink %>"></a>
+		        <button onclick="location.href='<%= downloadLink %>'" class="glyph-menu-button glyphicon glyphicon-download-alt utilities" data-toggle="tooltip" data-placement="bottom" title="<%= downloadLink %>"></button>
 		      <% } %>
         </span>	      
 	      <span class="pull-right">
@@ -50,25 +50,25 @@
 
     <div class="container application-list">
       <ul class="list-group">
-        <li ng-repeat="note in data.notes" ng-class="note.pinned ? 'message-pinned' : (note.checked ? 'message-checked' : '')" id="{{note._id}}" class="list-group-item">
+        <li ng-repeat="note in notes" ng-class="note.pinned ? 'message-pinned' : (note.checked ? 'message-checked' : '')" id="{{note._id}}" class="list-group-item">
           <div class="message-header">
             <span class="message-header-left">
-              <button ng-click="toggleItem(note)" ng-class="note.checked ? 'glyphicon-check' : 'glyphicon-unchecked'" class="message-header-icon glyphicon"></button>
-              <span class="message-time">{{note.timestamp}}</span>
-              <button ng-click="pinItem(note)" ng-class="note.pinned ? 'icon-rotate' : ''" class="message-header-icon glyphicon glyphicon-pushpin"></button>
+              <span class="message-time">{{note.timeVerbose}}</span>
             </span>
             <span class="message-header-right">
-              <button ng-show="!note.editMode" ng-click="deleteItem(note)" class="message-header-icon-right glyphicon glyphicon-trash"></button>
-              <button ng-show="note.editMode" ng-click="cancelChanges(null, note)" class="note-edit-cancel glyphicon glyphicon-remove-sign"></button> 
-              <button ng-show="note.editMode" ng-disabled="!note.modified" ng-click="acceptChanges(note)" ng-class="note.modified ? 'note-edit-accept' : 'note-edit-accept-disabled'" class="glyphicon glyphicon-ok-sign"></button> 
+              <button ng-show="!note.editing" ng-click="deleteItem(note)" class="note-header-icon glyphicon glyphicon-trash"></button>
+              <button ng-show="!note.editing" ng-click="pinItem(note)" ng-class="note.pinned ? 'icon-rotate' : ''" class="note-header-icon glyphicon glyphicon-pushpin"></button>
+              <button ng-show="!note.editing" ng-click="toggleItem(note)" ng-class="note.checked ? 'glyphicon-check' : 'glyphicon-unchecked'" class="note-header-icon glyphicon"></button>
+              <button ng-show="note.editing" ng-click="acceptChanges(note)"  ng-disabled="!note.modified" ng-class="note.modified ? 'note-edit-accept' : 'note-edit-accept-disabled'" class="note-header-icon glyphicon glyphicon-ok-sign"></button> 
+              <button ng-show="note.editing" ng-click="cancelChanges(null, note)" class="note-header-icon  note-edit-cancel glyphicon glyphicon-remove-sign"></button> 
             </span>  
           </div>
-          <div ng-show="!note.editMode" ng-click="enterModifyMode(note)" class="note-text" linkify>{{note.text}}</div>
-          <form ng-show="note.editMode" ng-keyup="cancelModifyMode($event, note)" class="form-inline">
-            <textarea ng-model="note.text" ng-change="noteTextChanged(note)" ng-trim="false" class="form-control input-default note-edit-input" focus="note.editMode"></textarea>
+          <div ng-show="!note.editing" ng-click="enterModifyMode(note)" ng-class="note.pinned ? 'note-text-pinned' : 'note-text'" linkify>{{note.text}}</div>
+          <form ng-show="note.editing" ng-keyup="cancelModifyMode($event, note)" class="form-inline">
+            <textarea ng-model="note.text" ng-change="noteTextChanged(note)" ng-trim="false" class="form-control input-default note-edit-input" focus="note.editing"></textarea>
           </form>
           <div class="note-tags">
-            <div ng-repeat="tag in (note.newTags || note.tags) track by $index" ng-click="!note.editMode && setTag(tag)" ng-class="note.editMode ? ' note-tag-inactive' : 'note-tag-active'" class="label label-primary">{{tag}}<span ng-show="note.editMode" ng-click="deleteTag(note, tag)" class="note-tag-remove"><strong>x</strong></span></div>
+            <div ng-repeat="tag in (note.newTags || note.tags) track by $index" ng-click="!note.editing && setTag(tag)" ng-class="note.editing ? ' note-tag-inactive' : 'note-tag-active'" class="label label-primary">{{tag}}<span ng-show="note.editing" ng-click="deleteTag(note, tag)" class="note-tag-remove"><strong>x</strong></span></div>
           </div>
         </li>
       </ul> 

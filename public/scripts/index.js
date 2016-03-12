@@ -84,25 +84,6 @@ $(document).ready(function() {
 	
     $('.application-list').css('margin-top', $('.application-header').outerHeight() + 'px') ;
 
-    $('.options-menu').click(function(e){
-		
-		if ($('.menu-items').is(':visible')) {
-			$('.menu-items').hide();
-			$('.options-menu').removeClass('glyphicon-remove');		
-			$('.options-menu').addClass('glyphicon-option-horizontal');
-		}
-		else {
-			$('.menu-items').show();
-			$('.options-menu').removeClass('glyphicon-option-horizontal');
-			$('.options-menu').addClass('glyphicon-remove');
-		}
-
-    	e.preventDefault() ;
-    });
-
-    $('.menu-items').hide();
-
-    // enable tooltips
     $('[data-toggle="tooltip"]').tooltip() ;
     
     $('#message-create-text').attr('autocomplete','off');
