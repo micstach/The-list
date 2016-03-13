@@ -4,8 +4,8 @@
 <div class="modal-body">
   <div class="message-header">
     <span class="message-header-left">
-      <button ng-click="toggleItem(note)" ng-class="(note.status == 'checked') ? 'glyphicon-check' : 'glyphicon-unchecked'" class="message-header-icon glyphicon"></button>
-      <span class="message-time">{{note.timestamp}}</span>
+      <span class="message-time">{{note.timeVerbose}}</span>
+      <button ng-class="(note.status == 'checked') ? 'glyphicon-check' : 'glyphicon-unchecked'" class="note-header-icon glyphicon"></button>
     </span> 
   </div>
   <div class="note-text" linkify>{{note.text}}</div>

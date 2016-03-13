@@ -25,17 +25,48 @@ body {
 	display: inline-block;
 }
 
-.note-edit-form
+.note-tags 
 {
+	margin-top: 0.5em;
+	width:100%;
 }
 
-.note-edit-input
+.note-tag-inactive
 {
-	width: 100%;
+ 	margin-right: 0.35em;
+ 	display: inline-block;
+ 	cursor: default;	 	
+}
+
+.note-tag-active 
+{
+ 	margin-right: 0.35em;
+ 	display: inline-block;
+ 	cursor: pointer;	
+}
+
+.note-tag-remove
+{
+	padding-left: 7px; 
+ 	cursor: pointer;	
+}
+
+.note-edit-form
+{
+	margin-top: 0.4em;	
+}
+
+.note-edit
+{
+	background-color: rgb(255,255,255);
+	border: 2px;
+	border-style: solid;
+	border-width: 2px;
+	border-color: rgb(0,0,0);
 	padding: 5px;
 }
 
-.note-text
+.note-text, .note-text-pinned
 {
 	margin-top: 0.5em;
 	font-size: 1.0em;
@@ -43,12 +74,16 @@ body {
 	cursor: pointer;
 }
 
+.note-text-pinned
+{
+}
+
 .message-form
 {
 	margin: 10px 0px 10px 0px;
 }
 
-.message-header-icon, .message-header-icon-right
+.glyph-button, .glyph-menu-button, .note-header-icon, .note-edit-accept, .note-edit-cancel, .note-edit-accept-disabled, .note-edit-cancel-disabled
 {
 	opacity: 0.45;
 	background-color: transparent;
@@ -62,6 +97,46 @@ body {
     height: 17px;
 }
 
+.note-header-icon, .note-edit-accept, .note-edit-cancel, .note-edit-accept-disabled, .note-edit-cancel-disabled
+{
+    margin-left: 7px;
+}
+
+.glyph-menu-button
+{
+	margin-right: 5px;
+}
+
+.note-edit-accept
+{
+	color:rgba(0,128,0,1.0);
+	float:right;
+}
+
+.note-edit-cancel
+{
+	color:rgba(128,0,0,1.0);
+	float: right;
+}
+
+.note-edit-accept-disabled
+{
+	color:rgba(128,128,128,1.0);
+	float:right;
+}
+
+.note-edit-input
+{
+	margin-top: 5px;
+	display: inline-block;
+/*	background-color: rgb(255,0,0);
+	border:0px;
+	border-style: none;
+	margin-top:5px;
+*/
+	min-width: calc(100% - 0px);
+	max-width: calc(100% - 0px);
+}
 .message-checked
 {
 	background-color: rgb(236, 256, 236);	
@@ -70,11 +145,6 @@ body {
 .message-pinned
 {
 	background-color: rgb(256, 256, 226);
-}
-
-.message-header-icon-right
-{
-	margin-left: 5px;
 }
 
 .message-header-right
@@ -96,27 +166,15 @@ body {
 
 .message-time
 {
-	color: rgb(162, 162, 205);
+	color: rgba(162, 162, 205, 0.75);
 	width: 100px;
 	font-size: 0.75em;
+	cursor: default;
 }
 
 .message-status
 {
 	margin-top: 0.0em;
-}
-
-.message-header
-{
-}
-
-.note-tags {
-	margin-top: 0.5em;
-	cursor: pointer;
-}
-
-.note-tag {
- 	margin-right: 0.35em;
 }
 
 .options-menu
@@ -188,7 +246,12 @@ body {
     width: calc(100% - 20px);
     z-index:100;
     padding-top: 1em;
-    padding-bottom: 0px;
+    padding-bottom: 1em;
+}
+
+.application-list
+{
+	margin-top: 50px;
 }
 
 /* bootstrap ui override */

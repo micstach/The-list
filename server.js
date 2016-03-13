@@ -48,12 +48,30 @@ var authorize = function(req, res, next) {
     return next();
   else
   {
-    console.log('Redirect to login page');
     return res.redirect('/login');
   }
 };
 
-app.get('/', authorize, function(req, res) {
+app.get('/', function(req, res) {
+  if (req.session.userid === undefined) {
+    
+    var downloadLink = null ;
+   
+    if (req.headers['user-agent'].indexOf('Windows') != -1) {
+      downloadLink = '/clients/windows/TheListClientPackage.zip';
+    }
+    else if (req.headers['user-agent'].indexOf('Android') != -1) {
+      downloadLink = '/clients/android/TheListClient.apk';
+    }
+
+    res.render('landing', {downloadLink:downloadLink}) ;
+  }
+  else {
+    res.redirect('/home') ;
+  }
+});
+
+app.get('/home', authorize, function(req, res) {
   if (req.session.userid === undefined) {
     res.redirect('/login') ;
   }
@@ -62,22 +80,14 @@ app.get('/', authorize, function(req, res) {
     console.log("ui: user-agent: " + req.headers['user-agent']);
 
     var desktopClient = (req.headers['user-agent'] === 'desktop client') ;
-    var downloadLink = null ;
     console.log("desktopClient: " + desktopClient);
-
-    if (req.headers['user-agent'].indexOf('Windows') != -1) {
-      downloadLink = '/clients/windows/TheListClientPackage.zip';
-    }
-    else if (req.headers['user-agent'].indexOf('Android') != -1) {
-      downloadLink = '/clients/android/TheListClient.apk';
-    }
 
     var mongoUrl = environment.config.db();  
     var userid = req.session.userid ;
 
     MongoClient.connect(mongoUrl, function(err, db) {
       db.collection('users').findOne({_id: mongodb.ObjectID(userid)}, function(err, user){
-        res.render('index', {desktopClient: desktopClient, downloadLink:downloadLink, username: user.name, userid:userid}) ;
+        res.render('notes', {desktopClient: desktopClient, username: user.name, userid:userid}) ;
         db.close();
       }) ;
     });
@@ -134,7 +144,7 @@ app.post('/register', function(req, res) {
 
 app.get('/logoff', function(req, res){
   req.session.destroy();
-  res.redirect('/login');
+  res.redirect('/');
 }) ;
 
 app.post('/login', function(req, res) {
@@ -154,7 +164,7 @@ app.post('/login', function(req, res) {
 
           if (user !== null) {
             req.session.userid = user._id ;
-            res.redirect('/');
+            res.redirect('/home');
           }
           else {
             console.log("user not verified !") ;
@@ -195,22 +205,22 @@ app.get('/api/notes', authorizeAPI, function(req, res) {
 }) ;
 
 app.post('/api/note/create', authorize, function(req, res){
-  console.log("api: note delete");
+  console.log("api: note create:" + JSON.stringify(req.body));
    
   var userid = req.session.userid ;
-  var text = req.body.text;
-  
-  if (text.length == 0) {
+
+  if (req.body.text.length == 0) {
     res.redirect('/') ;
   }
   else {
     MongoClient.connect(environment.config.db(), function(err, db) {
       db.collection('notes').save({
-        text: text, 
+        text: req.body.text, 
         checked: false,
-        pinned: false,
+        pinned: req.body.pinned,
         owner: userid,
         users: [userid],
+        tags: req.body.tags,
         timestamp: moment().valueOf() 
       }) ;
       db.close() ;
@@ -220,8 +230,8 @@ app.post('/api/note/create', authorize, function(req, res){
   }
 }) ;
 
-app.post('/api/message/delete/:id', authorize, function(req, res){
-  console.log("api: delete message: %d", req.params.id) ;
+app.post('/api/note/delete/:id', authorize, function(req, res){
+  console.log("api: delete message: " + req.params.id) ;
 
   var mongoUrl = environment.config.db() ;  
   var userid = req.session.userid ;
@@ -236,7 +246,7 @@ app.post('/api/message/delete/:id', authorize, function(req, res){
 }) ;
 
 app.put('/api/note/update/:id', authorize, function(req, res){
-  console.log("api: update message: %d", req.params.id) ;
+  console.log("api: update message: " + req.params.id) ;
 
   var mongoUrl = environment.config.db() ;  
   var userid = req.session.userid ;
@@ -244,7 +254,7 @@ app.put('/api/note/update/:id', authorize, function(req, res){
   MongoClient.connect(environment.config.db(), function(err, db) {
     db.collection('notes').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, item){
       item.text = req.body.text ;
-      //item.timestamp = moment().valueOf() ;
+      item.tags = req.body.tags ;
       db.collection('notes').save(item) ;
       db.close() ;
       res.sendStatus(200); 

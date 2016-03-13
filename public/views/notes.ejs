@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html ng-app="Index">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta http-equiv="cache-control" content="no-cache" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <link rel="icon" type="image/png" sizes="16x16" href="/res/todo_16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/res/todo_32.png">
+    <link rel="icon" type="image/png" sizes="64x64" href="/res/todo_64.png">    
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/checkboxes-nojs.css" rel="stylesheet" type="text/css">
+    <link href="../css/notes.css" rel="stylesheet" type="text/css">
+
+    <script src="../libs/jquery.min.js"></script>
+    <script src="../libs/bootstrap.min.js"></script>
+    <script src="../libs/angular.min.js"></script>
+    <script src="../libs/angular-animate.js"></script>
+    <script src="../libs/angular-linkify.min.js "></script>    
+    <script src="../libs/ui-bootstrap-tpls-1.2.1.min.js"></script>
+    <script src="../scripts/notes.js"></script>
+    <script src="../scripts/todo.js"></script>
+  </head>
+  <body ng-controller="Notes">
+    <div class="application-header">
+	    <div class="container">
+        <span class="menu-items">
+          <!-- <img src="/res/todo_16.png"> -->
+          <button ng-click="createNewNote()" class="glyph-menu-button glyphicon glyphicon-plus-sign"></button>
+          <button ng-click="refresh()" class="glyph-menu-button glyphicon glyphicon-repeat"></button>
+		      <button ng-click="deleteAllItems()" class="glyph-menu-button glyphicon glyphicon-trash"></button>
+          <button ng-show="filterTags.length > 0" ng-click="cancelFilter()" class="glyph-menu-button glyphicon glyphicon-filter"></button>
+        </span>	      
+	      <span class="pull-right">
+	        <span class="user" data-toggle="tooltip" data-placement="bottom" title="Witaj <%= username %>!"><%= username %></span>
+		      <% if (locals.desktopClient == false) { %>
+		        <a class="glyphicon glyphicon-log-out utilities-user" data-toggle="tooltip" data-placement="bottom" title="Kliknij aby się wylogować" href="/logoff"></a>
+		      <% } %>
+		    </span>
+	    </div>
+		</div>
+
+    <div class="container application-list">
+      <ul class="list-group">
+        <li ng-repeat="note in notes" ng-class="note.pinned ? 'message-pinned' : (note.checked ? 'message-checked' : '')" id="{{note._id}}" class="list-group-item">
+          <div class="message-header">
+            <span class="message-header-left">
+              <span class="message-time">{{note.timeVerbose}}</span>
+            </span>
+            <span class="message-header-right">
+              <button ng-click="pinItem(note)" ng-class="note.pinned ? 'icon-rotate' : ''" class="note-header-icon glyphicon glyphicon-pushpin"></button>
+              <button ng-show="!note.editing" ng-click="deleteItem(note)" class="note-header-icon glyphicon glyphicon-trash"></button>
+              <button ng-show="!note.editing" ng-click="toggleItem(note)" ng-class="note.checked ? 'glyphicon-check' : 'glyphicon-unchecked'" class="note-header-icon glyphicon"></button>
+              <button ng-show="note.editing" ng-click="acceptChanges(note)"  ng-disabled="!note.modified" ng-class="note.modified ? 'note-edit-accept' : 'note-edit-accept-disabled'" class="note-header-icon glyphicon glyphicon-ok-sign"></button> 
+              <button ng-show="note.editing" ng-click="cancelChanges(null, note)" class="note-header-icon  note-edit-cancel glyphicon glyphicon-remove-sign"></button> 
+            </span>  
+          </div>
+          <div ng-show="!note.editing" ng-click="enterEditingMode(note)" ng-class="note.pinned ? 'note-text-pinned' : 'note-text'" linkify>{{note.text}}</div>
+          <form ng-show="note.editing" ng-keyup="cancelModifyMode($event, note)" class="form-inline">
+            <textarea ng-model="note.text" ng-change="noteTextChanged(note)" ng-trim="false" class="form-control input-default note-edit-input" focus="note.editing" placeholder="Zanotujmy cokolwiek..."></textarea>
+          </form>
+          <div class="note-tags">
+            <span ng-repeat="tag in note.tags track by $index" ng-click="!note.editing && setTag(tag)" ng-class="note.editing ? ' note-tag-inactive' : 'note-tag-active'" class="label label-primary">{{tag}}<span ng-show="note.editing" ng-click="deleteTag(note, tag)" class="note-tag-remove"><strong>x</strong></span></span>
+            <span ng-repeat="tag in note.newTags track by $index" ng-click="!note.editing && setTag(tag)" ng-class="note.editing ? ' note-tag-inactive' : 'note-tag-active'" class="label label-primary">{{tag}}</span>
+          </div>
+        </li>
+      </ul> 
+    </div>
+  </body>
+</html>

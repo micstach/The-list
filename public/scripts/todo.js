@@ -15,164 +15,254 @@ angular.module('Index').config(['$httpProvider', function($httpProvider) {
 
 angular.module('Index').controller('Notes', function($scope, $timeout, $http, $location, $uibModal) {
 
+  $scope.userid = "";
   $scope.lastTag = undefined;
-  $scope.filterText = undefined;
+  $scope.filterTags = [];
+  $scope.autoRefreshTimer = null;
 
-  $scope.haveTags = function(noteText) {
-    return (noteText.indexOf(': ') > 0 && 
-            noteText
-              .substr(0, noteText.indexOf(': '))
-              .split(',')
-              .filter(function(tag) { 
-                return tag.trim().indexOf(' ') != -1;
-              }).length == 0)
+  $scope.mergeTags = function(tagsA, tagsB) {
+    tagsMerged = tagsA.concat(tagsB) ;
+    return tagsMerged.filter(function(tag, pos) { return tagsMerged.indexOf(tag) == pos; }) ;
   }
 
-  $scope.extractTags = function(text) {
-    var tags = [] ;
+  $scope.removeTags = function(text, tags) {
 
-    if ($scope.haveTags(text)) {
-      text
-        .substr(0, text.indexOf(': '))
-        .split(',')
-        .forEach(function(tag) { 
-          tags.push(tag.trim().toLowerCase());
-        });
-    }
+    tags.forEach(function(tag){
+      text = text.replace('#' + tag, '') ;
+    }) ;
 
-    return tags ;
+    text = text.trim();
+
+    return text ;
   }
 
-  $scope.extractNoteText = function(noteText) {
-    if ($scope.haveTags(noteText)){
-      var position = noteText.indexOf(': ') + 1 ;
-      return noteText.substr(position, noteText.length - position).trim() ;
-    }
-    else
-      return noteText ;
-  }
+  $scope.extractHashTags = function(text) {
+    var tags = text.match(/([#][a-z\d-]+)/g) ;
 
-  $scope.filterItems = function() {
-    // detect tags
-    if ($scope.haveTags($scope.noteText)) {
-      $scope.filterText = $scope.noteText.substr(0, $scope.noteText.indexOf(': '));
-      $scope.getItems();
-    }
+    if (tags == null)
+      return [];
     else {
-      if ($scope.filterText !== undefined) {
-        $scope.filterText = undefined ;
-        $scope.getItems() ;
-      }
+      for (var i=0; i<tags.length; i++)
+        tags[i] = tags[i].replace('#', '');
+
+      return tags;
     }
+  }
+
+  $scope.noteTextChanged = function(note) {
+    note.modified = true ;
+    note.newTags = $scope.extractHashTags(note.text) ;
+    
+    if (note.tags !== undefined)
+      note.newTags = note.newTags.filter(function(tag) { return note.tags.indexOf(tag) === -1; });
+
+    resizeTextArea('.note-edit-input') ;
+  }
+  
+  $scope.filterItems = function() {
+    $scope.filterTags = $scope.extractHashTags($scope.noteText)  ;
+    $scope.getItems();
   }
 
   $scope.setTag = function(tag) {
-    $scope.noteText = tag + ": " ;
+    $scope.noteText = '#' + tag + ' ';  
     $scope.filterItems() ;
   }
 
+  $scope.cancelFilter = function() {
+    $scope.noteText = '';  
+    $scope.filterItems() ;    
+  }
+
+  $scope.filterNotes = function(notes, fromServer) {
+    var taggedNotes = [] ;
+
+    if ($scope.filterTags.length > 0) {       
+      notes.forEach(function(note) {
+        
+        var tagsFound = $scope.filterTags.filter(function(tag) {
+          if (note.tags === undefined)
+            return false ;
+          else if (note.tags != null) {
+            return (note.tags.indexOf(tag) != -1) ;
+          }
+          else
+            return false ;
+        }).length ;    
+
+        if (tagsFound > 0)
+          taggedNotes.push(note) ;
+
+      }) ;
+    }
+    else
+    {
+      notes.forEach(function(note) { taggedNotes.push(note) ;}) ;
+    }
+
+    var filteredNotes = [] ;  
+    taggedNotes
+      .filter(function(note) { return (note.isNew !== undefined && note.isNew === true);})
+      .forEach(function(note) { filteredNotes.push(note); });
+
+    taggedNotes
+      .filter(function(note) { return note.pinned === true;})
+      .sort(function(a, b) { return b.timestamp - a.timestamp;})
+      .forEach(function(note) { filteredNotes.push(note); });
+
+    taggedNotes
+      .filter(function(note) { return note.checked === false && note.pinned === false;})
+      .sort(function(a, b) { return b.timestamp - a.timestamp;})
+      .forEach(function(note) { filteredNotes.push(note);});
+
+    taggedNotes
+      .filter(function(note){return note.checked === true && note.pinned === false;})
+      .sort(function(a, b) { return b.timestamp - a.timestamp;})
+      .forEach(function(note) { filteredNotes.push(note);}) ;
+
+    var refreshDelay = ((1000 * 60) * 60) ; // one hour
+    var lowestRefreshDelay = (1000 * 15) ; 
+
+    filteredNotes.forEach(function(note) {
+      var delta = Date.now() - (new Date(note.timestamp)) ;
+      if (delta < refreshDelay) {
+        refreshDelay = delta ;
+
+        if (refreshDelay < lowestRefreshDelay)
+          refreshDelay = lowestRefreshDelay ;    
+      }
+
+      // extend model
+      if (fromServer) {
+        note.editing = false ;
+        note.modified = false ;
+        note.removedTags = [] ;
+      }
+      note.timeVerbose = getTimeString(note.timestamp);
+    });
+
+    return {refreshDelay: refreshDelay, notes: filteredNotes} ;
+  }
+
+  $scope.cancelTimer = function(timer) {
+    if (timer !== null) {
+      $timeout.cancel(timer) ;
+      timer = null ;
+    } 
+  }
+
   $scope.getItems = function() {
+
     $http.get('/api/notes')
       .success(function(data) { 
+        var filteredNotes = $scope.filterNotes(data.notes, true) ;
+        $scope.userid = data.userid; 
+        $scope.notes = filteredNotes.notes ;
 
-        var filteredNotes = [] ;
-
-        if ($scope.filterText !== undefined) {       
-          var tags = [] ;
-          $scope.filterText.split(',').forEach(function(tag) { tags.push(tag.trim().toLowerCase());});
-
-          data.notes.forEach(function(note) {
-            
-            var tagsFound = tags.filter(function(tag){
-              var tagPosition = note.text.toLowerCase().indexOf(tag) ;
-              return (0 <= tagPosition && tagPosition < note.text.indexOf(':')) ;
-            }).length ;    
-
-            if (tagsFound > 0)
-              filteredNotes.push(note) ;
-
-          }) ;
-        }
-        else
-        {
-          data.notes.forEach(function(note) { filteredNotes.push(note) ;}) ;
-        }
-
-        var notes = [] ;  
-        filteredNotes
-          .filter(function(note) { return note.pinned === true;})
-          .sort(function(a, b) { return b.timestamp - a.timestamp;})
-          .forEach(function(note) { notes.push(note); });
-
-        filteredNotes
-          .filter(function(note) { return note.checked === false && note.pinned === false;})
-          .sort(function(a, b) { return b.timestamp - a.timestamp;})
-          .forEach(function(note) { notes.push(note);});
-
-        filteredNotes
-          .filter(function(note){return note.checked === true && note.pinned === false;})
-          .sort(function(a, b) { return b.timestamp - a.timestamp;})
-          .forEach(function(note) { notes.push(note);}) ;
-
-        var refreshDelay = ((1000 * 60) * 60) ; // one hour
-        var lowestRefreshDelay = (1000 * 15) ; 
-
-        notes.forEach(function(note) {
-          var delta = Date.now() - (new Date(note.timestamp)) ;
-          if (delta < refreshDelay) {
-            refreshDelay = delta ;
-
-            if (refreshDelay < lowestRefreshDelay)
-              refreshDelay = lowestRefreshDelay ;    
-          }
-
-          // transform unix timestamp into modified time
-          note.timestamp = getTimeString(note.timestamp);
-          note.originalText = note.text;
-          note.tags = $scope.extractTags(note.text)  
-          note.text = $scope.extractNoteText(note.text) ;
-          note.editMode = false ;
-        });
-
-        data.notes = notes;
-
-        $scope.data = data ;
-
-        $timeout($scope.getItems, refreshDelay);
+        $scope.cancelTimer($scope.autoRefreshTimer) ;       
+        $scope.autoRefreshTimer = $timeout($scope.getItems, filteredNotes.refreshDelay) ;
       })
       .error(function(data, status) {
         window.location = '/login' ;
       }) ;
   };
 
-  $scope.addNewItem = function(noteText) {
+  $scope.createNewNote = function() {
+    $scope.cancelTimer($scope.autoRefreshTimer) ;  
 
-    $http
-      .post('/api/note/create', {text: noteText})
-      .success(function(){
-        $scope.getItems() ;
-      });
+    var note = {
+        _id: "0",
+        text: '', 
+        checked: false,
+        pinned: false,
+        tags: [],
+        timestamp: Date.now(),
+        editing: true,
+        isNew: true,
+        owner: $scope.userid,
+        users: []
+      } ;
 
-    if ($scope.filterText !== undefined) {
-      $scope.noteText = $scope.filterText + ': ' ;
+      note.timeVerbose = getTimeString(note.timestamp) ;
+
+      // insert note stub
+      $scope.notes.splice(0, 0, note);
+  }
+
+  $scope.enterEditingMode = function(note) {
+    note.editing = true ;
+
+    $scope.notes.forEach(function(item){
+      if (note._id != item._id)
+          item.editing = false ;
+    });
+
+    $scope.cancelTimer($scope.autoRefreshTimer) ;  
+  }
+
+  $scope.acceptChanges = function(note) {
+
+    if (note.isNew !== undefined && note.isNew == true) {
+      var tags = $scope.extractHashTags(note.text) ;
+      var text = $scope.removeTags(note.text, tags);
+
+      $http
+        .post('/api/note/create', {text: text, tags: tags, pinned: note.pinned})
+        .success(function(){
+          $scope.getItems() ;
+        });
+
     }
-    else
-      $scope.noteText = '';
+    else {
+      if (note.newTags !== undefined)
+      {
+        if (note.tags !== undefined)
+          note.tags = $scope.mergeTags(note.tags, note.newTags) ;
+        else
+          note.tags = note.newTags ;
+
+        note.text = $scope.removeTags(note.text, note.tags) ;
+      }
+
+      note.removedTags = [] ;
+      note.newTags = [] ;
+
+      $http
+        .put('/api/note/update/' + note._id, {text: note.text, tags: note.tags})
+        .success(function() {
+          note.editing = false ;
+          note.modified = false ;
+        });
+    }
   };
 
-  $scope.modifyItem = function(note){
+  $scope.cancelChanges = function($event, note){
+    
+    if (note.isNew !== undefined && note.isNew == true) {
+      $scope.notes.splice($scope.notes.indexOf(note), 1) ;
+    }
+    else {
+      // restore removedTags
+      if (note.removedTags !== undefined && note.removedTags.length > 0) {
+        note.tags = note.tags.concat(note.removedTags) ;
+        note.removedTags = [];
+      }
 
-    $http
-      .put('/api/note/update/' + note._id, {text: note.originalText})
-      .success(function(){
-        note.editMode = false ;
-        $scope.getItems() ;
-      });
-  };
+      if ($event == null) {
+        note.editing = false ;
+        note.modified = false ;
+      }
+      else if ($event.keyCode == 27) {
+        note.editing = false ;
+        note.modified = false ;
+      }
+    }
+  }
 
-  $scope.cancelEdit = function($event, note){
-    if ($event.keyCode == 27)
-      note.editMode = false ;
+  $scope.deleteTag = function(note, tag) {
+    note.removedTags.push(tag);
+    note.tags.splice(note.tags.indexOf(tag), 1) ;
+    note.modified = true ;
   }
 
   $scope.deleteItem = function(note) {
@@ -191,8 +281,10 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
     modalInstance.result.then(function () {
       $http
-      .post('/api/message/delete/' + note._id)
-      .success(function() { $scope.getItems(); });
+      .post('/api/note/delete/' + note._id)
+      .success(function() { 
+        $scope.getItems(); 
+      });
     });
   }
 
@@ -220,18 +312,23 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       .success(function(){
             note.checked = state ;
             note.timestamp = getTimeString(Date.now());
-            //$scope.getItems();
       });
   }
 
   $scope.pinItem = function(note) {
-    var state = (note.pinned !== undefined) ? !note.pinned : true;
 
-    $http
-      .put('/api/message/pin/' + note._id + '/' + state)
-      .success(function(){
-            $scope.getItems();
-      });
+    if (note.isNew !== undefined && note.isNew == true) {
+      note.pinned = !note.pinned ;
+    }
+    else {
+      var state = (note.pinned !== undefined) ? !note.pinned : true;
+
+      $http
+        .put('/api/message/pin/' + note._id + '/' + state)
+        .success(function(){
+              $scope.getItems();
+        });
+    }
   };
 
   $scope.refresh = function()
@@ -241,6 +338,43 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
   $scope.getItems() ;
 }) ;
+
+angular.module('Index').directive('focus', function($timeout, $parse) {
+  return {
+    link: function(scope, element, attrs) {
+      var model = $parse(attrs.focus);
+      scope.$watch(model, function(value) {
+        if(value === true) { 
+          $timeout(function() {
+            element[0].focus(); 
+            resizeTextArea('.note-edit-input');
+          }, 1);
+        }
+      });
+      // element.bind('blur', function() {
+      //    scope.$apply(model.assign(scope, false));
+      // });
+    }
+  };
+});
+
+// angular.module('Index').directive('elastic', [
+//     '$timeout',
+//     function($timeout) {
+//         return {
+//             restrict: 'A',
+//             link: function($scope, element) {
+//               $scope.initialHeight = $scope.initialHeight || element[0].style.height; 
+//               var resize = function() { 
+//                 element[0].style.height = $scope.initialHeight; 
+//                 element[0].style.height = "" + element[0].scrollHeight + "px"; 
+//               }; 
+
+//               element.on("blur keyup change", resize); $timeout(resize, 0); 
+//             }
+//         };
+//     }
+// ]);
 
 angular.module('Index').controller('delete-note-controller', function ($scope, $uibModalInstance, note)
 {
