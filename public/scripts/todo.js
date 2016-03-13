@@ -65,6 +65,11 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     $scope.filterItems() ;
   }
 
+  $scope.cancelFilter = function() {
+    $scope.noteText = '';  
+    $scope.filterItems() ;    
+  }
+
   $scope.filterNotes = function(notes, fromServer) {
     var taggedNotes = [] ;
 
