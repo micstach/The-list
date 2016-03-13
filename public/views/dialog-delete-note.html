@@ -5,10 +5,14 @@
   <div class="message-header">
     <span class="message-header-left">
       <span class="message-time">{{note.timeVerbose}}</span>
-      <button ng-class="(note.status == 'checked') ? 'glyphicon-check' : 'glyphicon-unchecked'" class="note-header-icon glyphicon"></button>
+      <button ng-class="(note.checked) ? 'glyphicon-check' : 'glyphicon-unchecked'" class="note-header-icon glyphicon"></button>
     </span> 
   </div>
   <div class="note-text" linkify>{{note.text}}</div>
+  <div class="note-tags">
+    <span ng-repeat="tag in note.tags track by $index" class="note-tag-inactive label label-primary">{{tag}}</span>
+  </div>
+
 </div>
 <div class="modal-footer">
   <button class="btn btn-default" type="button" ng-click="ok()">Tak, chcę</button>
