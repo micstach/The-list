@@ -25,7 +25,7 @@ app.use(bodyParser.urlencoded({
 app.use(cookieParser('cookie-guid'));  
 
 app.use(session({
-  secret: 'super-secret',
+  secret: '8637DA5C-F544-4132-AE53-309005ECC4D0',
   resave: false,
   saveUninitialized: true
 }));
@@ -204,7 +204,7 @@ app.get('/api/notes', authorizeAPI, function(req, res) {
   }) ;
 }) ;
 
-app.post('/api/note/create', authorize, function(req, res){
+app.post('/api/note/create', authorizeAPI, function(req, res){
   console.log("api: note create:" + JSON.stringify(req.body));
    
   var userid = req.session.userid ;
@@ -230,7 +230,7 @@ app.post('/api/note/create', authorize, function(req, res){
   }
 }) ;
 
-app.post('/api/note/delete/:id', authorize, function(req, res){
+app.post('/api/note/delete/:id', authorizeAPI, function(req, res){
   console.log("api: delete message: " + req.params.id) ;
 
   var mongoUrl = environment.config.db() ;  
@@ -245,7 +245,7 @@ app.post('/api/note/delete/:id', authorize, function(req, res){
   }) ;
 }) ;
 
-app.put('/api/note/update/:id', authorize, function(req, res){
+app.put('/api/note/update/:id', authorizeAPI, function(req, res){
   console.log("api: update message: " + req.params.id) ;
 
   var mongoUrl = environment.config.db() ;  
@@ -263,7 +263,7 @@ app.put('/api/note/update/:id', authorize, function(req, res){
 
 }) ;
 
-app.post('/api/message/removeall', authorize, function(req, res){
+app.post('/api/message/removeall', authorizeAPI, function(req, res){
   console.log("api: remove all message(s)") ;
 
   var mongoUrl = environment.config.db() ;  
@@ -278,7 +278,7 @@ app.post('/api/message/removeall', authorize, function(req, res){
   }) ;
 }) ;
 
-app.put('/api/message/check/:id/:state', authorize, function(req, res){
+app.put('/api/message/check/:id/:state', authorizeAPI, function(req, res){
   console.log("api: message check: " + JSON.stringify(req.params));
   var userid = req.session.userid ;
 
@@ -293,7 +293,7 @@ app.put('/api/message/check/:id/:state', authorize, function(req, res){
   }) ;
 });
 
-app.put('/api/message/pin/:id/:state', authorize, function(req, res){
+app.put('/api/message/pin/:id/:state', authorizeAPI, function(req, res){
   console.log("api: message pin: " + JSON.stringify(req.params));
   var userid = req.session.userid ;
 
@@ -306,6 +306,38 @@ app.put('/api/message/pin/:id/:state', authorize, function(req, res){
     }) ;
   }) ;
 });
+
+app.get('/api/user/config', authorizeAPI, function(req, res) {
+  console.log("api: get user config");
+
+  MongoClient.connect(environment.config.db(), function(err, db) {
+     db.collection('users').findOne({_id: mongodb.ObjectID(req.session.userid)}, function(err, user) {
+      console.log("User config: " + JSON.stringify(user.config)) ;
+      res.writeHead(200, {'Content-Type': 'application/json'});
+      res.end(JSON.stringify({config:user.config}));
+      db.close() ;
+    }) ;
+  }) ;
+}) ;
+
+app.put('/api/user/config', authorizeAPI, function(req, res) {
+  console.log("api: put user config: " + JSON.stringify(req.body));
+
+  MongoClient.connect(environment.config.db(), function(err, db) {
+    db.collection('users').findOne({_id: mongodb.ObjectID(req.session.userid)}, function(err, user) {
+      
+      user.config = {
+        tags: req.body.tags
+      } ;
+
+      console.log("Saving user: " + JSON.stringify(user));
+
+      db.collection('users').save(user) ;
+      db.close() ;
+      res.sendStatus(200); 
+    }) ;
+  }) ;
+}) ;
 
 app.get('*', function(req, res){
   res.redirect('/');

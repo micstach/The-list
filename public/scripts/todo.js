@@ -60,19 +60,24 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     resizeTextArea('.note-edit-input') ;
   }
   
-  $scope.filterItems = function() {
-    $scope.filterTags = $scope.extractHashTags($scope.noteText)  ;
-    $scope.getItems();
-  }
+  $scope.setFilter = function(tag) {
+    $scope.filterTags = [tag];  
+    $scope.getItems() ;
 
-  $scope.setTag = function(tag) {
-    $scope.noteText = '#' + tag + ' ';  
-    $scope.filterItems() ;
+    $http
+      .put('/api/user/config', {tags: $scope.filterTags})
+      .success(function() {
+      });
   }
 
   $scope.cancelFilter = function() {
-    $scope.noteText = '';  
-    $scope.filterItems() ;    
+    $scope.filterTags = [];  
+    $scope.getItems() ;    
+
+    $http
+      .put('/api/user/config', {tags: $scope.filterTags})
+      .success(function() {
+      });
   }
 
   $scope.filterNotes = function(notes, fromServer) {
@@ -150,6 +155,22 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       $timeout.cancel(timer) ;
       timer = null ;
     } 
+  }
+
+  $scope.getFilterTags = function() {
+    $http.get('/api/user/config')
+      .success(function(data) { 
+        
+        if (data.config !== undefined){
+          if (data.config.tags !== undefined){
+            if (data.config.tags.length == 1)
+              $scope.filterTags = data.config.tags;
+          }
+        } 
+      })
+      .error(function(data, status) {
+        window.location = '/login' ;
+      }) ;
   }
 
   $scope.getItems = function() {
@@ -243,7 +264,6 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       $scope.notes.splice($scope.notes.indexOf(note), 1) ;
     }
     else {
-      // restore removedTags
       if (note.removedTags !== undefined && note.removedTags.length > 0) {
         note.tags = note.tags.concat(note.removedTags) ;
         note.removedTags = [];
@@ -337,6 +357,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     $scope.getItems() ;
   }
 
+  $scope.getFilterTags() ;
   $scope.getItems() ;
 }) ;
 
