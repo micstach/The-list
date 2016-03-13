@@ -20,6 +20,11 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   $scope.filterTags = [];
   $scope.autoRefreshTimer = null;
 
+  $scope.mergeTags = function(tagsA, tagsB) {
+    tagsMerged = tagsA.concat(tagsB) ;
+    return tagsMerged.filter(function(tag, pos) { return tagsMerged.indexOf(tag) == pos; }) ;
+  }
+
   $scope.removeTags = function(text, tags) {
 
     tags.forEach(function(tag){
@@ -47,7 +52,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   $scope.noteTextChanged = function(note) {
     note.modified = true ;
     note.newTags = $scope.extractHashTags(note.text) ;
-
+    note.newTags = note.newTags.filter(function(tag) { return note.tags.indexOf(tag) === -1; })
     resizeTextArea('.note-edit-input') ;
   }
   
@@ -208,9 +213,10 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     else {
       if (note.newTags !== undefined)
       {
-        note.tags = note.tags.concat(note.newTags) ;
+        note.tags = $scope.mergeTags(note.tags, note.newTags) ;
         note.text = $scope.removeTags(note.text, note.newTags) ;
       }
+      note.text = $scope.removeTags(note.text, note.tags) ;
 
       note.removedTags = [] ;
       note.newTags = [] ;
