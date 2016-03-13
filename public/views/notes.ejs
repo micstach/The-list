@@ -64,7 +64,8 @@
             <textarea ng-model="note.text" ng-change="noteTextChanged(note)" ng-trim="false" class="form-control input-default note-edit-input" focus="note.editing" placeholder="Zanotujmy cokolwiek..."></textarea>
           </form>
           <div class="note-tags">
-            <div ng-repeat="tag in (note.newTags || note.tags) track by $index" ng-click="!note.editing && setTag(tag)" ng-class="note.editing ? ' note-tag-inactive' : 'note-tag-active'" class="label label-primary">{{tag}}<span ng-show="note.editing" ng-click="deleteTag(note, tag)" class="note-tag-remove"><strong>x</strong></span></div>
+            <span ng-repeat="tag in note.tags track by $index" ng-click="!note.editing && setTag(tag)" ng-class="note.editing ? ' note-tag-inactive' : 'note-tag-active'" class="label label-primary">{{tag}}<span ng-show="note.editing" ng-click="deleteTag(note, tag)" class="note-tag-remove"><strong>x</strong></span></span>
+            <span ng-repeat="tag in note.newTags track by $index" ng-click="!note.editing && setTag(tag)" ng-class="note.editing ? ' note-tag-inactive' : 'note-tag-active'" class="label label-primary">{{tag}}</span>
           </div>
         </li>
       </ul> 
