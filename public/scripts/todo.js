@@ -23,9 +23,10 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   $scope.removeTags = function(text, tags) {
 
     tags.forEach(function(tag){
-      text = text.replace('#' + tag + ' ', '') ;
-      text = text.replace(' #' + tag, '') ;
+      text = text.replace('#' + tag, '') ;
     }) ;
+
+    text = text.trim();
 
     return text ;
   }
@@ -45,13 +46,8 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
   $scope.noteTextChanged = function(note) {
     note.modified = true ;
-    if (note.tags !== undefined) {
-      note.newTags = note.tags.concat($scope.extractHashTags(note.text)) ;
-      note.newTags = note.newTags.filter(function(item, pos) { return note.newTags.indexOf(item) == pos}) ;
-    }
-    else {
-      note.newTags = $scope.extractHashTags(note.text) ;
-    }
+    note.newTags = $scope.extractHashTags(note.text) ;
+
     resizeTextArea('.note-edit-input') ;
   }
   
@@ -210,17 +206,17 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
     }
     else {
-      var tags = note.tags ;
       if (note.newTags !== undefined)
       {
-        tags = note.newTags ;
+        note.tags = note.tags.concat(note.newTags) ;
         note.text = $scope.removeTags(note.text, note.newTags) ;
       }
 
       note.removedTags = [] ;
+      note.newTags = [] ;
 
       $http
-        .put('/api/note/update/' + note._id, {text: note.text, tags: tags})
+        .put('/api/note/update/' + note._id, {text: note.text, tags: note.tags})
         .success(function() {
           note.editing = false ;
           note.modified = false ;
