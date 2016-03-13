@@ -32,9 +32,6 @@
           <button ng-click="createNewNote()" class="glyph-menu-button glyphicon glyphicon-plus-sign"></button>
           <button ng-click="refresh()" class="glyph-menu-button glyphicon glyphicon-repeat"></button>
 		      <button ng-click="deleteAllItems()" class="glyph-menu-button glyphicon glyphicon-trash"></button>
-		      <% if (locals.downloadLink) { %>
-		        <button onclick="location.href='<%= downloadLink %>'" class="glyph-menu-button glyphicon glyphicon-download-alt utilities" data-toggle="tooltip" data-placement="bottom" title="<%= downloadLink %>"></button>
-		      <% } %>
         </span>	      
 	      <span class="pull-right">
 	        <span class="user" data-toggle="tooltip" data-placement="bottom" title="Witaj <%= username %>!"><%= username %></span>

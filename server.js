@@ -52,9 +52,19 @@ var authorize = function(req, res, next) {
   }
 };
 
-app.get('/', authorize, function(req, res) {
+app.get('/', function(req, res) {
   if (req.session.userid === undefined) {
-    res.redirect('/login') ;
+    
+    var downloadLink = null ;
+   
+    if (req.headers['user-agent'].indexOf('Windows') != -1) {
+      downloadLink = '/clients/windows/TheListClientPackage.zip';
+    }
+    else if (req.headers['user-agent'].indexOf('Android') != -1) {
+      downloadLink = '/clients/android/TheListClient.apk';
+    }
+
+    res.render('landing', {downloadLink:downloadLink}) ;
   }
   else {
     res.redirect('/home') ;
@@ -70,22 +80,14 @@ app.get('/home', authorize, function(req, res) {
     console.log("ui: user-agent: " + req.headers['user-agent']);
 
     var desktopClient = (req.headers['user-agent'] === 'desktop client') ;
-    var downloadLink = null ;
     console.log("desktopClient: " + desktopClient);
-
-    if (req.headers['user-agent'].indexOf('Windows') != -1) {
-      downloadLink = '/clients/windows/TheListClientPackage.zip';
-    }
-    else if (req.headers['user-agent'].indexOf('Android') != -1) {
-      downloadLink = '/clients/android/TheListClient.apk';
-    }
 
     var mongoUrl = environment.config.db();  
     var userid = req.session.userid ;
 
     MongoClient.connect(mongoUrl, function(err, db) {
       db.collection('users').findOne({_id: mongodb.ObjectID(userid)}, function(err, user){
-        res.render('notes', {desktopClient: desktopClient, downloadLink:downloadLink, username: user.name, userid:userid}) ;
+        res.render('notes', {desktopClient: desktopClient, username: user.name, userid:userid}) ;
         db.close();
       }) ;
     });
