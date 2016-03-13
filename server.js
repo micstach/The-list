@@ -144,7 +144,7 @@ app.post('/register', function(req, res) {
 
 app.get('/logoff', function(req, res){
   req.session.destroy();
-  res.redirect('/login');
+  res.redirect('/');
 }) ;
 
 app.post('/login', function(req, res) {

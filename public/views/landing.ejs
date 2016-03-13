@@ -7,8 +7,9 @@
     
     <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" type="text/css" >
     <link href="../css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="../css/main.css" rel="stylesheet" type="text/css">
     <link href="../css/landing.css" rel="stylesheet" type="text/css">
-    
+
     <link rel="icon" type="image/png" sizes="16x16" href="/res/todo_16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/res/todo_32.png">
     <link rel="icon" type="image/png" sizes="64x64" href="/res/todo_64.png">    
@@ -17,23 +18,26 @@
     <script src="../scripts/landing.js"></script>
   </head>
   <body>
-    <!-- <div class="center logo"></div> -->
+    <div class="application-header"></div>
     <div class="container">
-      <img src="/res/todo_32.png">
-      <% if (locals.downloadLink) { %>
-        <button onclick="location.href='<%= downloadLink %>'" class="menu-button-right btn btn-default">Pobierz aplikacje</button>
-      <% } %>
+      <div class="welcome-container">
+        <p class="welcome-message">Pamietaj o wszystkim <span class="glyphicon glyphicon-check"></span></p>
+        <div class="centered">
+          <button onclick="location.href='/login'" class="menu-button btn btn-primary">Zaloguj się</button>
+        </div>
+        <div class="centered">lub</div>
+        <div class="centered">
+          <a href="/register">Zarejestruj się</a>
+        </div>
+        <p class="welcome-description"> 
+          Masz dostęp do swoich zadań z dowolnego miejsca i na dowolnym urządzeniu
+        </p>
+        <div class="welcome-actions">        
+          <% if (locals.downloadLink) { %>
+            <button onclick="location.href='<%= downloadLink %>'" class="btn btn-warning">Pobierz aplikacje</button>
+          <% } %>
+        </div>
+      </div>
     </div>
-    <div class="container">
-      <div>
-        <p class="welcome-message">Odtąd pamietaj o wszystkim !</p>
-      </div>
-      <div>
-        <button onclick="location.href='/login'" class="btn btn-primary">Zaloguj się</button>
-      </div>
-      <div>
-        <button onclick="location.href='/register'" class="btn btn-default">Zarejestruj się</button>
-      </div>
-    </div>
-  </body>
+ </body>
 </html>
