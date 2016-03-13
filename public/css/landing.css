@@ -4,7 +4,6 @@ html, body {
 	margin-left:0px !important;
 	margin-top:0px !important;
 	padding-top:0px !important;
-	height:100%;
 }
 
 .menu-button-right
@@ -13,20 +12,12 @@ html, body {
 	margin-left: 10px;
 }
 
-.centered, .header
+.centered
 {
 	text-align: center;
-	padding-top: 5px;
+	margin-top: 10px;
 }
 
-.header
-{
-	background-image: url("/res/todo_64_no_corners.png");
-	background-position: center;
-	height:64px;
-	background-repeat: no-repeat;
-	background-color: rgb(0, 148, 255) 
-}
 .menu-button
 {
 	margin-top: 10px;
@@ -61,17 +52,17 @@ html, body {
 	margin-top: 25px;
 	text-align: center;
 	color: rgb(208, 208, 255);
-	font-size: 25px;
+	font-size: 30px;
 	cursor: default;
 }
 
 @media(max-width:640px){
 	.welcome-message{
-		font-size: 30px;
+		font-size: 25px;
 	}
 	
 	.welcome-description
 	{
-		font-size: 12px;
+		font-size: 16px;
 	}	
 }
