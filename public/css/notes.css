@@ -38,6 +38,13 @@ body {
  	cursor: default;	 	
 }
 
+.note-tag-filter
+{
+ 	margin-right: 0.35em;
+ 	cursor: default;
+ 	font-size: 100%;
+}
+
 .note-tag-active 
 {
  	margin-right: 0.35em;

@@ -19,6 +19,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   $scope.lastTag = undefined;
   $scope.filterTags = [];
   $scope.autoRefreshTimer = null;
+  $scope.adding = false ;
 
   $scope.mergeTags = function(tagsA, tagsB) {
     tagsMerged = tagsA.concat(tagsB) ;
@@ -171,11 +172,10 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     $scope.cancelTimer($scope.autoRefreshTimer) ;  
 
     var note = {
-        _id: "0",
         text: '', 
         checked: false,
         pinned: false,
-        tags: [],
+        tags: $scope.filterTags,
         timestamp: Date.now(),
         editing: true,
         isNew: true,
@@ -187,6 +187,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
       // insert note stub
       $scope.notes.splice(0, 0, note);
+      $scope.adding = true ;
   }
 
   $scope.enterEditingMode = function(note) {
@@ -202,31 +203,27 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
   $scope.acceptChanges = function(note) {
 
-    if (note.isNew !== undefined && note.isNew == true) {
-      var tags = $scope.extractHashTags(note.text) ;
-      var text = $scope.removeTags(note.text, tags);
+    if (note.newTags !== undefined)
+    {
+      if (note.tags !== undefined)
+        note.tags = $scope.mergeTags(note.tags, note.newTags) ;
+      else
+        note.tags = note.newTags ;
 
+      note.text = $scope.removeTags(note.text, note.tags) ;
+    }
+
+    note.removedTags = [] ;
+    note.newTags = [] ;
+
+    if (note._id === undefined) {
       $http
-        .post('/api/note/create', {text: text, tags: tags, pinned: note.pinned})
+        .post('/api/note/create', {text: note.text, tags: note.tags, pinned: note.pinned})
         .success(function(){
           $scope.getItems() ;
         });
-
     }
     else {
-      if (note.newTags !== undefined)
-      {
-        if (note.tags !== undefined)
-          note.tags = $scope.mergeTags(note.tags, note.newTags) ;
-        else
-          note.tags = note.newTags ;
-
-        note.text = $scope.removeTags(note.text, note.tags) ;
-      }
-
-      note.removedTags = [] ;
-      note.newTags = [] ;
-
       $http
         .put('/api/note/update/' + note._id, {text: note.text, tags: note.tags})
         .success(function() {
@@ -234,10 +231,14 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
           note.modified = false ;
         });
     }
+
+    $scope.adding = false ;
   };
 
   $scope.cancelChanges = function($event, note){
     
+    $scope.adding = false ;
+
     if (note.isNew !== undefined && note.isNew == true) {
       $scope.notes.splice($scope.notes.indexOf(note), 1) ;
     }

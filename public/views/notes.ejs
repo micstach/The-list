@@ -29,11 +29,10 @@
     <div class="application-header">
 	    <div class="container">
         <span class="menu-items">
-          <!-- <img src="/res/todo_16.png"> -->
-          <button ng-click="createNewNote()" class="glyph-menu-button glyphicon glyphicon-plus-sign"></button>
-          <button ng-click="refresh()" class="glyph-menu-button glyphicon glyphicon-repeat"></button>
-		      <button ng-click="deleteAllItems()" class="glyph-menu-button glyphicon glyphicon-trash"></button>
-          <button ng-show="filterTags.length > 0" ng-click="cancelFilter()" class="glyph-menu-button glyphicon glyphicon-filter"></button>
+          <span ng-repeat="tag in filterTags track by $index" class="note-tag-filter label label-default">{{tag}}<span ng-click="cancelFilter()" class="note-tag-remove"><strong>x</strong></span></span>
+          <button ng-show="!adding" ng-click="createNewNote()" class="glyph-menu-button glyphicon glyphicon-plus-sign"></button>
+          <button ng-show="!adding" ng-click="refresh()" class="glyph-menu-button glyphicon glyphicon-repeat"></button>
+		      <button ng-show="!adding" ng-click="deleteAllItems()" class="glyph-menu-button glyphicon glyphicon-trash"></button>
         </span>	      
 	      <span class="pull-right">
 	        <span class="user" data-toggle="tooltip" data-placement="bottom" title="Witaj <%= username %>!"><%= username %></span>
