@@ -52,7 +52,10 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   $scope.noteTextChanged = function(note) {
     note.modified = true ;
     note.newTags = $scope.extractHashTags(note.text) ;
-    note.newTags = note.newTags.filter(function(tag) { return note.tags.indexOf(tag) === -1; })
+    
+    if (note.tags !== undefined)
+      note.newTags = note.newTags.filter(function(tag) { return note.tags.indexOf(tag) === -1; });
+
     resizeTextArea('.note-edit-input') ;
   }
   
@@ -213,10 +216,13 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     else {
       if (note.newTags !== undefined)
       {
-        note.tags = $scope.mergeTags(note.tags, note.newTags) ;
-        note.text = $scope.removeTags(note.text, note.newTags) ;
+        if (note.tags !== undefined)
+          note.tags = $scope.mergeTags(note.tags, note.newTags) ;
+        else
+          note.tags = note.newTags ;
+
+        note.text = $scope.removeTags(note.text, note.tags) ;
       }
-      note.text = $scope.removeTags(note.text, note.tags) ;
 
       note.removedTags = [] ;
       note.newTags = [] ;
