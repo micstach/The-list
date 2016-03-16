@@ -29,15 +29,15 @@
     <div class="application-header">
 	    <div class="container">
         <span class="menu-items">
+          <button type="button" ng-click="!adding && createNewNote()" class="btn glyph-menu-button glyphicon glyphicon-plus-sign" ng-class="adding ? 'disabled':''"></button>
           <div ng-show="tags.length > 0" class="btn-group">
             <button type="button" class="btn dropdown-toggle glyph-menu-button glyphicon glyphicon-tag" data-toggle="dropdown" ng-class="adding ? 'disabled':''"></button>
-            <ul class="dropdown-menu">
+            <ul class="dropdown-menu scrollable-menu">
               <li ng-show="filterTags.length > 0" ng-click="setFilter(null)"><a href="#">Usuń filtrowanie</a></li>
               <li ng-show="filterTags.length > 0" role="separator" class="divider"></li>
               <li ng-repeat="tag in tags track by $index" ng-click="setFilter(tag)"><a href="#">{{tag}}</a></li>
             </ul>
           </div>
-          <button type="button" ng-click="!adding && createNewNote()" class="btn glyph-menu-button glyphicon glyphicon-plus-sign" ng-class="adding ? 'disabled':''"></button>
           <button type="button" ng-click="!adding && refresh()" class="btn glyph-menu-button glyphicon glyphicon-repeat" ng-class="adding ? 'disabled':''"></button>
 		      <button type="button" ng-click="!adding && deleteAllItems()" class="btn glyph-menu-button glyphicon glyphicon-trash" ng-class="adding ? 'disabled':''"></button>
           <span class="pull-right">

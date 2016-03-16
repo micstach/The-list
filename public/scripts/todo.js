@@ -68,7 +68,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     else {
       $scope.filterTags.push(tag);  
     }
-    
+
     $scope.getItems() ;
     
     $timeout(repositionList, 0) ;
@@ -97,7 +97,9 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     notes.forEach(function(note) {
       $scope.tags = $scope.mergeTags($scope.tags, note.tags) ;
     }) ;
+    $scope.tags.sort();
 
+    // remove from tags, tags from filterTags
     $scope.filterTags.forEach(function(tag){
       $scope.tags.splice($scope.tags.indexOf(tag), 1) ;
     }) ;
@@ -117,7 +119,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
             return false ;
         }).length ;    
 
-        if (tagsFound > 0)
+        if (tagsFound == $scope.filterTags.length)
           taggedNotes.push(note) ;
 
       }) ;

@@ -16,6 +16,12 @@ body {
 	padding-right: 10px;
 }
 
+.scrollable-menu {
+    height: auto;
+    max-height: 300px;
+    overflow-x: hidden;
+}
+
 .checkbox
 {
 	padding-top: 0px;
@@ -257,7 +263,7 @@ body {
 
 .application-header
 {
-    background: linear-gradient(rgba(255, 255, 255, 1) 65%, rgba(255, 255, 255, 0));
+    background: linear-gradient(rgba(255, 255, 255, 1) 90%, rgba(255, 255, 255, 0));
     position:fixed;
     top: 0em;
     width: calc(100% - 20px);
