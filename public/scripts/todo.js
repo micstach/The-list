@@ -102,7 +102,18 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     
     $scope.tags = [] ;
     notes.forEach(function(note) {
-      $scope.tags = $scope.mergeTags($scope.tags, note.tags) ;
+      if ($scope.filterTags.length > 0) {
+        $scope.filterTags.forEach(function(tag) {
+          if (note.tags !== undefined && note.tags !== null) {
+            if (note.tags.indexOf(tag) !== -1) {
+              $scope.tags = $scope.mergeTags($scope.tags, note.tags) ;
+            }
+          }
+        }) ;
+      }
+      else {
+        $scope.tags = $scope.mergeTags($scope.tags, note.tags) ;
+      }
     }) ;
     $scope.tags.sort(function(a, b) {return a.toLowerCase().localeCompare(b.toLowerCase());});
 
@@ -175,7 +186,8 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
         note.removedTags = [] ;
       }
       note.timeVerbose = getTimeString(note.timestamp);
-      note.tags.sort(function(a, b) {return a.toLowerCase().localeCompare(b.toLowerCase());});
+      if (note.tags !== null)
+        note.tags.sort(function(a, b) {return a.toLowerCase().localeCompare(b.toLowerCase());});
     });
 
     return {refreshDelay: refreshDelay, notes: filteredNotes} ;
