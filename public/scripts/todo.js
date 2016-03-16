@@ -131,7 +131,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
     var filteredNotes = [] ;  
     taggedNotes
-      .filter(function(note) { return (note.isNew !== undefined && note.isNew === true);})
+      .filter(function(note) { return (note._id === undefined);})
       .forEach(function(note) { filteredNotes.push(note); });
 
     taggedNotes
@@ -168,6 +168,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
         note.removedTags = [] ;
       }
       note.timeVerbose = getTimeString(note.timestamp);
+      note.tags.sort();
     });
 
     return {refreshDelay: refreshDelay, notes: filteredNotes} ;
@@ -222,7 +223,6 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
         tags: $scope.filterTags,
         timestamp: Date.now(),
         editing: true,
-        isNew: true,
         owner: $scope.userid,
         users: []
       } ;
@@ -236,6 +236,8 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
   $scope.enterEditingMode = function(note) {
     note.editing = true ;
+    note.originalText = note.text ;
+    note.originalTags = note.tags ;
 
     $scope.notes.forEach(function(item){
       if (note._id != item._id)
@@ -246,7 +248,6 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   }
 
   $scope.acceptChanges = function(note) {
-    
     note.changeAccepted = true ;
 
     if (note.newTags !== undefined)
@@ -285,15 +286,15 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     
     $scope.adding = false ;
 
-    if (note.isNew !== undefined && note.isNew == true) {
+    if (note._id === undefined) {
       $scope.notes.splice($scope.notes.indexOf(note), 1) ;
     }
     else {
-      if (note.removedTags !== undefined && note.removedTags.length > 0) {
-        note.tags = note.tags.concat(note.removedTags) ;
-        note.removedTags = [];
-      }
-
+      note.text = note.originalText ;
+      note.tags = note.originalTags ;
+      note.removedTags = [];
+      note.newTags = [] ;
+      
       if ($event == null) {
         note.editing = false ;
         note.modified = false ;
@@ -363,7 +364,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
   $scope.pinItem = function(note) {
 
-    if (note.isNew !== undefined && note.isNew == true) {
+    if (note._id === undefined) {
       note.pinned = !note.pinned ;
     }
     else {

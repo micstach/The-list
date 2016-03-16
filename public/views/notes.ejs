@@ -47,7 +47,7 @@
             <% } %>
           </span>
           <div ng-show="filterTags.length > 0" class="note-tags">
-            <span ng-repeat="tag in filterTags track by $index" class="label label-default note-tag-filter">{{tag}}<span ng-click="cancelFilter(tag)" class="note-tag-remove"><strong>x</strong></span></span>
+            <span ng-repeat="tag in filterTags track by $index" class="label label-primary note-tag-filter">{{tag}}<span ng-click="cancelFilter(tag)" class="note-tag-remove"><strong>x</strong></span></span>
           </div>
         </span>	      
 	    </div>
@@ -61,7 +61,7 @@
               <span class="message-time">{{note.timeVerbose}}</span>
             </span>
             <span class="message-header-right">
-              <button ng-click="pinItem(note)" ng-class="note.pinned ? 'icon-rotate' : ''" class="note-header-icon glyphicon glyphicon-pushpin"></button>
+              <button ng-show="!note.editing" ng-click="pinItem(note)" ng-class="note.pinned ? 'icon-rotate' : ''" class="note-header-icon glyphicon glyphicon-pushpin"></button>
               <button ng-show="!note.editing" ng-click="deleteItem(note)" class="note-header-icon glyphicon glyphicon-trash"></button>
               <button ng-show="!note.editing" ng-click="toggleItem(note)" ng-class="note.checked ? 'glyphicon-check' : 'glyphicon-unchecked'" class="note-header-icon glyphicon"></button>
               <button ng-show="note.editing" ng-click="acceptChanges(note)"  ng-disabled="!note.modified || note.changeAccepted" ng-class="note.modified ? 'note-edit-accept' : 'note-edit-accept-disabled'" class="note-header-icon glyphicon glyphicon-ok-sign"></button> 
@@ -73,8 +73,8 @@
             <textarea ng-model="note.text" ng-change="noteTextChanged(note)" ng-trim="false" class="form-control input-default note-edit-input" focus="note.editing" placeholder="Zanotujmy cokolwiek..."></textarea>
           </form>
           <div class="note-tags">
-            <span ng-repeat="tag in note.tags track by $index" ng-click="!note.editing && setFilter(tag)" ng-class="note.editing ? ' note-tag-inactive' : 'note-tag-active'" class="label label-primary">{{tag}}<span ng-show="note.editing" ng-click="deleteTag(note, tag)" class="note-tag-remove"><strong>x</strong></span></span>
-            <span ng-repeat="tag in note.newTags track by $index" ng-click="!note.editing && setFilter(tag)" ng-class="note.editing ? ' note-tag-inactive' : 'note-tag-active'" class="label label-primary">{{tag}}</span>
+            <span ng-repeat="tag in note.tags track by $index" ng-click="!note.editing && setFilter(tag)" ng-class="{'note-tag-inactive': note.editing, 'note-tag-active': !note.editing, 'label-info': filterTags.indexOf(tag) == -1, 'label-primary':filterTags.indexOf(tag) != -1}" class="label">{{tag}}<span ng-show="note.editing" ng-click="deleteTag(note, tag)" class="note-tag-remove"><strong>x</strong></span></span>
+            <span ng-repeat="tag in note.newTags track by $index" ng-click="!note.editing && setFilter(tag)" ng-class="note.editing ? ' note-tag-inactive' : 'note-tag-active'" class="label label-warning">{{tag}}</span>
           </div>
         </li>
       </ul> 
