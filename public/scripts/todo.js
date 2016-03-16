@@ -17,13 +17,14 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
   $scope.userid = "";
   $scope.lastTag = undefined;
+  $scope.tags = [] ;
   $scope.filterTags = [];
   $scope.autoRefreshTimer = null;
   $scope.adding = false ;
 
   $scope.mergeTags = function(tagsA, tagsB) {
     tagsMerged = tagsA.concat(tagsB) ;
-    return tagsMerged.filter(function(tag, pos) { return tagsMerged.indexOf(tag) == pos; }) ;
+    return tagsMerged.filter(function(tag, pos) { return tagsMerged.indexOf(tag) == pos && tag !== null; }) ;
   }
 
   $scope.removeTags = function(text, tags) {
@@ -61,8 +62,16 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   }
   
   $scope.setFilter = function(tag) {
-    $scope.filterTags = [tag];  
+    if (tag === null) {
+      $scope.filterTags = [] ;
+    }
+    else {
+      $scope.filterTags.push(tag);  
+    }
+    
     $scope.getItems() ;
+    
+    $timeout(repositionList, 0) ;
 
     $http
       .put('/api/user/config', {tags: $scope.filterTags})
@@ -70,9 +79,11 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       });
   }
 
-  $scope.cancelFilter = function() {
-    $scope.filterTags = [];  
+  $scope.cancelFilter = function(tag) {
+    $scope.filterTags.splice($scope.filterTags.indexOf(tag), 1);  
     $scope.getItems() ;    
+
+    $timeout(repositionList, 0) ;
 
     $http
       .put('/api/user/config', {tags: $scope.filterTags})
@@ -81,6 +92,16 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   }
 
   $scope.filterNotes = function(notes, fromServer) {
+    
+    $scope.tags = [] ;
+    notes.forEach(function(note) {
+      $scope.tags = $scope.mergeTags($scope.tags, note.tags) ;
+    }) ;
+
+    $scope.filterTags.forEach(function(tag){
+      $scope.tags.splice($scope.tags.indexOf(tag), 1) ;
+    }) ;
+
     var taggedNotes = [] ;
 
     if ($scope.filterTags.length > 0) {       
@@ -161,12 +182,12 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     $http.get('/api/user/config')
       .success(function(data) { 
         
-        if (data.config !== undefined){
-          if (data.config.tags !== undefined){
-            if (data.config.tags.length == 1)
+        if (data.config !== undefined)
+          if (data.config.tags !== undefined) {
               $scope.filterTags = data.config.tags;
-          }
-        } 
+              $timeout(repositionList, 0) ;
+            }
+          
       })
       .error(function(data, status) {
         window.location = '/login' ;
@@ -223,6 +244,8 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   }
 
   $scope.acceptChanges = function(note) {
+    
+    note.changeAccepted = true ;
 
     if (note.newTags !== undefined)
     {
@@ -370,7 +393,7 @@ angular.module('Index').directive('focus', function($timeout, $parse) {
           $timeout(function() {
             element[0].focus(); 
             resizeTextArea('.note-edit-input');
-          }, 1);
+          }, 0);
         }
       });
       // element.bind('blur', function() {
@@ -380,23 +403,11 @@ angular.module('Index').directive('focus', function($timeout, $parse) {
   };
 });
 
-// angular.module('Index').directive('elastic', [
-//     '$timeout',
-//     function($timeout) {
-//         return {
-//             restrict: 'A',
-//             link: function($scope, element) {
-//               $scope.initialHeight = $scope.initialHeight || element[0].style.height; 
-//               var resize = function() { 
-//                 element[0].style.height = $scope.initialHeight; 
-//                 element[0].style.height = "" + element[0].scrollHeight + "px"; 
-//               }; 
-
-//               element.on("blur keyup change", resize); $timeout(resize, 0); 
-//             }
-//         };
-//     }
-// ]);
+// angular.module('Index').directive('resizable', function($timeout) {
+//   return {
+//     link: function(scope, element, attrs) { $timeout(repositionList, 0); }
+//   };
+// });
 
 angular.module('Index').controller('delete-note-controller', function ($scope, $uibModalInstance, note)
 {

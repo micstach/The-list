@@ -41,7 +41,8 @@ body {
 {
  	margin-right: 0.35em;
  	cursor: default;
- 	font-size: smaller;
+ 	font-size: 75%;
+ 	display: inline-block;
 }
 
 .note-tag-active 
@@ -267,7 +268,7 @@ body {
 
 .application-list
 {
-	margin-top: 50px;
+	margin-top: 100px;
 }
 
 /* bootstrap ui override */

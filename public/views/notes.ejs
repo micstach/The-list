@@ -29,17 +29,27 @@
     <div class="application-header">
 	    <div class="container">
         <span class="menu-items">
-          <span ng-repeat="tag in filterTags track by $index" class="note-tag-filter label label-default">{{tag}}<span ng-click="cancelFilter()" class="note-tag-remove"><strong>x</strong></span></span>
+          <div ng-show="tags.length > 0" class="btn-group">
+            <button type="button" class="btn dropdown-toggle glyph-menu-button glyphicon glyphicon-tag" data-toggle="dropdown" ng-class="adding ? 'disabled':''"></button>
+            <ul class="dropdown-menu">
+              <li ng-show="filterTags.length > 0" ng-click="setFilter(null)"><a href="#">Usuń filtrowanie</a></li>
+              <li ng-show="filterTags.length > 0" role="separator" class="divider"></li>
+              <li ng-repeat="tag in tags track by $index" ng-click="setFilter(tag)"><a href="#">{{tag}}</a></li>
+            </ul>
+          </div>
           <button type="button" ng-click="!adding && createNewNote()" class="btn glyph-menu-button glyphicon glyphicon-plus-sign" ng-class="adding ? 'disabled':''"></button>
           <button type="button" ng-click="!adding && refresh()" class="btn glyph-menu-button glyphicon glyphicon-repeat" ng-class="adding ? 'disabled':''"></button>
 		      <button type="button" ng-click="!adding && deleteAllItems()" class="btn glyph-menu-button glyphicon glyphicon-trash" ng-class="adding ? 'disabled':''"></button>
+          <span class="pull-right">
+            <span class="user" data-toggle="tooltip" data-placement="bottom" title="Witaj <%= username %>!"><%= username %></span>
+            <% if (locals.desktopClient == false) { %>
+              <a class="glyphicon glyphicon-log-out user-logout" data-toggle="tooltip" data-placement="bottom" title="Kliknij aby się wylogować" href="/logoff"></a>
+            <% } %>
+          </span>
+          <div ng-show="filterTags.length > 0" class="note-tags">
+            <span ng-repeat="tag in filterTags track by $index" class="label label-default note-tag-filter">{{tag}}<span ng-click="cancelFilter(tag)" class="note-tag-remove"><strong>x</strong></span></span>
+          </div>
         </span>	      
-	      <span class="pull-right">
-	        <span class="user" data-toggle="tooltip" data-placement="bottom" title="Witaj <%= username %>!"><%= username %></span>
-		      <% if (locals.desktopClient == false) { %>
-		        <a class="glyphicon glyphicon-log-out user-logout" data-toggle="tooltip" data-placement="bottom" title="Kliknij aby się wylogować" href="/logoff"></a>
-		      <% } %>
-		    </span>
 	    </div>
 		</div>
 
@@ -51,11 +61,11 @@
               <span class="message-time">{{note.timeVerbose}}</span>
             </span>
             <span class="message-header-right">
-              <button ng-click="pinItem(note)" ng-class="note.pinned ? 'icon-rotate' : ''" class="note-header-icon glyphicon glyphicon-paperclip"></button>
+              <button ng-click="pinItem(note)" ng-class="note.pinned ? 'icon-rotate' : ''" class="note-header-icon glyphicon glyphicon-pushpin"></button>
               <button ng-show="!note.editing" ng-click="deleteItem(note)" class="note-header-icon glyphicon glyphicon-trash"></button>
               <button ng-show="!note.editing" ng-click="toggleItem(note)" ng-class="note.checked ? 'glyphicon-check' : 'glyphicon-unchecked'" class="note-header-icon glyphicon"></button>
-              <button ng-show="note.editing" ng-click="acceptChanges(note)"  ng-disabled="!note.modified" ng-class="note.modified ? 'note-edit-accept' : 'note-edit-accept-disabled'" class="note-header-icon glyphicon glyphicon-ok-sign"></button> 
-              <button ng-show="note.editing" ng-click="cancelChanges(null, note)" class="note-header-icon  note-edit-cancel glyphicon glyphicon-remove-sign"></button> 
+              <button ng-show="note.editing" ng-click="acceptChanges(note)"  ng-disabled="!note.modified || note.changeAccepted" ng-class="note.modified ? 'note-edit-accept' : 'note-edit-accept-disabled'" class="note-header-icon glyphicon glyphicon-ok-sign"></button> 
+              <button ng-show="note.editing" ng-click="cancelChanges(null, note)" ng-disable="note.changeAccepted" class="note-header-icon  note-edit-cancel glyphicon glyphicon-remove-sign"></button> 
             </span>  
           </div>
           <div ng-show="!note.editing" ng-click="enterEditingMode(note)" ng-class="note.pinned ? 'note-text-pinned' : 'note-text'" linkify>{{note.text}}</div>

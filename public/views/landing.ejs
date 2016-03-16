@@ -22,15 +22,20 @@
     <div class="container">
       <div class="welcome-container">
         <p class="welcome-message">Pamietaj o wszystkim, wszędzie <span class="glyphicon glyphicon-check"></span></p>
-        <div class="centered">
-          <button onclick="location.href='/login'" class="menu-button btn btn-primary">Zaloguj się</button>
-        </div>
-        <div class="centered">lub</div>
-        <div class="centered">
-          <a href="/register">Zarejestruj się</a>
+        <div>
+          <div class="centered">
+            <button onclick="location.href='/login'" class="menu-button btn btn-primary">Zaloguj się</button>
+          </div>
+          <div class="centered">lub</div>
+          <div class="centered">
+            <a href="/register">Zarejestruj się</a>
+          </div>
         </div>
         <p class="welcome-description"> 
-          Masz dostęp do swoich zadań z dowolnego miejsca i na dowolnym urządzeniu
+          Masz dostęp do swoich zadań z dowolnego miejsca i na dowolnym urządzeniu.
+        </p>
+        <p class="welcome-description"> 
+          Porządkuj swoje notatki za pomocą tagów. Dodaj #dom aby zgrupować swoje domowe zadania.
         </p>
         <div class="welcome-actions">        
           <% if (locals.downloadLink) { %>
