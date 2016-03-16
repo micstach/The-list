@@ -39,7 +39,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   }
 
   $scope.extractHashTags = function(text) {
-    var tags = text.match(/([#][a-z\d-]+)/g) ;
+    var tags = text.match(/([#][A-Za-z\d-]+)/g) ;
 
     if (tags == null)
       return [];
@@ -62,21 +62,28 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   }
   
   $scope.setFilter = function(tag) {
+    
+    var update = false ;
+
     if (tag === null) {
       $scope.filterTags = [] ;
+      update = true ;
     }
-    else {
+    else if ($scope.filterTags.indexOf(tag) === -1) {
       $scope.filterTags.push(tag);  
+      update = true ;
     }
 
-    $scope.getItems() ;
-    
-    $timeout(repositionList, 0) ;
+    if (update) {
+      $scope.getItems() ;
+      
+      $timeout(repositionList, 0) ;
 
-    $http
-      .put('/api/user/config', {tags: $scope.filterTags})
-      .success(function() {
-      });
+      $http
+        .put('/api/user/config', {tags: $scope.filterTags})
+        .success(function() {
+        });
+    }
   }
 
   $scope.cancelFilter = function(tag) {
@@ -97,7 +104,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     notes.forEach(function(note) {
       $scope.tags = $scope.mergeTags($scope.tags, note.tags) ;
     }) ;
-    $scope.tags.sort();
+    $scope.tags.sort(function(a, b) {return a.toLowerCase().localeCompare(b.toLowerCase());});
 
     // remove from tags, tags from filterTags
     $scope.filterTags.forEach(function(tag){
@@ -168,7 +175,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
         note.removedTags = [] ;
       }
       note.timeVerbose = getTimeString(note.timestamp);
-      note.tags.sort();
+      note.tags.sort(function(a, b) {return a.toLowerCase().localeCompare(b.toLowerCase());});
     });
 
     return {refreshDelay: refreshDelay, notes: filteredNotes} ;
@@ -294,7 +301,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       note.tags = note.originalTags ;
       note.removedTags = [];
       note.newTags = [] ;
-      
+
       if ($event == null) {
         note.editing = false ;
         note.modified = false ;
