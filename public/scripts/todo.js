@@ -186,7 +186,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
         note.removedTags = [] ;
       }
       note.timeVerbose = getTimeString(note.timestamp);
-      if (note.tags !== null)
+      if (note.tags !== undefined && note.tags !== null)
         note.tags.sort(function(a, b) {return a.toLowerCase().localeCompare(b.toLowerCase());});
     });
 
