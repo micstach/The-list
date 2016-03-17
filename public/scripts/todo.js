@@ -22,9 +22,29 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   $scope.autoRefreshTimer = null;
   $scope.adding = false ;
 
+  $scope.isNullOrUndefined = function(obj){
+    return (obj === null || obj === undefined) ;
+  }
+
   $scope.mergeTags = function(tagsA, tagsB) {
-    tagsMerged = tagsA.concat(tagsB) ;
-    return tagsMerged.filter(function(tag, pos) { return tagsMerged.indexOf(tag) == pos && tag !== null; }) ;
+    
+    if ($scope.isNullOrUndefined(tagsA) && $scope.isNullOrUndefined(tagsB)) {
+      return [] ;
+    } 
+    else {
+      
+      if ($scope.isNullOrUndefined(tagsA)) {
+        tagsA = tagB ;
+        tagsB = null ;
+      }
+
+      var tagsMerged = tagsA ;
+
+      if (!$scope.isNullOrUndefined(tagsB))
+        tagsMerged = tagsMerged.concat(tagsB) ;
+
+      return tagsMerged.filter(function(tag, pos) { return tagsMerged.indexOf(tag) == pos && tag !== null; }) ;
+    }
   }
 
   $scope.removeTags = function(text, tags) {
@@ -115,6 +135,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
         $scope.tags = $scope.mergeTags($scope.tags, note.tags) ;
       }
     }) ;
+
     $scope.tags.sort(function(a, b) {return a.toLowerCase().localeCompare(b.toLowerCase());});
 
     // remove from tags, tags from filterTags
