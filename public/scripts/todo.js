@@ -18,7 +18,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   $scope.userid = "";
   $scope.lastTag = undefined;
   $scope.tags = [] ;
-  $scope.filterTags = [];
+  $scope.selectedTags = [];
   $scope.autoRefreshTimer = null;
   $scope.adding = false ;
 
@@ -26,22 +26,22 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     return (obj === null || obj === undefined) ;
   }
 
-  $scope.mergeTags = function(tagsA, tagsB) {
+  $scope.mergeTags = function(arr1, arr2) {
     
-    if ($scope.isNullOrUndefined(tagsA) && $scope.isNullOrUndefined(tagsB)) {
+    if ($scope.isNullOrUndefined(arr1) && $scope.isNullOrUndefined(arr2)) {
       return [] ;
     } 
     else {
       
-      if ($scope.isNullOrUndefined(tagsA)) {
-        tagsA = tagB ;
-        tagsB = null ;
+      if ($scope.isNullOrUndefined(arr1)) {
+        arr1 = tagB ;
+        arr2 = null ;
       }
 
-      var tagsMerged = tagsA ;
+      var tagsMerged = arr1 ;
 
-      if (!$scope.isNullOrUndefined(tagsB))
-        tagsMerged = tagsMerged.concat(tagsB) ;
+      if (!$scope.isNullOrUndefined(arr2))
+        tagsMerged = tagsMerged.concat(arr2) ;
 
       return tagsMerged.filter(function(tag, pos) { return tagsMerged.indexOf(tag) == pos && tag !== null; }) ;
     }
@@ -86,11 +86,12 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     var update = false ;
 
     if (tag === null) {
-      $scope.filterTags = [] ;
+      $scope.selectedTags = [] ;
       update = true ;
     }
-    else if ($scope.filterTags.indexOf(tag) === -1) {
-      $scope.filterTags.push(tag);  
+    else if ($scope.selectedTags.indexOf(tag) === -1) {
+      $scope.selectedTags.push(tag);
+      $scope.selectedTags.sort(function(a, b) {return a.toLowerCase().localeCompare(b.toLowerCase());})  
       update = true ;
     }
 
@@ -100,20 +101,20 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       $timeout(repositionList, 0) ;
 
       $http
-        .put('/api/user/config', {tags: $scope.filterTags})
+        .put('/api/user/config', {tags: $scope.selectedTags})
         .success(function() {
         });
     }
   }
 
   $scope.cancelFilter = function(tag) {
-    $scope.filterTags.splice($scope.filterTags.indexOf(tag), 1);  
+    $scope.selectedTags.splice($scope.selectedTags.indexOf(tag), 1);  
     $scope.getItems() ;    
 
     $timeout(repositionList, 0) ;
 
     $http
-      .put('/api/user/config', {tags: $scope.filterTags})
+      .put('/api/user/config', {tags: $scope.selectedTags})
       .success(function() {
       });
   }
@@ -122,33 +123,9 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     
     $scope.tags = [] ;
     notes.forEach(function(note) {
-      if ($scope.filterTags.length > 0) {
-        $scope.filterTags.forEach(function(tag) {
-          if (note.tags !== undefined && note.tags !== null) {
-            if (note.tags.indexOf(tag) !== -1) {
-              $scope.tags = $scope.mergeTags($scope.tags, note.tags) ;
-            }
-          }
-        }) ;
-      }
-      else {
-        $scope.tags = $scope.mergeTags($scope.tags, note.tags) ;
-      }
-    }) ;
+      if ($scope.selectedTags.length > 0) {
 
-    $scope.tags.sort(function(a, b) {return a.toLowerCase().localeCompare(b.toLowerCase());});
-
-    // remove from tags, tags from filterTags
-    $scope.filterTags.forEach(function(tag){
-      $scope.tags.splice($scope.tags.indexOf(tag), 1) ;
-    }) ;
-
-    var taggedNotes = [] ;
-
-    if ($scope.filterTags.length > 0) {       
-      notes.forEach(function(note) {
-        
-        var tagsFound = $scope.filterTags.filter(function(tag) {
+        var foundTagsCount = $scope.selectedTags.filter(function(tag) {
           if (note.tags === undefined)
             return false ;
           else if (note.tags != null) {
@@ -158,9 +135,41 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
             return false ;
         }).length ;    
 
-        if (tagsFound == $scope.filterTags.length)
-          taggedNotes.push(note) ;
+        if (foundTagsCount == $scope.selectedTags.length) {
+          if (note.tags !== undefined && note.tags !== null) {
+              $scope.tags = $scope.mergeTags($scope.tags, note.tags) ;
+          }
+        }
+      }
+      else {
+        $scope.tags = $scope.mergeTags($scope.tags, note.tags) ;
+      }
+    }) ;
 
+    $scope.tags.sort(function(a, b) {return a.toLowerCase().localeCompare(b.toLowerCase());});
+
+    // remove from tags, tags from filterTags
+    $scope.selectedTags.forEach(function(tag){
+      $scope.tags.splice($scope.tags.indexOf(tag), 1) ;
+    }) ;
+
+    var taggedNotes = [] ;
+
+    if ($scope.selectedTags.length > 0) {       
+      notes.forEach(function(note) {
+        
+        var foundTagsCount = $scope.selectedTags.filter(function(tag) {
+          if (note.tags === undefined)
+            return false ;
+          else if (note.tags != null) {
+            return (note.tags.indexOf(tag) != -1) ;
+          }
+          else
+            return false ;
+        }).length ;    
+
+        if (foundTagsCount == $scope.selectedTags.length)
+          taggedNotes.push(note) ;
       }) ;
     }
     else
@@ -227,7 +236,8 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
         
         if (data.config !== undefined)
           if (data.config.tags !== undefined) {
-              $scope.filterTags = data.config.tags;
+              $scope.selectedTags = data.config.tags;
+              $scope.selectedTags.sort(function(a, b) {return a.toLowerCase().localeCompare(b.toLowerCase());})  
               $timeout(repositionList, 0) ;
             }
           
@@ -260,7 +270,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
         text: '', 
         checked: false,
         pinned: false,
-        tags: $scope.filterTags,
+        tags: $scope.selectedTags,
         timestamp: Date.now(),
         editing: true,
         owner: $scope.userid,
@@ -275,6 +285,8 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   }
 
   $scope.enterEditingMode = function(note) {
+    note.changeAccepted = false ;
+    
     note.editing = true ;
     note.originalText = note.text ;
     note.originalTags = note.tags ;
@@ -323,7 +335,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   };
 
   $scope.cancelChanges = function($event, note){
-    
+    note.changeAccepted = false ;
     $scope.adding = false ;
 
     if (note._id === undefined) {
