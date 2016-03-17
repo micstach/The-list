@@ -247,20 +247,32 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       }) ;
   }
 
-  $scope.getItems = function() {
+  $scope.organizeNotes = function(notes, fromServer) {
+    var result = $scope.filterNotes(notes, fromServer) ;
+    $scope.notes = result.notes ;
 
-    $http.get('/api/notes')
-      .success(function(data) { 
-        var filteredNotes = $scope.filterNotes(data.notes, true) ;
-        $scope.userid = data.userid; 
-        $scope.notes = filteredNotes.notes ;
+    $scope.cancelTimer($scope.autoRefreshTimer) ;       
+    $scope.autoRefreshTimer = $timeout($scope.getItems, result.refreshDelay) ;
+  }
 
-        $scope.cancelTimer($scope.autoRefreshTimer) ;       
-        $scope.autoRefreshTimer = $timeout($scope.getItems, filteredNotes.refreshDelay) ;
-      })
-      .error(function(data, status) {
-        window.location = '/login' ;
-      }) ;
+  $scope.getItems = function(fromServer) {
+
+    if (fromServer === undefined)
+      fromServer = true ;
+
+    if (fromServer) {
+      $http.get('/api/notes')
+        .success(function(data) { 
+          $scope.organizeNotes(data.notes, fromServer) ;
+          $scope.userid = data.userid; 
+        })
+        .error(function(data, status) {
+          window.location = '/login' ;
+        }) ;
+      }
+      else {
+        $scope.organizeNotes($scope.notes, fromServer) ;
+      }
   };
 
   $scope.createNewNote = function() {
@@ -286,7 +298,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
   $scope.enterEditingMode = function(note) {
     note.changeAccepted = false ;
-    
+
     note.editing = true ;
     note.originalText = note.text ;
     note.originalTags = note.tags ;
@@ -420,14 +432,14 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       note.pinned = !note.pinned ;
     }
     else {
-      var state = (note.pinned !== undefined) ? !note.pinned : true;
-
+      note.pinned = (note.pinned !== undefined) ? !note.pinned : true;
+ 
       $http
-        .put('/api/message/pin/' + note._id + '/' + state)
+        .put('/api/message/pin/' + note._id + '/' + note.pinned)
         .success(function(){
-              $scope.getItems();
         });
     }
+    $scope.getItems(false) ;
   };
 
   $scope.refresh = function()
