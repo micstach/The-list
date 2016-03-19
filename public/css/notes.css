@@ -164,11 +164,6 @@ body {
 {
 	margin-top: 5px;
 	display: inline-block;
-/*	background-color: rgb(255,0,0);
-	border:0px;
-	border-style: none;
-	margin-top:5px;
-*/
 	min-width: calc(100% - 0px);
 	max-width: calc(100% - 0px);
 }
@@ -194,7 +189,7 @@ body {
 
 .pinned
 {
-	color: rgb(255, 128, 128);
+	color: rgb(128, 64, 64);
 	opacity: 1.0;
 }
 
