@@ -35,7 +35,9 @@
             <ul class="dropdown-menu scrollable-menu">
               <li ng-show="selectedTags.length > 0" ng-click="setFilter(null)"><a href="#">Usuń filtrowanie</a></li>
               <li ng-show="tags.length > 0 && selectedTags.length > 0" role="separator" class="divider"></li>
-              <li ng-show="tags.length > 0 || selectedTags.length > 0"><div style="padding:5px;"><span ng-repeat="tag in tags track by $index" ng-click="setFilter(tag)" class="note-tag-drop-filter note-tag-active label label-primary">{{tag}}</span><div></li>
+              <li ng-show="tags.length > 0 || selectedTags.length > 0">
+                <div ng-show="tags.length > 0" style="padding-left:7px;"><span ng-repeat="tag in tags track by $index" ng-click="setFilter(tag)" class="note-tag-drop-filter note-tag-active label label-primary">{{tag}}</span><div>
+              </li>
             </ul>
           </div>
           <button type="button" ng-click="!adding && refresh()" class="btn glyph-menu-button glyphicon glyphicon-repeat" ng-class="adding ? 'disabled':''"></button>
