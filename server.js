@@ -64,7 +64,7 @@ app.get('/', function(req, res) {
       downloadLink = '/clients/android/TheListClient.apk';
     }
 
-    res.render('landing', {downloadLink:downloadLink}) ;
+    res.render('landing', {downloadLink:downloadLink, userAgent:req.headers['user-agent']}) ;
   }
   else {
     res.redirect('/home') ;
@@ -278,14 +278,14 @@ app.post('/api/message/removeall', authorizeAPI, function(req, res){
   }) ;
 }) ;
 
-app.put('/api/message/check/:id/:state', authorizeAPI, function(req, res){
+app.put('/api/note/check/:id/:state', authorizeAPI, function(req, res){
   console.log("api: message check: " + JSON.stringify(req.params));
   var userid = req.session.userid ;
 
   MongoClient.connect(environment.config.db(), function(err, db) {
     db.collection('notes').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, item){
       item.checked = (req.params.state === "true") ;
-      item.timestamp = moment().valueOf() ;
+      //item.timestamp = moment().valueOf() ;
       db.collection('notes').save(item) ;
       db.close() ;
       res.sendStatus(200); 

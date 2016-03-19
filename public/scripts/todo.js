@@ -13,7 +13,7 @@ angular.module('Index').config(['$httpProvider', function($httpProvider) {
     $httpProvider.defaults.headers.get['Pragma'] = 'no-cache';
 }]);
 
-angular.module('Index').controller('Notes', function($scope, $timeout, $http, $location, $uibModal) {
+angular.module('Index').controller('Notes', function($scope, $timeout, $http, $location, $uibModal, linkify, $sce) {
 
   $scope.userid = "";
   $scope.lastTag = undefined;
@@ -215,6 +215,9 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
         note.modified = false ;
         note.removedTags = [] ;
       }
+      
+      note.outputText = $sce.trustAsHtml(linkify.twitter(note.text));
+
       note.timeVerbose = getTimeString(note.timestamp);
       if (note.tags !== undefined && note.tags !== null)
         note.tags.sort(function(a, b) {return a.toLowerCase().localeCompare(b.toLowerCase());});
@@ -230,7 +233,15 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     } 
   }
 
-  $scope.getFilterTags = function() {
+  $scope.organizeNotes = function(notes, fromServer) {
+    var result = $scope.filterNotes(notes, fromServer) ;
+    $scope.data = {notes: result.notes};
+
+    $scope.cancelTimer($scope.autoRefreshTimer) ;       
+    $scope.autoRefreshTimer = $timeout($scope.getItems, result.refreshDelay) ;
+  }
+
+  $scope.initialize = function() {
     $http.get('/api/user/config')
       .success(function(data) { 
         
@@ -239,20 +250,14 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
               $scope.selectedTags = data.config.tags;
               $scope.selectedTags.sort(function(a, b) {return a.toLowerCase().localeCompare(b.toLowerCase());})  
               $timeout(repositionList, 0) ;
+
+              $scope.getItems() ;
             }
           
       })
       .error(function(data, status) {
         window.location = '/login' ;
       }) ;
-  }
-
-  $scope.organizeNotes = function(notes, fromServer) {
-    var result = $scope.filterNotes(notes, fromServer) ;
-    $scope.notes = result.notes ;
-
-    $scope.cancelTimer($scope.autoRefreshTimer) ;       
-    $scope.autoRefreshTimer = $timeout($scope.getItems, result.refreshDelay) ;
   }
 
   $scope.getItems = function(fromServer) {
@@ -271,7 +276,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
         }) ;
       }
       else {
-        $scope.organizeNotes($scope.notes, fromServer) ;
+        $scope.organizeNotes($scope.data.notes, fromServer);
       }
   };
 
@@ -292,7 +297,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       note.timeVerbose = getTimeString(note.timestamp) ;
 
       // insert note stub
-      $scope.notes.splice(0, 0, note);
+      $scope.data.notes.splice(0, 0, note);
       $scope.adding = true ;
   }
 
@@ -303,7 +308,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     note.originalText = note.text ;
     note.originalTags = note.tags ;
 
-    $scope.notes.forEach(function(item){
+    $scope.data.notes.forEach(function(item){
       if (note._id != item._id)
           item.editing = false ;
     });
@@ -326,6 +331,9 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
     note.removedTags = [] ;
     note.newTags = [] ;
+    note.editing = false ;
+    note.modified = false ;
+    note.outputText = $sce.trustAsHtml(linkify.github(note.text)) ;
 
     if (note._id === undefined) {
       $http
@@ -334,12 +342,10 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
           $scope.getItems() ;
         });
     }
-    else {
+    else {      
       $http
         .put('/api/note/update/' + note._id, {text: note.text, tags: note.tags})
         .success(function() {
-          note.editing = false ;
-          note.modified = false ;
         });
     }
 
@@ -351,7 +357,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     $scope.adding = false ;
 
     if (note._id === undefined) {
-      $scope.notes.splice($scope.notes.indexOf(note), 1) ;
+      $scope.data.notes.splice($scope.data.notesindexOf(note), 1);
     }
     else {
       note.text = note.originalText ;
@@ -416,13 +422,13 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   }
 
   $scope.toggleItem = function(note){
-    var state = (note.checked !== undefined) ? !note.checked : true ;
+    note.checked = (note.checked !== undefined) ? !note.checked : true ;
+    
+    $timeout(function() {$scope.getItems(false)}, 5000) ;
     
     $http
-      .put('/api/message/check/' + note._id + '/' + state)
+      .put('/api/note/check/' + note._id + '/' + note.checked)
       .success(function(){
-            note.checked = state ;
-            note.timestamp = getTimeString(Date.now());
       });
   }
 
@@ -447,8 +453,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     $scope.getItems() ;
   }
 
-  $scope.getFilterTags() ;
-  $scope.getItems() ;
+  $scope.initialize() ;
 }) ;
 
 angular.module('Index').directive('focus', function($timeout, $parse) {
