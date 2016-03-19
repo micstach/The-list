@@ -96,10 +96,16 @@ app.get('/home', authorize, function(req, res) {
 
 app.get('/login', function(req, res) {
   if (req.session.userid !== undefined){
-    res.redirect('/');
+    res.redirect('/home');
   }
   else {
-    res.render('login', {error:null}) ;
+    console.log("Request parameters: " + JSON.stringify(req.query));
+
+    var parameters = {
+      error: null,
+      user: req.query.user
+    } ;
+    res.render('login', parameters) ;
   }
 }) ;
 
@@ -132,7 +138,7 @@ app.post('/register', function(req, res) {
           res.render('register', {user: req.body.user, error:"Hasła nie pasują !"});
         }
 
-        res.redirect('/login');
+        res.redirect('/login?user=' + req.body.user);
       }
       else {
         db.close() ;
@@ -231,7 +237,7 @@ app.post('/api/note/create', authorizeAPI, function(req, res){
 }) ;
 
 app.post('/api/note/delete/:id', authorizeAPI, function(req, res){
-  console.log("api: delete message: " + req.params.id) ;
+  console.log("api: delete note: " + req.params.id) ;
 
   var mongoUrl = environment.config.db() ;  
   var userid = req.session.userid ;
@@ -246,7 +252,7 @@ app.post('/api/note/delete/:id', authorizeAPI, function(req, res){
 }) ;
 
 app.put('/api/note/update/:id', authorizeAPI, function(req, res){
-  console.log("api: update message: " + req.params.id) ;
+  console.log("api: update note: " + req.params.id) ;
 
   var mongoUrl = environment.config.db() ;  
   var userid = req.session.userid ;
@@ -263,8 +269,8 @@ app.put('/api/note/update/:id', authorizeAPI, function(req, res){
 
 }) ;
 
-app.post('/api/message/removeall', authorizeAPI, function(req, res){
-  console.log("api: remove all message(s)") ;
+app.post('/api/notes/removeall', authorizeAPI, function(req, res){
+  console.log("api: remove all notes(s)") ;
 
   var mongoUrl = environment.config.db() ;  
   var userid = req.session.userid ;
@@ -279,7 +285,7 @@ app.post('/api/message/removeall', authorizeAPI, function(req, res){
 }) ;
 
 app.put('/api/note/check/:id/:state', authorizeAPI, function(req, res){
-  console.log("api: message check: " + JSON.stringify(req.params));
+  console.log("api: note check: " + JSON.stringify(req.params));
   var userid = req.session.userid ;
 
   MongoClient.connect(environment.config.db(), function(err, db) {
@@ -293,8 +299,8 @@ app.put('/api/note/check/:id/:state', authorizeAPI, function(req, res){
   }) ;
 });
 
-app.put('/api/message/pin/:id/:state', authorizeAPI, function(req, res){
-  console.log("api: message pin: " + JSON.stringify(req.params));
+app.put('/api/note/pin/:id/:state', authorizeAPI, function(req, res){
+  console.log("api: note pin: " + JSON.stringify(req.params));
   var userid = req.session.userid ;
 
   MongoClient.connect(environment.config.db(), function(err, db) {

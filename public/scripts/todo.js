@@ -237,6 +237,10 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     var result = $scope.filterNotes(notes, fromServer) ;
     $scope.data = {notes: result.notes};
 
+    if ($scope.data.notes.length === 0){
+      $scope.createNewNote();
+    }
+
     $scope.cancelTimer($scope.autoRefreshTimer) ;       
     $scope.autoRefreshTimer = $timeout($scope.getItems, result.refreshDelay) ;
   }
@@ -250,10 +254,9 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
               $scope.selectedTags = data.config.tags;
               $scope.selectedTags.sort(function(a, b) {return a.toLowerCase().localeCompare(b.toLowerCase());})  
               $timeout(repositionList, 0) ;
-
-              $scope.getItems() ;
             }
-          
+
+        $scope.getItems() ;
       })
       .error(function(data, status) {
         window.location = '/login' ;
@@ -294,7 +297,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
         users: []
       } ;
 
-      note.timeVerbose = getTimeString(note.timestamp) ;
+      note.timeVerbose = "nowa" ;//getTimeString(note.timestamp) ;
 
       // insert note stub
       $scope.data.notes.splice(0, 0, note);
@@ -420,7 +423,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
     modalInstance.result.then(function () {
       $http
-        .post('/api/message/removeall')
+        .post('/api/notes/removeall')
         .success(function() { $scope.getItems(); });
       });
   }
@@ -445,7 +448,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       note.pinned = (note.pinned !== undefined) ? !note.pinned : true;
  
       $http
-        .put('/api/message/pin/' + note._id + '/' + note.pinned)
+        .put('/api/note/pin/' + note._id + '/' + note.pinned)
         .success(function(){
         });
     }

@@ -23,7 +23,11 @@
       <form action="/login" method="post" class="message-form">
         <div class="form-group">
           <label for="user">Użytkownik</label>
-          <input id="user" name="user" class="form-control input-default" placeholder="Podaj nazwę użytkownika">
+          <% if (locals.user) { %>
+            <input id="user" name="user" class="form-control input-default" placeholder="Podaj nazwę użytkownika" value="<%= user %>">
+          <% } else { %>
+            <input id="user" name="user" class="form-control input-default" placeholder="Podaj nazwę użytkownika">
+          <% } %>
         </div>
         <div class="form-group">
           <label for="pwd">Hasło</label>
