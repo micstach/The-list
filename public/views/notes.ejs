@@ -35,7 +35,7 @@
             <ul class="dropdown-menu scrollable-menu">
               <li ng-show="selectedTags.length > 0" ng-click="setFilter(null)"><a href="#">Usuń filtrowanie</a></li>
               <li ng-show="tags.length > 0 && selectedTags.length > 0" role="separator" class="divider"></li>
-              <li ng-show="tags.length > 0 || selectedTags.length > 0" ng-repeat="tag in tags track by $index" ng-click="setFilter(tag)"><a href="#">{{tag}}</a></li>
+              <li ng-show="tags.length > 0 || selectedTags.length > 0"><div style="padding:5px;"><span ng-repeat="tag in tags track by $index" ng-click="setFilter(tag)" class="note-tag-drop-filter note-tag-active label label-primary">{{tag}}</span><div></li>
             </ul>
           </div>
           <button type="button" ng-click="!adding && refresh()" class="btn glyph-menu-button glyphicon glyphicon-repeat" ng-class="adding ? 'disabled':''"></button>
@@ -58,17 +58,18 @@
         <li ng-repeat="note in data.notes" ng-class="note.pinned ? 'message-pinned' : (note.checked ? 'message-checked' : '')" id="{{note._id}}" class="list-group-item">
           <div class="message-header">
             <span class="message-header-left">
-              <span class="message-time">{{note.timeVerbose}}</span>
+              <button ng-show="!note.editing" ng-click="toggleItem(note)" ng-class="note.checked ? 'glyphicon-check' : 'glyphicon-unchecked'" class="note-header-icon-nospace glyphicon"></button>
+              <span class="note-time">{{note.timeVerbose}}</span>
             </span>
             <span class="message-header-right">
-              <button ng-show="!note.editing" ng-click="pinItem(note)" ng-class="note.pinned ? 'icon-rotate' : ''" class="note-header-icon glyphicon glyphicon-pushpin"></button>
+              <button ng-show="!note.editing" ng-click="pinItem(note)" ng-class="note.pinned ? 'pinned' : 'unpinned'" class="note-header-icon glyphicon glyphicon-flag"></button>
+              <button ng-show="!note.editing" ng-click="enterEditingMode(note)" class="note-header-icon glyphicon glyphicon-edit"></button>
               <button ng-show="!note.editing" ng-click="deleteItem(note)" class="note-header-icon glyphicon glyphicon-trash"></button>
-              <button ng-show="!note.editing" ng-click="toggleItem(note)" ng-class="note.checked ? 'glyphicon-check' : 'glyphicon-unchecked'" class="note-header-icon glyphicon"></button>
               <button ng-show="note.editing" ng-click="acceptChanges(note)"  ng-disabled="!note.modified || note.changeAccepted" ng-class="note.modified ? 'note-edit-accept' : 'note-edit-accept-disabled'" class="note-header-icon glyphicon glyphicon-ok-sign"></button> 
               <button ng-show="note.editing" ng-click="cancelChanges(null, note)" ng-disable="note.changeAccepted" class="note-header-icon  note-edit-cancel glyphicon glyphicon-remove-sign"></button> 
             </span>  
           </div>
-          <div ng-show="!note.editing" ng-bind-html="note.outputText" ng-model="note.outputText" ng-click="enterEditingMode(note)" ng-class="note.pinned ? 'note-text-pinned' : 'note-text'">{{note.outputText}}</div>
+          <div ng-show="!note.editing" ng-bind-html="note.outputText" ng-model="note.outputText" ng-class="note.pinned ? 'note-text-pinned' : 'note-text'">{{note.outputText}}</div>
           <form ng-show="note.editing" ng-keyup="cancelModifyMode($event, note)" class="form-inline">
             <textarea ng-model="note.text" ng-change="noteTextChanged(note)" ng-trim="false" class="form-control input-default note-edit-input" focus="note.editing" placeholder="Zanotujmy cokolwiek..." linkify>{{note.text}}</textarea>
           </form>

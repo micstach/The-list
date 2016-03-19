@@ -314,6 +314,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     });
 
     $scope.cancelTimer($scope.autoRefreshTimer) ;  
+    $scope.cancelDeleyedRefresh();
   }
 
   $scope.acceptChanges = function(note) {
@@ -350,6 +351,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     }
 
     $scope.adding = false ;
+    $scope.deleyedRefresh() ;
   };
 
   $scope.cancelChanges = function($event, note){
@@ -374,6 +376,8 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
         note.modified = false ;
       }
     }
+
+    $scope.deleyedRefresh();
   }
 
   $scope.deleteTag = function(note, tag) {
@@ -424,8 +428,8 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   $scope.toggleItem = function(note){
     note.checked = (note.checked !== undefined) ? !note.checked : true ;
     
-    $timeout(function() {$scope.getItems(false)}, 5000) ;
-    
+    $scope.deleyedRefresh() ;
+
     $http
       .put('/api/note/check/' + note._id + '/' + note.checked)
       .success(function(){
@@ -445,8 +449,26 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
         .success(function(){
         });
     }
-    $scope.getItems(false) ;
+    $scope.deleyedRefresh() ;
   };
+
+  $scope.cancelDeleyedRefresh = function() {
+    if ($scope.deleyedRefreshTimeout !== undefined) {
+      if ($scope.deleyedRefreshTimeout !== null) {
+        $timeout.cancel($scope.deleyedRefreshTimeout) ;  
+        $scope.deleyedRefreshTimeout = null ;
+      }
+    }
+  }
+
+  $scope.deleyedRefresh = function() {
+    if ($scope.deleyedRefreshTimeout === undefined)
+        $scope.deleyedRefreshTimeout = null ;
+
+    $scope.cancelDeleyedRefresh();
+      
+    $scope.deleyedRefreshTimeout = $timeout(function() {$scope.getItems(false)}, 5000) ;
+  }
 
   $scope.refresh = function()
   {
