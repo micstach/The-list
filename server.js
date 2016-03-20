@@ -4,6 +4,7 @@ var cookieParser = require('cookie-parser') ;
 var mongodb = require('mongodb') ; 
 var bodyParser = require('body-parser') ;
 var moment = require('moment');
+var nodemailer = require('nodemailer') ;
 
 var environment = require('./environment.js') ;
 var utils = require('./utils.js');
@@ -343,6 +344,42 @@ app.put('/api/user/config', authorizeAPI, function(req, res) {
       res.sendStatus(200); 
     }) ;
   }) ;
+}) ;
+
+app.post('/api/reset', function(req, res){
+  var response = {
+    email: req.query.email
+  };
+
+  if (process.env.LOCAL_NODEJS_IP !== undefined) {
+    var transporter = nodemailer.createTransport('smtps://todo.noreply%40poczta.onet.pl:Stasiek1@smtp.poczta.onet.pl') ;
+
+    // setup e-mail data with unicode symbols
+    var mailOptions = {
+        from: 'todo.noreply@poczta.onet.pl', // sender address
+        to: req.query.email, // list of receivers
+        subject: 'Hello !', // Subject line
+        text: 'Hello world !', // plaintext body
+        html: '<b>Hello world !</b>' // html body
+    };
+
+    // send mail with defined transport object
+    transporter.sendMail(mailOptions, function(error, info){
+        if(error){
+            return console.log(error);
+        }
+        console.log('Message sent: ' + info.response);
+        
+        response.info = info.response ;
+        res.writeHead(200, {'Content-Type': 'application/json'});
+        res.end(JSON.stringify(response));
+    });
+  }
+  else {
+    response.info = "unavailable" ;
+    res.writeHead(200, {'Content-Type': 'application/json'});
+    res.end(JSON.stringify(response));
+  }
 }) ;
 
 app.get('*', function(req, res){
