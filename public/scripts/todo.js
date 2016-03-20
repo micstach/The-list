@@ -362,7 +362,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     $scope.adding = false ;
 
     if (note._id === undefined) {
-      $scope.data.notes.splice($scope.data.notesindexOf(note), 1);
+      $scope.data.notes.splice($scope.data.notes.indexOf(note), 1);
     }
     else {
       note.text = note.originalText ;
