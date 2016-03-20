@@ -18,7 +18,9 @@
     <script src="../scripts/login.js"></script>
   </head>
   <body>
-    <div class="application-header"></div>
+    <a href="/">
+      <div class="application-header"></div>
+    </a>
     <div class="container">
       <form action="/login" method="post" class="message-form">
         <div class="form-group">
@@ -34,11 +36,11 @@
           <input id="pwd" type="password" name="pwd" class="form-control input-default" placeholder="Podaj hasło">
         </div>
         <% if (locals.error) { %>
-        <div class="form-group">
-          <text class="error"><%= error %></text>
-        </div>
+          <div class="form-group">
+            <text class="error"><%= error %></text>
+          </div>
         <% } %>  
-        <button type="submit" class="login-button form-control btn btn-primary"><strong>Zaloguj się</strong></button>
+        <button type="submit" class="form-control btn btn-primary"><strong>Zaloguj się</strong></button>
       </form>
     </div>
   </body>
