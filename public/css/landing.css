@@ -40,7 +40,7 @@ html, body {
 .welcome-message
 {
 	margin-top:10px;
-	padding-top:25px;
+	padding-top:20px;
 }
 
 .welcome-text
@@ -61,8 +61,8 @@ html, body {
 	cursor: default;
 }
 
-@media(max-width:640px){
-	.welcome-message{
+@media(max-width:920px){
+	.welcome-text{
 		font-size: 25px;
 	}
 	
