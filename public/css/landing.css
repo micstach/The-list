@@ -41,9 +41,13 @@ html, body {
 {
 	margin-top:10px;
 	padding-top:25px;
+}
+
+.welcome-text
+{
 	text-align: center;
 	color: rgb(208, 208, 255);
-	font-size: 50px;
+	font-size: 45px;
 	cursor: default;
 }
 
@@ -53,6 +57,7 @@ html, body {
 	text-align: center;
 	color: rgb(208, 208, 255);
 	font-size: 30px;
+	height: 75px;
 	cursor: default;
 }
 

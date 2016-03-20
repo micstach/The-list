@@ -14,25 +14,61 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/res/todo_32.png">
     <link rel="icon" type="image/png" sizes="64x64" href="/res/todo_64.png">    
     
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="../libs/jquery.min.js"></script>
+    <script src="../libs/bootstrap.min.js"></script>
     <script src="../scripts/landing.js"></script>
   </head>
   <body>
     <div class="application-header"></div>
     <div class="container">
       <div class="welcome-container">
-        <p class="welcome-message">Pamietaj o wszystkim <span class="glyphicon glyphicon-check"></span></p>
-        <div class="centered">
-          <button onclick="location.href='/login'" class="menu-button btn btn-primary">Zaloguj się</button>
+        <div class="welcome-message">
+          <p class="welcome-text">Pamietaj o wszystkim</p> 
+          <p class="welcome-text">...wszędzie <span class="glyphicon glyphicon-check"></span></p>
         </div>
-        <div class="centered">lub</div>
-        <div class="centered">
-          <a href="/register">Zarejestruj się</a>
+        <div>
+          <div class="centered">
+            <button onclick="location.href='/login'" class="menu-button btn btn-primary">Zaloguj się</button>
+          </div>
+          <div class="centered">lub</div>
+          <div class="centered">
+            <a href="/register">Zarejestruj się</a>
+          </div>
+        </div>        
+        <div id="learning-carousel" class="carousel slide" data-ride="carousel">
+          <div class="carousel-inner" role="listbox">
+            <div class="item active">
+              <p class="welcome-description"> 
+                Masz dostęp do swoich zadań z dowolnego miejsca i na dowolnym urządzeniu.
+              </p>
+            </div>
+            <div class="item">
+              <p class="welcome-description"> 
+                Porządkuj swoje notatki za pomocą znaczników.
+              </p>
+            </div>
+            <div class="item">
+              <p class="welcome-description"> 
+                Dodaj znacznik #dom aby zacząć grupować swoje domowe zadania.
+              </p>
+            </div>
+            <div class="item">
+              <p class="welcome-description"> 
+                Filtruj notatki wygodnie i szybko dzieki opcji filtrowania znaczników              </p>
+            </div>
+            <div class="item">
+              <p class="welcome-description"> 
+                Konfiguracja filtra znaczników zapisywana jest na serwerze.
+              </p>
+            </div>
+            <div class="item">
+              <p class="welcome-description"> 
+                Logując się ponownie lub z innego urządzenia masz od razu dostęp do ostatniego widoku.
+              </p>
+            </div>
+          </div>          
         </div>
-        <p class="welcome-description"> 
-          Masz dostęp do swoich zadań z dowolnego miejsca i na dowolnym urządzeniu
-        </p>
-        <div class="welcome-actions">        
+        <div class="welcome-actions">    
           <% if (locals.downloadLink) { %>
             <button onclick="location.href='<%= downloadLink %>'" class="btn btn-warning">Pobierz aplikacje</button>
           <% } %>

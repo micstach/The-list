@@ -12,10 +12,15 @@
 
     <link rel="icon" type="image/png" sizes="16x16" href="/res/todo_16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/res/todo_32.png">
-    <link rel="icon" type="image/png" sizes="64x64" href="/res/todo_64.png">    
+    <link rel="icon" type="image/png" sizes="64x64" href="/res/todo_64.png">  
+
+    <script src="../libs/jquery.min.js"></script>
+    <script src="../scripts/register.js"></script>  
   </head>
   <body>
-    <div class="application-header"></div>
+    <a href="/">
+      <div class="application-header"></div>
+    </a>
     <div class="container centered">
       <form action="/register" method="post" class="message-form">
         <div class="form-group">
@@ -32,9 +37,16 @@
           <input type="password" name="pwd" class="form-control input-default" placeholder="Podaj hasło">
         </div>
         <div class="form-group">
-          <input type="password" name="re-pwd" class="form-control input-default" placeholder="Powtórz hasło">
+          <input type="password" name="re-pwd" class="retyped form-control input-default" placeholder="Powtórz hasło">
         </div>
-        <% if (locals.error) { %>
+<!--         <div class="form-group">
+          <label for="email">E-mail</label>
+          <input type="email" name="email" class="form-control input-default" placeholder="Podaj adres e-mail">
+        </div>
+        <div class="form-group">
+          <input type="email" name="retyped-email" class="retyped form-control input-default" placeholder="Powtórz adres e-mail">
+        </div>
+ -->        <% if (locals.error) { %>
           <div  class="form-group">
             <text class="error"><%= error %></text>
           </div>

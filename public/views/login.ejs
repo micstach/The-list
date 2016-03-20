@@ -14,27 +14,33 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/res/todo_32.png">
     <link rel="icon" type="image/png" sizes="64x64" href="/res/todo_64.png">    
     
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+    <script src="../libs/jquery.min.js"></script>
     <script src="../scripts/login.js"></script>
   </head>
   <body>
-    <div class="application-header"></div>
+    <a href="/">
+      <div class="application-header"></div>
+    </a>
     <div class="container">
       <form action="/login" method="post" class="message-form">
         <div class="form-group">
           <label for="user">Użytkownik</label>
-          <input id="user" name="user" class="form-control input-default" placeholder="Podaj nazwę użytkownika">
+          <% if (locals.user) { %>
+            <input id="user" name="user" class="form-control input-default" placeholder="Podaj nazwę użytkownika" value="<%= user %>">
+          <% } else { %>
+            <input id="user" name="user" class="form-control input-default" placeholder="Podaj nazwę użytkownika">
+          <% } %>
         </div>
         <div class="form-group">
           <label for="pwd">Hasło</label>
           <input id="pwd" type="password" name="pwd" class="form-control input-default" placeholder="Podaj hasło">
         </div>
         <% if (locals.error) { %>
-        <div class="form-group">
-          <text class="error"><%= error %></text>
-        </div>
+          <div class="form-group">
+            <text class="error"><%= error %></text>
+          </div>
         <% } %>  
-        <button type="submit" class="login-button form-control btn btn-primary"><strong>Zaloguj się</strong></button>
+        <button type="submit" class="form-control btn btn-primary"><strong>Zaloguj się</strong></button>
       </form>
     </div>
   </body>

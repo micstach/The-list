@@ -7,7 +7,6 @@ body {
 .user
 {
 	color: rgb(132, 132, 175);
-	font-weight: bold;
 }
 
 .items-counter
@@ -15,6 +14,12 @@ body {
 	margin-right: 5px;
 	padding-left: 10px;
 	padding-right: 10px;
+}
+
+.scrollable-menu {
+    height: auto;
+    max-height: 300px;
+    overflow-x: hidden;
 }
 
 .checkbox
@@ -38,6 +43,21 @@ body {
  	cursor: default;	 	
 }
 
+.note-tag-filter, .note-tag-drop-filter
+{
+ 	cursor: default;
+ 	display: inline-block;
+}
+
+.note-tag-filter {
+ 	margin-right: 0.35em;
+ 	font-size: 75%;
+ }
+
+.note-tag-drop-filter {
+ 	margin: 0.35em;
+ 	font-size: 75%;
+ }
 .note-tag-active 
 {
  	margin-right: 0.35em;
@@ -83,7 +103,7 @@ body {
 	margin: 10px 0px 10px 0px;
 }
 
-.glyph-button, .glyph-menu-button, .note-header-icon, .note-edit-accept, .note-edit-cancel, .note-edit-accept-disabled, .note-edit-cancel-disabled
+.glyph-button, .note-header-icon-left, .note-header-icon, .note-header-icon-nospace, .note-edit-accept, .note-edit-cancel, .note-edit-accept-disabled, .note-edit-cancel-disabled
 {
 	opacity: 0.45;
 	background-color: transparent;
@@ -102,8 +122,23 @@ body {
     margin-left: 7px;
 }
 
+.note-header-icon-left
+{
+	margin-right: 7px;
+}
+
 .glyph-menu-button
 {
+	opacity: 0.45;
+	background-color: transparent;
+    background-repeat: no-repeat;
+    border: none;
+    cursor: pointer;
+    overflow: hidden;
+    outline:none;
+    padding:0px;
+    margin:0px;
+    font-size: small;
 	margin-right: 5px;
 }
 
@@ -129,11 +164,6 @@ body {
 {
 	margin-top: 5px;
 	display: inline-block;
-/*	background-color: rgb(255,0,0);
-	border:0px;
-	border-style: none;
-	margin-top:5px;
-*/
 	min-width: calc(100% - 0px);
 	max-width: calc(100% - 0px);
 }
@@ -157,17 +187,21 @@ body {
 	opacity: 1.0;
 }
 
-.icon-rotate
+.pinned
 {
-	transform: rotate(-45deg);
-	color: rgb(0, 0, 0);
+	color: rgb(128, 64, 64);
 	opacity: 1.0;
 }
 
-.message-time
+.unpinned
+{
+	color: rgb(0, 0, 0);
+	opacity: 0.25;
+}
+
+.note-time
 {
 	color: rgba(162, 162, 205, 0.75);
-	width: 100px;
 	font-size: 0.75em;
 	cursor: default;
 }
@@ -197,14 +231,14 @@ body {
 	color: rgba(192, 192, 235);
 }
 
-.utilities-user
+.user-logout
 {
 	opacity: 0.75;
-	margin-left: 10px;
+	margin-left: 7px;
 	text-decoration: none;
 }	    
 
-.utilities-user:hover
+.user-logout:hover
 {
 	opacity: 1.0;
 	text-decoration: none;
@@ -240,7 +274,7 @@ body {
 
 .application-header
 {
-    background: linear-gradient(rgba(255, 255, 255, 1) 65%, rgba(255, 255, 255, 0));
+    background: linear-gradient(rgba(255, 255, 255, 1) 90%, rgba(255, 255, 255, 0));
     position:fixed;
     top: 0em;
     width: calc(100% - 20px);
@@ -251,7 +285,7 @@ body {
 
 .application-list
 {
-	margin-top: 50px;
+	margin-top: 100px;
 }
 
 /* bootstrap ui override */

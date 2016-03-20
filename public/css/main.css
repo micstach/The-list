@@ -2,8 +2,9 @@
 {
 	text-align: center;
 	padding: 5px;
-	background-image: url("/res/todo_64_no_corners.png");
+	background-image: url("/res/todo_256_no_corners.png");
 	background-position: center;
+	background-size: 64px 64px;
 	height:64px;
 	background-repeat: no-repeat;
 	background-color: rgb(0, 148, 255) 

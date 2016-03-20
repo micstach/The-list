@@ -4,6 +4,7 @@ var cookieParser = require('cookie-parser') ;
 var mongodb = require('mongodb') ; 
 var bodyParser = require('body-parser') ;
 var moment = require('moment');
+var nodemailer = require('nodemailer') ;
 
 var environment = require('./environment.js') ;
 var utils = require('./utils.js');
@@ -25,7 +26,7 @@ app.use(bodyParser.urlencoded({
 app.use(cookieParser('cookie-guid'));  
 
 app.use(session({
-  secret: 'super-secret',
+  secret: '8637DA5C-F544-4132-AE53-309005ECC4D0',
   resave: false,
   saveUninitialized: true
 }));
@@ -64,7 +65,7 @@ app.get('/', function(req, res) {
       downloadLink = '/clients/android/TheListClient.apk';
     }
 
-    res.render('landing', {downloadLink:downloadLink}) ;
+    res.render('landing', {downloadLink:downloadLink, userAgent:req.headers['user-agent']}) ;
   }
   else {
     res.redirect('/home') ;
@@ -96,10 +97,16 @@ app.get('/home', authorize, function(req, res) {
 
 app.get('/login', function(req, res) {
   if (req.session.userid !== undefined){
-    res.redirect('/');
+    res.redirect('/home');
   }
   else {
-    res.render('login', {error:null}) ;
+    console.log("Request parameters: " + JSON.stringify(req.query));
+
+    var parameters = {
+      error: null,
+      user: req.query.user
+    } ;
+    res.render('login', parameters) ;
   }
 }) ;
 
@@ -132,7 +139,7 @@ app.post('/register', function(req, res) {
           res.render('register', {user: req.body.user, error:"Hasła nie pasują !"});
         }
 
-        res.redirect('/login');
+        res.redirect('/login?user=' + req.body.user);
       }
       else {
         db.close() ;
@@ -204,7 +211,7 @@ app.get('/api/notes', authorizeAPI, function(req, res) {
   }) ;
 }) ;
 
-app.post('/api/note/create', authorize, function(req, res){
+app.post('/api/note/create', authorizeAPI, function(req, res){
   console.log("api: note create:" + JSON.stringify(req.body));
    
   var userid = req.session.userid ;
@@ -230,8 +237,8 @@ app.post('/api/note/create', authorize, function(req, res){
   }
 }) ;
 
-app.post('/api/note/delete/:id', authorize, function(req, res){
-  console.log("api: delete message: " + req.params.id) ;
+app.post('/api/note/delete/:id', authorizeAPI, function(req, res){
+  console.log("api: delete note: " + req.params.id) ;
 
   var mongoUrl = environment.config.db() ;  
   var userid = req.session.userid ;
@@ -245,8 +252,8 @@ app.post('/api/note/delete/:id', authorize, function(req, res){
   }) ;
 }) ;
 
-app.put('/api/note/update/:id', authorize, function(req, res){
-  console.log("api: update message: " + req.params.id) ;
+app.put('/api/note/update/:id', authorizeAPI, function(req, res){
+  console.log("api: update note: " + req.params.id) ;
 
   var mongoUrl = environment.config.db() ;  
   var userid = req.session.userid ;
@@ -263,8 +270,8 @@ app.put('/api/note/update/:id', authorize, function(req, res){
 
 }) ;
 
-app.post('/api/message/removeall', authorize, function(req, res){
-  console.log("api: remove all message(s)") ;
+app.post('/api/notes/removeall', authorizeAPI, function(req, res){
+  console.log("api: remove all notes(s)") ;
 
   var mongoUrl = environment.config.db() ;  
   var userid = req.session.userid ;
@@ -278,14 +285,14 @@ app.post('/api/message/removeall', authorize, function(req, res){
   }) ;
 }) ;
 
-app.put('/api/message/check/:id/:state', authorize, function(req, res){
-  console.log("api: message check: " + JSON.stringify(req.params));
+app.put('/api/note/check/:id/:state', authorizeAPI, function(req, res){
+  console.log("api: note check: " + JSON.stringify(req.params));
   var userid = req.session.userid ;
 
   MongoClient.connect(environment.config.db(), function(err, db) {
     db.collection('notes').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, item){
       item.checked = (req.params.state === "true") ;
-      item.timestamp = moment().valueOf() ;
+      //item.timestamp = moment().valueOf() ;
       db.collection('notes').save(item) ;
       db.close() ;
       res.sendStatus(200); 
@@ -293,8 +300,8 @@ app.put('/api/message/check/:id/:state', authorize, function(req, res){
   }) ;
 });
 
-app.put('/api/message/pin/:id/:state', authorize, function(req, res){
-  console.log("api: message pin: " + JSON.stringify(req.params));
+app.put('/api/note/pin/:id/:state', authorizeAPI, function(req, res){
+  console.log("api: note pin: " + JSON.stringify(req.params));
   var userid = req.session.userid ;
 
   MongoClient.connect(environment.config.db(), function(err, db) {
@@ -306,6 +313,74 @@ app.put('/api/message/pin/:id/:state', authorize, function(req, res){
     }) ;
   }) ;
 });
+
+app.get('/api/user/config', authorizeAPI, function(req, res) {
+  console.log("api: get user config");
+
+  MongoClient.connect(environment.config.db(), function(err, db) {
+     db.collection('users').findOne({_id: mongodb.ObjectID(req.session.userid)}, function(err, user) {
+      console.log("User config: " + JSON.stringify(user.config)) ;
+      res.writeHead(200, {'Content-Type': 'application/json'});
+      res.end(JSON.stringify({config:user.config}));
+      db.close() ;
+    }) ;
+  }) ;
+}) ;
+
+app.put('/api/user/config', authorizeAPI, function(req, res) {
+  console.log("api: put user config: " + JSON.stringify(req.body));
+
+  MongoClient.connect(environment.config.db(), function(err, db) {
+    db.collection('users').findOne({_id: mongodb.ObjectID(req.session.userid)}, function(err, user) {
+      
+      user.config = {
+        tags: req.body.tags
+      } ;
+
+      console.log("Saving user: " + JSON.stringify(user));
+
+      db.collection('users').save(user) ;
+      db.close() ;
+      res.sendStatus(200); 
+    }) ;
+  }) ;
+}) ;
+
+app.post('/api/reset', function(req, res){
+  var response = {
+    email: req.query.email
+  };
+
+  if (process.env.LOCAL_NODEJS_IP !== undefined) {
+    var transporter = nodemailer.createTransport('smtps://todo.noreply%40poczta.onet.pl:Stasiek1@smtp.poczta.onet.pl') ;
+
+    // setup e-mail data with unicode symbols
+    var mailOptions = {
+        from: 'todo.noreply@poczta.onet.pl', // sender address
+        to: req.query.email, // list of receivers
+        subject: 'Hello !', // Subject line
+        text: 'Hello world !', // plaintext body
+        html: '<b>Hello world !</b>' // html body
+    };
+
+    // send mail with defined transport object
+    transporter.sendMail(mailOptions, function(error, info){
+        if(error){
+            return console.log(error);
+        }
+        console.log('Message sent: ' + info.response);
+        
+        response.info = info.response ;
+        res.writeHead(200, {'Content-Type': 'application/json'});
+        res.end(JSON.stringify(response));
+    });
+  }
+  else {
+    response.info = "unavailable" ;
+    res.writeHead(200, {'Content-Type': 'application/json'});
+    res.end(JSON.stringify(response));
+  }
+}) ;
 
 app.get('*', function(req, res){
   res.redirect('/');

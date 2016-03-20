@@ -80,12 +80,37 @@ function resizeTextArea(className) {
     });
 }
 
-$(document).ready(function() {
+
+var repositionListCallCounter = 0 ;
+var repositionListHeaderSizeParameter = 0 ;
+function repositionList() {
 	
-    $('.application-list').css('margin-top', $('.application-header').outerHeight() + 'px') ;
+	var currentSize = $('.application-header').outerHeight() ;
+	
+	if (currentSize != repositionListHeaderSizeParameter) {
+		$('.application-list').css('margin-top', currentSize +  'px') ;
+		repositionListHeaderSizeParameter = currentSize ;
+		repositionListCallCounter = 0 ;
+	}
+	else {
+		// call repositionList until we detect change in size ;
+		if (repositionListCallCounter < 100)
+			setTimeout(repositionList, repositionListCallCounter * 10) ;
+
+		repositionListCallCounter ++ ;
+	}
+}
+
+$(document).ready(function() {
+    
+    repositionList() ;
 
     $('[data-toggle="tooltip"]').tooltip() ;
     
     $('#message-create-text').attr('autocomplete','off');
 
+}) ;
+
+$(window).resize(function() {
+    repositionList() ;
 }) ;
