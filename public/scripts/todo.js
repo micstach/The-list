@@ -242,7 +242,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     }
 
     $scope.cancelTimer($scope.autoRefreshTimer) ;       
-    $scope.autoRefreshTimer = $timeout($scope.getItems, result.refreshDelay) ;
+    //$scope.autoRefreshTimer = $timeout($scope.getItems, result.refreshDelay) ;
   }
 
   $scope.initialize = function() {
@@ -285,6 +285,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
   $scope.createNewNote = function() {
     $scope.cancelTimer($scope.autoRefreshTimer) ;  
+    $scope.cancelDeleyedRefresh();
 
     var note = {
         text: '', 
@@ -305,6 +306,9 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   }
 
   $scope.enterEditingMode = function(note) {
+    $scope.cancelTimer($scope.autoRefreshTimer) ;  
+    $scope.cancelDeleyedRefresh();
+
     note.changeAccepted = false ;
 
     note.editing = true ;
@@ -315,9 +319,6 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       if (note._id != item._id)
           item.editing = false ;
     });
-
-    $scope.cancelTimer($scope.autoRefreshTimer) ;  
-    $scope.cancelDeleyedRefresh();
   }
 
   $scope.acceptChanges = function(note) {
@@ -456,21 +457,21 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   };
 
   $scope.cancelDeleyedRefresh = function() {
-    if ($scope.deleyedRefreshTimeout !== undefined) {
-      if ($scope.deleyedRefreshTimeout !== null) {
-        $timeout.cancel($scope.deleyedRefreshTimeout) ;  
-        $scope.deleyedRefreshTimeout = null ;
+    if ($scope.delayedRefreshTimeout !== undefined) {
+      if ($scope.delayedRefreshTimeout !== null) {
+        $timeout.cancel($scope.delayedRefreshTimeout) ;  
+        $scope.delayedRefreshTimeout = null ;
       }
     }
   }
 
   $scope.deleyedRefresh = function() {
-    if ($scope.deleyedRefreshTimeout === undefined)
-        $scope.deleyedRefreshTimeout = null ;
+    if ($scope.delayedRefreshTimeout === undefined)
+        $scope.delayedRefreshTimeout = null ;
 
     $scope.cancelDeleyedRefresh();
       
-    $scope.deleyedRefreshTimeout = $timeout(function() {$scope.getItems(false)}, 5000) ;
+    $scope.delayedRefreshTimeout = $timeout(function() {$scope.getItems(false)}, 5000) ;
   }
 
   $scope.refresh = function()

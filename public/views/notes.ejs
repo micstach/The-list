@@ -57,7 +57,7 @@
 
     <div class="container application-list">
       <ul class="list-group">
-        <li ng-repeat="note in data.notes" ng-class="note.pinned ? 'message-pinned' : (note.checked ? 'message-checked' : '')" id="{{note._id}}" class="list-group-item">
+        <li ng-repeat="note in data.notes track by $index" ng-class="note.pinned ? 'message-pinned' : (note.checked ? 'message-checked' : '')" id="{{note._id}}" class="list-group-item">
           <div class="message-header">
             <span class="message-header-left">
               <button ng-show="!note.editing" ng-click="toggleItem(note)" ng-class="note.checked ? 'glyphicon-check' : 'glyphicon-unchecked'" class="note-header-icon-nospace glyphicon"></button>
