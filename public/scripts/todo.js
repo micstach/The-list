@@ -102,7 +102,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     }
 
     if (update) {
-      $scope.getItems() ;
+      $scope.organizeNotes($scope.serverData.notes, false) ;
       
       $timeout(repositionList, 0) ;
 
