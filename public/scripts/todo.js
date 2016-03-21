@@ -82,6 +82,11 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
     resizeTextArea('.note-edit-input') ;
   }
+
+  $scope.searchButtonClicked = function() {
+    $scope.searchTextBoxVisible = !$scope.searchTextBoxVisible ;
+    $scope.organizeNotes($scope.serverData.notes, false) ;
+  }
   
   $scope.searchTextChanged = function(searchText) {
     $scope.organizeNotes($scope.serverData.notes, false) ;
@@ -524,6 +529,27 @@ angular.module('Index').directive('focus', function($timeout, $parse) {
           $timeout(function() {
             element[0].focus(); 
             resizeTextArea('.note-edit-input');
+          }, 100);
+        }
+      });
+      // element.bind('blur', function() {
+      //    scope.$apply(model.assign(scope, false));
+      // });
+    }
+  };
+});
+
+angular.module('Index').directive('focusSearch', function($timeout, $parse) {
+  return {
+    link: function(scope, element, attrs) {
+      var model = $parse(attrs.focusSearch);
+      scope.$watch(model, function(value) {
+        if(value === true) { 
+          $timeout(function() {
+            element[0].focus(); 
+          }, 0);
+          $timeout(function() {
+            element[0].focus(); 
           }, 100);
         }
       });
