@@ -19,6 +19,8 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   $scope.lastTag = undefined;
   $scope.tags = [] ;
   $scope.selectedTags = [];
+  $scope.searchText = "" ;
+  $scope.searchTextBoxVisible = false ;
   $scope.autoRefreshTimer = null;
   $scope.adding = false ;
 
@@ -81,6 +83,10 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     resizeTextArea('.note-edit-input') ;
   }
   
+  $scope.searchTextChanged = function(searchText) {
+    $scope.organizeNotes($scope.serverData.notes, false) ;
+  }
+
   $scope.setFilter = function(tag) {
     
     var update = false ;
@@ -107,6 +113,13 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     }
   }
 
+  $scope.notANewNotesCount = function() {
+    if ($scope.data !== undefined)
+      return $scope.data.notes.filter(function(note){return note._id !== undefined;}).length ;
+    else
+      return 0 ;
+  }
+
   $scope.cancelFilter = function(tag) {
     $scope.selectedTags.splice($scope.selectedTags.indexOf(tag), 1);  
     $scope.getItems() ;    
@@ -117,6 +130,12 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       .put('/api/user/config', {tags: $scope.selectedTags})
       .success(function() {
       });
+  }
+
+  $scope.queryItem = function(note) {
+    if (note._id !== undefined) {
+
+    }
   }
 
   $scope.filterNotes = function(notes, fromServer) {
@@ -200,6 +219,14 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     var refreshDelay = ((1000 * 60) * 60) ; // one hour
     var lowestRefreshDelay = (1000 * 15) ; 
 
+    if ($scope.searchTextBoxVisible) {
+      if ($scope.searchText !== null && $scope.searchText.length > 0) {
+        filteredNotes = filteredNotes.filter(function(note) { 
+          return note.text.toLowerCase().indexOf($scope.searchText.toLowerCase()) !== -1 ;
+        }) ;
+      }
+    }
+
     filteredNotes.forEach(function(note) {
       var delta = Date.now() - (new Date(note.timestamp)) ;
       if (delta < refreshDelay) {
@@ -237,12 +264,11 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     var result = $scope.filterNotes(notes, fromServer) ;
     $scope.data = {notes: result.notes};
 
-    if ($scope.data.notes.length === 0){
+    if ($scope.data.notes.length === 0 && $scope.searchText.length == 0){
       $scope.createNewNote();
     }
 
     $scope.cancelTimer($scope.autoRefreshTimer) ;       
-    //$scope.autoRefreshTimer = $timeout($scope.getItems, result.refreshDelay) ;
   }
 
   $scope.initialize = function() {
@@ -271,6 +297,9 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     if (fromServer) {
       $http.get('/api/notes')
         .success(function(data) { 
+          // save server data for future filtering
+          $scope.serverData = {notes: data.notes} ;
+
           $scope.organizeNotes(data.notes, fromServer) ;
           $scope.userid = data.userid; 
         })
@@ -298,7 +327,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
         users: []
       } ;
 
-      note.timeVerbose = "nowa" ;//getTimeString(note.timestamp) ;
+      note.timeVerbose = "nowa" ;
 
       // insert note stub
       $scope.data.notes.splice(0, 0, note);
@@ -355,7 +384,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     }
 
     $scope.adding = false ;
-    $scope.deleyedRefresh() ;
+    $scope.deleyedRefresh(0) ;
   };
 
   $scope.cancelChanges = function($event, note){
@@ -492,6 +521,10 @@ angular.module('Index').directive('focus', function($timeout, $parse) {
             element[0].focus(); 
             resizeTextArea('.note-edit-input');
           }, 0);
+          $timeout(function() {
+            element[0].focus(); 
+            resizeTextArea('.note-edit-input');
+          }, 100);
         }
       });
       // element.bind('blur', function() {

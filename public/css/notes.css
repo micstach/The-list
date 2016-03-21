@@ -91,7 +91,7 @@ body {
 	margin-top: 0.5em;
 	font-size: 1.0em;
 	overflow:hidden;
-	cursor: pointer;
+	cursor: default;
 }
 
 .note-text-pinned
