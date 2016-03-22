@@ -41,15 +41,15 @@
             </ul>
           </div>
           <button ng-show="notANewNotesCount() > 0 || searchText.length > 0" ng-click="!adding && searchButtonClicked()" class="btn glyph-menu-button glyphicon glyphicon-search" ng-class="adding ? 'disabled':''" type="button" ></button>
-          <input ng-show="searchTextBoxVisible" focus-search="searchTextBoxVisible" ng-model="searchText" ng-change="searchTextChanged(searchText)" class="form-control input-xs" style="display:inline-block;width:100px;font-size:75%;margin-right:7px;height:20px;"></input> 
+          <input ng-show="searchTextBoxVisible" focus-search="searchTextBoxVisible" ng-model="searchText" ng-change="searchTextChanged(searchText)" class="form-control input-xs search-input"></input> 
           <button ng-show="notANewNotesCount() > 0" ng-click="!adding && deleteAllItems()" class="btn glyph-menu-button glyphicon glyphicon-trash" ng-class="adding ? 'disabled':''" type="button" ></button>
           <span class="pull-right">
-            <span class="user" data-toggle="tooltip" data-placement="bottom" title="Witaj <%= username %>!"><%= username %></span>
+            <!-- <span class="user" data-toggle="tooltip" data-placement="bottom" title="Witaj <%= username %>!"><%= username %></span> -->
             <% if (locals.desktopClient == false) { %>
               <div class="btn-group">
-                <button type="button" data-toggle="dropdown" class="btn dropdown-toggle glyph-menu-button glyphicon glyphicon-cog"></button>
+                <button type="button" data-toggle="dropdown" class="btn btn-link btn-md dropdown-toggle" style="text-decoration: none;"><%= username %> <span class="glyphicon glyphicon-cog"></span></button>
                 <ul class="dropdown-menu-right dropdown-menu scrollable-menu">
-                  <li><a href="/logoff"><button class="glyph-menu-button btn glyphicon glyphicon-log-out pull-left"></button>Wyloguj</a></li>
+                  <li><a href="/logoff">Wyloguj</a></li>
                 </ul>
               </div>
             <% } %>

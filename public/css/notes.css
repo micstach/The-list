@@ -9,6 +9,15 @@ body {
 	color: rgb(132, 132, 175);
 }
 
+.search-input
+{
+	display:inline-block;
+	width:100px;
+	font-size:75%;
+	margin-right:7px;
+	height:25px;"
+}
+
 .items-counter
 {
 	margin-right: 5px;
