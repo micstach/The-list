@@ -44,8 +44,9 @@
           <input ng-show="searchTextBoxVisible" focus-search="searchTextBoxVisible" ng-model="searchText" ng-change="searchTextChanged(searchText)" class="form-control input-xs search-input"></input> 
           <button ng-show="notANewNotesCount() > 0" ng-click="!adding && deleteAllItems()" class="btn glyph-menu-button glyphicon glyphicon-trash" ng-class="adding ? 'disabled':''" type="button" ></button>
           <span class="pull-right">
-            <!-- <span class="user" data-toggle="tooltip" data-placement="bottom" title="Witaj <%= username %>!"><%= username %></span> -->
-            <% if (locals.desktopClient == false) { %>
+            <% if (locals.desktopClient == true) { %>
+            <span class="user" data-toggle="tooltip" data-placement="bottom" title="Witaj <%= username %>!"><%= username %></span>
+            <% } else { %>
               <div class="btn-group">
                 <button type="button" data-toggle="dropdown" class="btn btn-link btn-md dropdown-toggle" style="text-decoration: none;"><%= username %> <span class="glyphicon glyphicon-cog"></span></button>
                 <ul class="dropdown-menu-right dropdown-menu scrollable-menu">

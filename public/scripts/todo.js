@@ -379,6 +379,8 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     note.newTags = [] ;
     note.editing = false ;
     note.modified = false ;
+    note.text = escapeHtmlEntities(note.text);
+
     note.outputText = $sce.trustAsHtml(linkify.github(note.text)) ;
 
     if (note._id === undefined) {

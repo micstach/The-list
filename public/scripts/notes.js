@@ -18,6 +18,10 @@ function finishesWithArray(referenceValue, arr)
 	return arr.filter(function(endingValue) { return finishesWith(referenceValue, endingValue); }).length > 0 ;
 }
 
+function escapeHtmlEntities(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 function getTimeString(timestamp)
 {
 	var now = Date.now() ;
