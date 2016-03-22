@@ -227,8 +227,14 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     if ($scope.searchTextBoxVisible) {
       if ($scope.searchText !== null && $scope.searchText.length > 0) {
         filteredNotes = filteredNotes.filter(function(note) { 
-          return note.text.toLowerCase().indexOf($scope.searchText.toLowerCase()) !== -1 ||
-                note.tags.filter(function(tag) { return tag.toLowerCase().indexOf($scope.searchText.toLowerCase()) !== -1;}).length > 0;
+
+          var textFoundInNoteText = note.text.toLowerCase().indexOf($scope.searchText.toLowerCase()) !== -1 ;
+          var textFoundInNoteTags = false ;
+          if (note.tags !== undefined && note.tags !== null) {
+            textFoundInNoteTags = note.tags.filter(function(tag) { return tag.toLowerCase().indexOf($scope.searchText.toLowerCase()) !== -1;}).length > 0;
+          }
+          return textFoundInNoteText || textFoundInNoteTags ;
+
         }) ;
       }
     }
