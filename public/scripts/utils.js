@@ -89,7 +89,7 @@ var repositionListCallCounter = 0 ;
 var repositionListHeaderSizeParameter = 0 ;
 function repositionList() {
 	
-	var currentSize = $('.application-header').outerHeight() ;
+	var currentSize = $('.application-header').outerHeight();
 	
 	if (currentSize != repositionListHeaderSizeParameter) {
 		$('.application-list').css('margin-top', currentSize +  'px') ;
@@ -103,6 +103,52 @@ function repositionList() {
 
 		repositionListCallCounter ++ ;
 	}
+}
+
+function detectPreformatedText(text) {
+
+  var textToReplace = [] ;
+	var preformatedTags = [] ;
+	var re = new RegExp('```', 'gi');
+	while (re.exec(text))
+	  preformatedTags.push(re.lastIndex - ('```'.length)) ;
+
+	if (preformatedTags.length > 0 && preformatedTags.length % 2 === 0) {
+	  for (var i=0; i<preformatedTags.length; i+=2)
+	  {
+	    var originalTextBlock = text.slice(preformatedTags[i], preformatedTags[i+1] + '```'.length) ;
+
+	    var transformedTextBlock = originalTextBlock ;
+	    var index = 1 ;
+	    transformedTextBlock = transformedTextBlock.substr(0, index)  + 'A' + transformedTextBlock.substr(index+1, transformedTextBlock.length-(index+1));
+	    index = transformedTextBlock.length - 2;
+	    transformedTextBlock = transformedTextBlock.substr(0, index)  + 'B' + transformedTextBlock.substr(index+1, transformedTextBlock.length-(index+1));
+
+	    if (transformedTextBlock[3] == '\n')
+	    {
+	      index = 3 ;
+	      transformedTextBlock = transformedTextBlock.substr(0, index)  + '' + transformedTextBlock.substr(index+1, transformedTextBlock.length-(index+1));
+	    }
+
+      var singleLine = originalTextBlock.substr(3, originalTextBlock.length - 6).indexOf('\n') === -1 ; 
+
+      if (singleLine)
+	      transformedTextBlock = transformedTextBlock.replace("`A`", "<div class='preformated-text-inline'>");
+      else
+        transformedTextBlock = transformedTextBlock.replace("`A`", "<div class='preformated-text'>");
+
+	    transformedTextBlock = transformedTextBlock.replace("`B`", "</div>") ;
+
+      textToReplace.push({src: originalTextBlock, dst: transformedTextBlock});
+	  }
+	}	
+
+  textToReplace.forEach(function(transformation) {
+    text = text.replace(transformation.src, transformation.dst) ;
+    text = text.replace('</div>\n', '</div>');
+  }) ;
+
+  return text ;
 }
 
 $(document).ready(function() {
