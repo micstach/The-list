@@ -115,7 +115,7 @@ app.get('/register', function(req, res) {
 }) ;
 
 app.post('/register', function(req, res) {
-  console.log('api register: %s, %s, %s', req.body.user, pwd, retypedPwd); 
+  console.log('api register: %s, %s, %s', req.body.user, req.body.pwd, req.body['re-pwd']); 
 
   if (req.body.user.length == 0) {
     res.render('register', {user: req.body.user, user_error:"Niepoprawna nazwa użytkownika !"});      
@@ -128,18 +128,25 @@ app.post('/register', function(req, res) {
   
   // register if not exists
   MongoClient.connect(mongoUrl, function(err, db) {
-    db.collection('users').findOne({name: req.body.user}, function(err, user) {
+
+    var users = db.collection('users') ;
+
+    users.findOne({name: req.body.user}, function(err, user) {
       if (user == null) {
         if (pwd == retypedPwd) {
-          db.collection('users').save({name: req.body.user, password: pwd}) ;
-          db.close() ;
+          var usr = {name: req.body.user, password: pwd} ;
+          
+          users.save(usr, null, function(err, result) {           
+            users.findOne(usr, function(err, user) {
+              utils.helpers.storeUserInSession(req, res, user) ;
+              db.close();
+            }) ;
+          }) ;
         }
         else {
           db.close() ;
           res.render('register', {user: req.body.user, error:"Hasła nie pasują !"});
         }
-
-        res.redirect('/login?user=' + req.body.user);
       }
       else {
         db.close() ;
@@ -166,18 +173,9 @@ app.post('/login', function(req, res) {
 
     MongoClient.connect(mongoUrl, function(err, db) {
       db.collection('users').findOne({name: req.body.user, password: pwd}, function(err, user) {
-          console.log("mongo err: %s", JSON.stringify(err));
-          console.log("mongo user: %s", JSON.stringify(user));
-
-          if (user !== null) {
-            req.session.userid = user._id ;
-            res.redirect('/home');
-          }
-          else {
-            console.log("user not verified !") ;
-            req.session.destroy();
-            res.render('login', {error: "Niepoprawny użytkownik lub hasło !"}); 
-          }
+          
+          utils.helpers.storeUserInSession(req, res, user) ;
+          
           db.close();
         });
     }) ;

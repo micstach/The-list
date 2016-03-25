@@ -8,7 +8,7 @@
       <button ng-class="(note.checked) ? 'glyphicon-check' : 'glyphicon-unchecked'" class="note-header-icon glyphicon"></button>
     </span> 
   </div>
-  <div class="note-text" linkify>{{note.text}}</div>
+  <div ng-bind-html="note.outputText" class="note-text">{{note.outputText}}</div>
   <div class="note-tags">
     <span ng-repeat="tag in note.tags track by $index" class="note-tag-inactive label label-primary">{{tag}}</span>
   </div>

@@ -19,6 +19,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   $scope.lastTag = undefined;
   $scope.tags = [] ;
   $scope.selectedTags = [];
+  $scope.server = []
   $scope.searchText = "" ;
   $scope.searchTextBoxVisible = false ;
   $scope.autoRefreshTimer = null;
@@ -85,14 +86,14 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
   $scope.searchButtonClicked = function() {
     $scope.searchTextBoxVisible = !$scope.searchTextBoxVisible ;
-    $scope.organizeNotes($scope.serverData.notes, false) ;
+    $scope.organizeNotes($scope.server.notes, false) ;
   }
   
   $scope.searchTextChanged = function(searchText) {
-    $scope.organizeNotes($scope.serverData.notes, false) ;
+    $scope.organizeNotes($scope.server.notes, false) ;
   }
 
-  $scope.setFilter = function(tag) {
+  $scope.selectTag = function(tag) {
     
     var update = false ;
 
@@ -107,7 +108,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     }
 
     if (update) {
-      $scope.organizeNotes($scope.serverData.notes, false) ;
+      $scope.organizeNotes($scope.server.notes, false) ;
       
       $timeout(repositionList, 0) ;
 
@@ -118,7 +119,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     }
   }
 
-  $scope.notANewNotesCount = function() {
+  $scope.notesCount = function() {
     if ($scope.data !== undefined)
       return $scope.data.notes.filter(function(note){return note._id !== undefined;}).length ;
     else
@@ -143,8 +144,29 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     }
   }
 
-  $scope.filterNotes = function(notes, fromServer) {
-    
+  $scope.transformNoteForView = function(note, clear) {
+    if (clear) {
+      note.editing = false ;
+      note.modified = false ;
+      note.removedTags = [] ;
+      note.newTags = [] ;
+    }
+
+    note.outputText = escapeHtmlEntities(note.text);
+    note.outputText = note.outputText.replace(/\r\n/g, '\n');
+    note.outputText = note.outputText.replace(/\n/g, '<br/>');
+    note.outputText = note.outputText.replace(/ /g, '&nbsp;');
+    note.outputText = $sce.trustAsHtml(linkify.github(note.outputText)) ;
+    note.timeVerbose = getTimeString(note.timestamp);
+
+    if (note.tags !== undefined && note.tags !== null) {
+      note.tags.sort(function(a, b) {
+        return a.toLowerCase().localeCompare(b.toLowerCase());
+      });      
+    }
+  }
+
+  $scope.extractTagsFromNotes = function(notes) {
     $scope.tags = [] ;
     notes.forEach(function(note) {
       if ($scope.selectedTags.length > 0) {
@@ -176,6 +198,11 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     $scope.selectedTags.forEach(function(tag){
       $scope.tags.splice($scope.tags.indexOf(tag), 1) ;
     }) ;
+  }
+
+  $scope.filterNotes = function(notes, fromServer) {
+    
+    $scope.extractTagsFromNotes(notes);
 
     var taggedNotes = [] ;
 
@@ -248,18 +275,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
           refreshDelay = lowestRefreshDelay ;    
       }
 
-      // extend model
-      if (fromServer) {
-        note.editing = false ;
-        note.modified = false ;
-        note.removedTags = [] ;
-      }
-      
-      note.outputText = $sce.trustAsHtml(linkify.twitter(note.text));
-
-      note.timeVerbose = getTimeString(note.timestamp);
-      if (note.tags !== undefined && note.tags !== null)
-        note.tags.sort(function(a, b) {return a.toLowerCase().localeCompare(b.toLowerCase());});
+      $scope.transformNoteForView(note, fromServer);
     });
 
     return {refreshDelay: refreshDelay, notes: filteredNotes} ;
@@ -310,7 +326,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       $http.get('/api/notes')
         .success(function(data) { 
           // save server data for future filtering
-          $scope.serverData = {notes: data.notes} ;
+          $scope.server = {notes: data.notes} ;
 
           $scope.organizeNotes(data.notes, fromServer) ;
           $scope.userid = data.userid; 
@@ -375,13 +391,8 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       note.text = $scope.removeTags(note.text, note.tags) ;
     }
 
-    note.removedTags = [] ;
-    note.newTags = [] ;
-    note.editing = false ;
-    note.modified = false ;
-    note.text = escapeHtmlEntities(note.text);
-
-    note.outputText = $sce.trustAsHtml(linkify.github(note.text)) ;
+    $scope.transformNoteForView(note, true) ;
+    $scope.extractTagsFromNotes($scope.data.notes) ;
 
     if (note._id === undefined) {
       $http

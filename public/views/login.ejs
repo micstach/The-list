@@ -24,6 +24,9 @@
     <div class="container">
       <form action="/login" method="post" class="message-form">
         <div class="form-group">
+          <% if (locals.error) { %>
+            <div class="alert alert-danger" role="alert"><%= error %></div>
+          <% } %> 
           <label for="user">Użytkownik</label>
           <% if (locals.user) { %>
             <input id="user" name="user" class="form-control input-default" placeholder="Podaj nazwę użytkownika" value="<%= user %>">
@@ -34,12 +37,7 @@
         <div class="form-group">
           <label for="pwd">Hasło</label>
           <input id="pwd" type="password" name="pwd" class="form-control input-default" placeholder="Podaj hasło">
-        </div>
-        <% if (locals.error) { %>
-          <div class="form-group">
-            <text class="error"><%= error %></text>
-          </div>
-        <% } %>  
+        </div> 
         <button type="submit" class="form-control btn btn-primary"><strong>Zaloguj się</strong></button>
       </form>
     </div>

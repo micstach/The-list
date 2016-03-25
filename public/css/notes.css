@@ -55,7 +55,6 @@ body {
 .note-tag-filter, .note-tag-drop-filter
 {
  	cursor: default;
- 	display: inline-block;
 }
 
 .note-tag-filter {
@@ -66,7 +65,9 @@ body {
 .note-tag-drop-filter {
  	margin: 0.35em;
  	font-size: 75%;
+ 	cursor: pointer;
  }
+
 .note-tag-active 
 {
  	margin-right: 0.35em;
@@ -112,7 +113,7 @@ body {
 	margin: 10px 0px 10px 0px;
 }
 
-.glyph-button, .note-header-icon-left, .note-header-icon, .note-header-icon-nospace, .note-edit-accept, .note-edit-cancel, .note-edit-accept-disabled, .note-edit-cancel-disabled
+.glyph-button, .glyph-menu-button, .glyph-menu-button-right, .note-header-icon-left, .note-header-icon, .note-header-icon-nospace, .note-edit-accept, .note-edit-cancel, .note-edit-accept-disabled, .note-edit-cancel-disabled
 {
 	opacity: 0.45;
 	background-color: transparent;
@@ -136,19 +137,19 @@ body {
 	margin-right: 7px;
 }
 
+.glyph-menu-button, .glyph-menu-button-right
+{
+    font-size: small;
+}
+
 .glyph-menu-button
 {
-	opacity: 0.45;
-	background-color: transparent;
-    background-repeat: no-repeat;
-    border: none;
-    cursor: pointer;
-    overflow: hidden;
-    outline:none;
-    padding:0px;
-    margin:0px;
-    font-size: small;
 	margin-right: 5px;
+}
+
+.glyph-menu-button-right
+{
+	margin-top: 5px;
 }
 
 .note-edit-accept
@@ -286,7 +287,7 @@ body {
     background: linear-gradient(rgba(255, 255, 255, 1) 90%, rgba(255, 255, 255, 0));
     position:fixed;
     top: 0em;
-    width: calc(100% - 20px);
+    width: ;
     z-index:100;
     padding-top: 1em;
     padding-bottom: 1em;
@@ -294,7 +295,7 @@ body {
 
 .application-list
 {
-	margin-top: 100px;
+	margin-top: 60px;
 }
 
 /* bootstrap ui override */
