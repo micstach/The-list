@@ -34,7 +34,7 @@
           <div ng-show="data.notes.length > 0 && (tags.length > 1 || selectedTags.length > 0)" class="btn-group">
             <button type="button" class="btn dropdown-toggle glyph-menu-button glyphicon glyphicon-tag" data-toggle="dropdown" ng-class="adding ? 'disabled':''"></button>
             <ul class="dropdown-menu scrollable-menu">
-              <li ng-show="selectedTags.length > 0" ng-click="selectTag(null)"><a href="#">UsuĹ„ filtrowanie</a></li>
+              <li ng-show="selectedTags.length > 0" ng-click="selectTag(null)"><a href="#">Usuń filtrowanie</a></li>
               <li ng-show="tags.length > 1 && selectedTags.length > 0" role="separator" class="divider"></li>
               <li ng-show="tags.length > 1 || selectedTags.length > 0">
                 <div ng-show="data.notes.length > 1 && tags.length > 1" style="padding-left:7px;"><span ng-repeat="tag in tags track by $index" ng-click="selectTag(tag)" class="note-tag-drop-filter note-tag-active label label-primary">{{tag}}</span><div>

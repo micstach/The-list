@@ -125,8 +125,9 @@ body {
 {
 	margin-top: 0.5em;
 	font-size: 1.0em;
-	overflow:hidden;
+	overflow: hidden;
 	cursor: default;
+	word-break: break-all;
 }
 
 .note-text-pinned
