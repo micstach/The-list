@@ -89,19 +89,37 @@ var repositionListCallCounter = 0 ;
 var repositionListHeaderSizeParameter = 0 ;
 function repositionList() {
 	
-	var currentSize = $('.application-header').outerHeight();
+	// var currentSize = $('.application-header').outerHeight()+10;
 	
-	if (currentSize != repositionListHeaderSizeParameter) {
-		$('.application-list').css('margin-top', currentSize +  'px') ;
-		repositionListHeaderSizeParameter = currentSize ;
-		repositionListCallCounter = 0 ;
-	}
-	else {
-		// call repositionList until we detect change in size ;
-		if (repositionListCallCounter < 100)
-			setTimeout(repositionList, repositionListCallCounter * 10) ;
+	// if (currentSize != repositionListHeaderSizeParameter) {
+	// 	$('.application-list').css('margin-top', currentSize +  'px') ;
+	// 	repositionListHeaderSizeParameter = currentSize ;
+	// 	repositionListCallCounter = 0 ;
+	// }
+	// else {
+	// 	// call repositionList until we detect change in size ;
+	// 	if (repositionListCallCounter < 100)
+	// 		setTimeout(repositionList, repositionListCallCounter * 10) ;
 
-		repositionListCallCounter ++ ;
+	// 	repositionListCallCounter ++ ;
+	// }
+}
+
+function repositionSearchBar(width) {
+	if (width === undefined) {
+		var tagsButtonWidth = $('.tags-button').outerWidth(true) ;
+		var tagsSelectedWidth = $('.tags-selected').outerWidth(true) ;
+		var searchBoxWidth = $('.search-box').outerWidth(true) ;
+
+		var searchBarWidth = $('#content-filter-box').innerWidth() ;
+
+		var diff = searchBarWidth - (tagsButtonWidth + tagsSelectedWidth);
+
+		$('.search-box').outerWidth(diff - 10) ;
+	}
+	else
+	{
+		$('.search-box').outerWidth(width) ;	
 	}
 }
 
@@ -163,4 +181,5 @@ $(document).ready(function() {
 
 $(window).resize(function() {
     repositionList() ;
+    repositionSearchBar() ;
 }) ;

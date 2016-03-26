@@ -29,41 +29,47 @@
     
     <div class="application-header">
       <div class="container">
-        <div class="menu-items">
-          <button type="button" ng-click="!adding && createNewNote()" class="btn glyph-menu-button glyphicon glyphicon-plus-sign" ng-class="adding ? 'disabled':''"></button>
-          <div ng-show="data.notes.length > 0 && (tags.length > 1 || selectedTags.length > 0)" class="btn-group">
+        <button type="button" ng-click="!adding && createNewNote()" class="btn glyphicon glyphicon-plus-sign button-note-add" ng-class="adding ? 'disabled':''"></button>
+        <button ng-click="!adding && deleteAllItems()" class="btn glyph-menu-button glyphicon glyphicon-trash" ng-class="adding ? 'disabled':''" type="button" style="color:white;"></button>
+        <span class="pull-right">
+          <% if (locals.desktopClient == true) { %>
+          <span class="user" data-toggle="tooltip" data-placement="bottom" title="Witaj <%= username %>!"><%= username %></span>
+          <% } else { %>
+            <div class="btn-group">
+              <button type="button" data-toggle="dropdown" class="btn btn-link btn-md dropdown-toggle" style="text-decoration: none; padding-right: 0px; color:white;"><%= username %> <span class="glyphicon glyphicon-option-vertical"></span></button>
+              <ul class="dropdown-menu-right dropdown-menu scrollable-menu">
+                <li><a href="/logoff">Wyloguj</a></li>
+              </ul>
+            </div>
+          <% } %>
+        </span>
+        <div id="content-filter-box" class="note-tags-filter">
+          <div class="btn-group tags-button">
             <button type="button" class="btn dropdown-toggle glyph-menu-button glyphicon glyphicon-tag" data-toggle="dropdown" ng-class="adding ? 'disabled':''"></button>
             <ul class="dropdown-menu scrollable-menu">
               <li ng-show="selectedTags.length > 0" ng-click="selectTag(null)"><a href="#">Usuń filtrowanie</a></li>
               <li ng-show="tags.length > 1 && selectedTags.length > 0" role="separator" class="divider"></li>
               <li ng-show="tags.length > 1 || selectedTags.length > 0">
-                <div ng-show="data.notes.length > 1 && tags.length > 1" style="padding-left:7px;"><span ng-repeat="tag in tags track by $index" ng-click="selectTag(tag)" class="note-tag-drop-filter note-tag-active label label-primary">{{tag}}</span><div>
+                <li ng-repeat="tag in tags track by $index">
+                  <a href="#">
+                    <span  ng-click="selectTag(tag)" class="note-tag-active label label-primary">{{tag}}</span>
+                  </a>
+                </li>
               </li>
             </ul>
           </div>
-          <button ng-show="notesCount() > 0 || searchText.length > 0" ng-click="!adding && searchButtonClicked()" class="btn glyph-menu-button glyphicon glyphicon-search" ng-class="adding ? 'disabled':''" type="button" ></button>
-          <input ng-show="searchTextBoxVisible" focus-search="searchTextBoxVisible" ng-model="searchText" ng-change="searchTextChanged(searchText)" class="form-control input-xs search-input"></input> 
-          <button ng-show="notesCount() > 0" ng-click="!adding && deleteAllItems()" class="btn glyph-menu-button glyphicon glyphicon-trash" ng-class="adding ? 'disabled':''" type="button" ></button>
-          <span class="pull-right">
-            <% if (locals.desktopClient == true) { %>
-            <span class="user" data-toggle="tooltip" data-placement="bottom" title="Witaj <%= username %>!"><%= username %></span>
-            <% } else { %>
-              <div class="btn-group">
-                <button type="button" data-toggle="dropdown" class="btn btn-link btn-md dropdown-toggle" style="text-decoration: none; padding-right: 0px;"><%= username %> <span class="glyphicon glyphicon-option-vertical"></span></button>
-                <ul class="dropdown-menu-right dropdown-menu scrollable-menu">
-                  <li><a href="/logoff">Wyloguj</a></li>
-                </ul>
-              </div>
-            <% } %>
+          <span ng-show="selectedTags.length > 0" class="tags-selected">
+            <span ng-repeat="tag in selectedTags track by $index" class="label label-primary note-tag-filter" ng-click="cancelFilter(tag)">{{tag}}</span>
+            </span>
           </span>
-          <div ng-show="selectedTags.length > 0" class="note-tags">
-            <span ng-repeat="tag in selectedTags track by $index" class="label label-primary note-tag-filter">{{tag}}<span ng-click="cancelFilter(tag)" class="note-tag-remove"><strong>x</strong></span></span>
-          </div>
-        </div>        
+          <span class="search-box">
+            <input type="text" ng-model="searchText" ng-change="searchTextChanged(searchText)" placeholder="Znajdź notatkę..." class="input-box" focus-search="true">
+          </span>
+        </div>
       </div>
     </div>
 
-    <div class="container">
+    <div class="container application-list">
       <ul class="list-group">
         <li ng-repeat="note in data.notes track by $index" ng-class="note.pinned ? 'message-pinned' : (note.checked ? 'message-checked' : '')" id="{{note._id}}" class="list-group-item">
           <div class="message-header">

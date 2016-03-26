@@ -21,7 +21,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   $scope.selectedTags = [];
   $scope.server = []
   $scope.searchText = "" ;
-  $scope.searchTextBoxVisible = false ;
+  $scope.searchTextBoxVisible = true ;
   $scope.autoRefreshTimer = null;
   $scope.adding = false ;
 
@@ -94,7 +94,8 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   }
 
   $scope.selectTag = function(tag) {
-    
+    // $timeout(function() { repositionSearchBar(0); } , 0) ;
+    $('.search-box').outerWidth(0) ;
     var update = false ;
 
     if (tag === null) {
@@ -111,6 +112,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       $scope.organizeNotes($scope.server.notes, false) ;
       
       $timeout(repositionList, 0) ;
+      $timeout(repositionSearchBar, 0) ;
 
       $http
         .put('/api/user/config', {tags: $scope.selectedTags})
@@ -131,7 +133,8 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     $scope.getItems() ;    
 
     $timeout(repositionList, 0) ;
-
+    $timeout(repositionSearchBar, 1000);
+  
     $http
       .put('/api/user/config', {tags: $scope.selectedTags})
       .success(function() {
@@ -538,6 +541,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   }
 
   $scope.initialize() ;
+  $timeout(repositionSearchBar, 1000);
 }) ;
 
 angular.module('Index').directive('focus', function($timeout, $parse) {

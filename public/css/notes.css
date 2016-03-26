@@ -1,13 +1,25 @@
 body {
 	padding-right:0px !important;
-	margin-right:10px !important;
-	margin-left:10px !important;
+	margin-right:5px !important;
+	margin-left:5px !important;
 	padding-top: 70px; 
 }
 
+#content-filter-box
+{
+	margin-top: 5px;
+}
+
+.button-note-add
+{
+	background-color: transparent;
+	font-size: 150%;
+	color: white;
+	padding: 0px;
+}
 .user
 {
-	color: rgb(132, 132, 175);
+	color: white;
 }
 
 .search-input
@@ -16,7 +28,7 @@ body {
 	width:100px;
 	font-size:75%;
 	margin-right:7px;
-	height:25px;"
+	height:25px;
 }
 
 .items-counter
@@ -70,6 +82,17 @@ body {
 	width:100%;
 }
 
+.note-tags-filter 
+{
+	background-color: white;
+	border-radius: 3px;
+	margin: 0px;
+	padding: 0px;
+	padding-bottom: 3px;
+	padding-left: 0.15em;
+	padding-right: 3px;
+}
+
 .note-tag-inactive
 {
  	margin-right: 0.35em;
@@ -83,9 +106,9 @@ body {
 }
 
 .note-tag-filter {
- 	margin-right: 0.35em;
  	font-size: 75%;
- }
+ 	margin-right: 3px;
+}
 
 .note-tag-drop-filter {
  	margin: 0.35em;
@@ -130,6 +153,33 @@ body {
 	word-break: break-all;
 }
 
+.tags-button
+{
+	margin-left: 5px;
+	margin-right: 5px;
+}
+
+.search-box
+{
+	width: 100px; 
+	background-color: white;
+}
+
+.input-box
+{
+	color:black; 
+	width:inherit;
+	font-size: 75%;
+	/*background-color: transparent;*/
+	border-style: none;
+	outline: none;
+}
+
+.search-box:focus
+{
+	border-style: none;
+}
+
 .note-text-pinned
 {
 }
@@ -141,7 +191,7 @@ body {
 
 .glyph-button, .glyph-menu-button, .glyph-menu-button-right, .note-header-icon-left, .note-header-icon, .note-header-icon-nospace, .note-edit-accept, .note-edit-cancel, .note-edit-accept-disabled, .note-edit-cancel-disabled
 {
-	opacity: 0.45;
+	opacity: 1.0;
 	background-color: transparent;
     background-repeat: no-repeat;
     border: none;
@@ -151,6 +201,7 @@ body {
     padding:0px;
     margin:0px;
     height: 17px;
+    color: gray;
 }
 
 .note-header-icon, .note-edit-accept, .note-edit-cancel, .note-edit-accept-disabled, .note-edit-cancel-disabled
@@ -166,11 +217,13 @@ body {
 .glyph-menu-button, .glyph-menu-button-right
 {
     font-size: small;
+    color: ;
 }
 
 .glyph-menu-button
 {
-	margin-right: 5px;
+	margin-left: 5px;
+	color: rgb(0, 148, 255);
 }
 
 .glyph-menu-button-right
@@ -310,20 +363,21 @@ body {
 
 .application-header
 {
-	background: linear-gradient(rgba(255, 255, 255, 1) 90%, rgba(255, 255, 255, 0));
+	/*background: linear-gradient(rgba(255, 255, 255, 1) 90%, rgba(255, 255, 255, 0));*/
+	background-color: rgb(0, 148, 255) ;
+	color: rgb(255, 255, 255);
 	position:fixed;
 	top: 0em;
 	left: 0em;
 	width: 100%;
 	z-index:100;
-	padding-top: 1em;
-	padding-bottom: 1em;
-	margin-left: 0px;
+	padding-top: 0.5em;
+	padding-bottom: 0.75em;
 }
 
 .application-list
 {
-	margin-top: 60px;
+	margin-top: 20px;
 }
 
 /* bootstrap ui override */
