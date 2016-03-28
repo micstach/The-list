@@ -79,7 +79,7 @@ function getTimeString(timestamp)
 }
 
 function resizeTextArea(className) {
-	$('.note-edit-input').each(function () {
+	$(className).each(function () {
         $(this).height(0).height(this.scrollHeight);
     });
 }

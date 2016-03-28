@@ -74,6 +74,13 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     }
   }
 
+  $scope.getNodeDOMId = function(note) {
+    if (note._id !== undefined)
+      return "note-id-" + note._id ;
+    else
+      return "note-id-undefined" ;
+  }
+
   $scope.noteTextChanged = function(note) {
     note.modified = true ;
     note.newTags = $scope.extractHashTags(note.text) ;
@@ -81,7 +88,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     if (note.tags !== undefined)
       note.newTags = note.newTags.filter(function(tag) { return note.tags.indexOf(tag) === -1; });
 
-    resizeTextArea('.note-edit-input') ;
+    resizeTextArea('#' + $scope.getNodeDOMId(note)) ;
   }
 
   $scope.searchButtonClicked = function() {
@@ -130,7 +137,8 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
   $scope.cancelFilter = function(tag) {
     $scope.selectedTags.splice($scope.selectedTags.indexOf(tag), 1);  
-    $scope.getItems() ;    
+
+    $scope.organizeNotes($scope.server.notes, false) ;
 
     $timeout(repositionList, 0) ;
     $timeout(repositionSearchBar, 1000);
@@ -139,12 +147,6 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       .put('/api/user/config', {tags: $scope.selectedTags})
       .success(function() {
       });
-  }
-
-  $scope.queryItem = function(note) {
-    if (note._id !== undefined) {
-
-    }
   }
 
   $scope.transformNoteForView = function(note, clear) {
