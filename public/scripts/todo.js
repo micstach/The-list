@@ -150,12 +150,12 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   }
 
   $scope.transformNoteForView = function(note, clear) {
-    if (clear) {
+    //if (clear) {
       note.editing = false ;
       note.modified = false ;
       note.removedTags = [] ;
       note.newTags = [] ;
-    }
+    //}
 
     note.outputText = escapeHtmlEntities(note.text);
     note.outputText = note.outputText.replace(/\r\n/g, '\n');
@@ -361,7 +361,8 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
         timestamp: Date.now(),
         editing: true,
         owner: $scope.userid,
-        users: []
+        users: [],
+        removedTags: []
       } ;
 
       note.timeVerbose = "nowa" ;
@@ -554,11 +555,11 @@ angular.module('Index').directive('focus', function($timeout, $parse) {
         if(value === true) { 
           $timeout(function() {
             element[0].focus(); 
-            resizeTextArea('.note-edit-input');
+            resizeTextArea('#' + attrs.id);
           }, 0);
           $timeout(function() {
             element[0].focus(); 
-            resizeTextArea('.note-edit-input');
+            resizeTextArea('#' + attrs.id);
           }, 100);
         }
       });

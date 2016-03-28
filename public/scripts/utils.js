@@ -78,12 +78,16 @@ function getTimeString(timestamp)
 	return timeString ;
 }
 
+var elements = {} ;
 function resizeTextArea(className) {
-	$(className).each(function () {
-        $(this).height(0).height(this.scrollHeight);
-    });
+	if (elements[className] === undefined)
+		elements[className] = $(className) ;
+	
+	var element = elements[className] ;
+	element.height(0) ;
+	var scrollHeight = element[0].scrollHeight ;
+	element.height(scrollHeight);
 }
-
 
 var repositionListCallCounter = 0 ;
 var repositionListHeaderSizeParameter = 0 ;

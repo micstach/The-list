@@ -30,7 +30,8 @@
     <div class="application-header">
       <div class="container">
         <button type="button" ng-click="!adding && createNewNote()" class="btn glyphicon glyphicon-plus-sign button-note-add" ng-class="adding ? 'disabled':''"></button>
-        <button ng-click="!adding && deleteAllItems()" class="btn glyph-menu-button glyphicon glyphicon-trash" ng-class="adding ? 'disabled':''" type="button" style="color:white;"></button>
+        <!-- <span>Project name</span> -->
+        <!-- <button ng-click="!adding && deleteAllItems()" class="btn glyph-menu-button glyphicon glyphicon-trash" ng-class="adding ? 'disabled':''" type="button" style="color:white;"></button> -->
         <span class="pull-right">
           <% if (locals.desktopClient == true) { %>
           <span class="user" data-toggle="tooltip" data-placement="bottom" title="Witaj <%= username %>!"><%= username %></span>
@@ -38,6 +39,8 @@
             <div class="btn-group">
               <button type="button" data-toggle="dropdown" class="btn btn-link btn-md dropdown-toggle" style="text-decoration: none; padding-right: 0px; color:white;"><%= username %> <span class="glyphicon glyphicon-option-vertical"></span></button>
               <ul class="dropdown-menu-right dropdown-menu scrollable-menu">
+                <li><a ng-click="deleteAllItems()" href="#">Usuń notatki</a></li>
+                <li role="separator" class="divider"></li>
                 <li><a href="/logoff">Wyloguj</a></li>
               </ul>
             </div>
@@ -48,7 +51,7 @@
             <button type="button" class="btn dropdown-toggle glyph-menu-button glyphicon glyphicon-tag" data-toggle="dropdown" ng-class="adding ? 'disabled':''"></button>
             <ul class="dropdown-menu scrollable-menu">
               <li ng-show="selectedTags.length > 0" ng-click="selectTag(null)"><a href="#">Usuń filtrowanie</a></li>
-              <li ng-show="tags.length > 1 && selectedTags.length > 0" role="separator" class="divider"></li>
+              <li ng-show="tags.length > 0 && selectedTags.length > 0" role="separator" class="divider"></li>
               <li ng-show="tags.length > 1 || selectedTags.length > 0">
                 <li ng-repeat="tag in tags track by $index">
                   <a href="#">
