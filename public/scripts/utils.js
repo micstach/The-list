@@ -111,7 +111,7 @@ function detectBoldText(text) {
 
   	var textToReplace = [] ;
 	var preformatedTags = [] ;
-	var tags = text.match(/([*][A-Za-z\d- ]+[*])/g) ;
+	var tags = text.match(/([*][</>_A-Za-z\d- ]+[*])/g) ;
 
 	if (tags !== null) {
 		tags.forEach(function(tag){
@@ -128,7 +128,7 @@ function detectItalicText(text) {
 
   	var textToReplace = [] ;
 	var preformatedTags = [] ;
-	var tags = text.match(/([_][A-Za-z\d- ]+[_])/g) ;
+	var tags = text.match(/([_][</>*A-Za-z\d- ]+[_])/g) ;
 
 	if (tags !== null) {
 		tags.forEach(function(tag){
