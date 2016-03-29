@@ -107,9 +107,43 @@ function repositionSearchBar(width) {
 	}
 }
 
+function detectBoldText(text) {
+
+  	var textToReplace = [] ;
+	var preformatedTags = [] ;
+	var tags = text.match(/([*][A-Za-z\d- ]+[*])/g) ;
+
+	if (tags !== null) {
+		tags.forEach(function(tag){
+			var originalTextBlock = tag ;
+			var transformedTextBlock = '<b>' + tag.replace('*','').replace('*','') + '</b>';	
+			text = text.replace(originalTextBlock, transformedTextBlock);
+		}) ;
+	}
+
+	return text ;
+}
+
+function detectItalicText(text) {
+
+  	var textToReplace = [] ;
+	var preformatedTags = [] ;
+	var tags = text.match(/([_][A-Za-z\d- ]+[_])/g) ;
+
+	if (tags !== null) {
+		tags.forEach(function(tag){
+			var originalTextBlock = tag ;
+			var transformedTextBlock = '<i>' + tag.replace('_','').replace('_','') + '</i>';	
+			text = text.replace(originalTextBlock, transformedTextBlock);
+		}) ;
+	}
+
+	return text ;
+}
+
 function detectPreformatedText(text) {
 
-  var textToReplace = [] ;
+  	var textToReplace = [] ;
 	var preformatedTags = [] ;
 	var re = new RegExp('```', 'gi');
 	while (re.exec(text))
@@ -145,18 +179,15 @@ function detectPreformatedText(text) {
 	  }
 	}	
 
-  textToReplace.forEach(function(transformation) {
-    text = text.replace(transformation.src, transformation.dst) ;
-    text = text.replace('</div>\n', '</div>');
-  }) ;
+	textToReplace.forEach(function(transformation) {
+	text = text.replace(transformation.src, transformation.dst) ;
+	text = text.replace('</div>\n', '</div>');
+	}) ;
 
-  return text ;
+	return text ;
 }
 
 $(document).ready(function() {
-    
-    repositionList() ;
-
     $('[data-toggle="tooltip"]').tooltip() ;
     
     $('#message-create-text').attr('autocomplete','off');
@@ -164,6 +195,5 @@ $(document).ready(function() {
 }) ;
 
 $(window).resize(function() {
-    repositionList() ;
     repositionSearchBar() ;
 }) ;

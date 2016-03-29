@@ -169,6 +169,8 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     note.outputText = note.outputText.replace(/ /g, '&nbsp;');
 
     note.outputText = detectPreformatedText(note.outputText);
+    note.outputText = detectBoldText(note.outputText);
+    note.outputText = detectItalicText(note.outputText);
 
     note.outputText = note.outputText.replace(/\n/g, '<br/>');  
     
