@@ -165,16 +165,16 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     //}
 
     note.outputText = escapeHtmlEntities(note.text);
+    note.outputText = note.outputText.replace(/(^\s*\s* )/gm, '&nbsp;');
     note.outputText = note.outputText.replace(/\r\n/g, '\n');
-    note.outputText = note.outputText.replace(/ /g, '&nbsp;');
 
     note.outputText = detectPreformatedText(note.outputText);
     note.outputText = detectBoldText(note.outputText);
     note.outputText = detectItalicText(note.outputText);
 
     note.outputText = note.outputText.replace(/\n/g, '<br/>');  
-    
     note.outputText = $sce.trustAsHtml(linkify.github(note.outputText)) ;
+    
     note.timeVerbose = getTimeString(note.timestamp);
 
     if (note.tags !== undefined && note.tags !== null) {
