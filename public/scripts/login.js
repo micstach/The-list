@@ -11,8 +11,4 @@ $(document).ready(function(){
     }
     catch(err){}
   });
-
-  $('#retyped-email').onpaste(function(e){
-    e.preventDefault();
-  }) ;
 });

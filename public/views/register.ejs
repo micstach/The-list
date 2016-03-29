@@ -5,7 +5,6 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
-    <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" type="text/css" >
     <link href="../css/bootstrap.min.css" rel="stylesheet" type="text/css">
     <link href="../css/main.css" rel="stylesheet" type="text/css" >
     <link href="../css/credentials.css" rel="stylesheet" type="text/css" >
@@ -28,9 +27,7 @@
           <input name="user" class="form-control input-default" placeholder="Podaj nazwę użytkownika">
         </div>
         <% if (locals.user_error) { %>
-        <div class="form-group">
-          <text class="error"><%= user_error %></text>
-        </div>
+          <div class="alert alert-danger" role="alert"><%= user_error %></div>
         <% } %>        
         <div class="form-group">
           <label for="pwd">Hasło</label>
@@ -46,10 +43,8 @@
         <div class="form-group">
           <input type="email" name="retyped-email" class="retyped form-control input-default" placeholder="Powtórz adres e-mail">
         </div>
- -->        <% if (locals.error) { %>
-          <div  class="form-group">
-            <text class="error"><%= error %></text>
-          </div>
+ -->    <% if (locals.error) { %>
+          <div class="alert alert-danger" role="alert"><%= error %></div>
         <% } %>
         <button type="submit" class="form-control btn btn-primary"><strong>Zarejestruj się</strong></button>
       </form>

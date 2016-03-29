@@ -19,6 +19,9 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   $scope.lastTag = undefined;
   $scope.tags = [] ;
   $scope.selectedTags = [];
+  $scope.server = []
+  $scope.searchText = "" ;
+  $scope.searchTextBoxVisible = true ;
   $scope.autoRefreshTimer = null;
   $scope.adding = false ;
 
@@ -71,6 +74,13 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     }
   }
 
+  $scope.getNodeDOMId = function(note) {
+    if (note._id !== undefined)
+      return "note-id-" + note._id ;
+    else
+      return "note-id-undefined" ;
+  }
+
   $scope.noteTextChanged = function(note) {
     note.modified = true ;
     note.newTags = $scope.extractHashTags(note.text) ;
@@ -78,10 +88,19 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     if (note.tags !== undefined)
       note.newTags = note.newTags.filter(function(tag) { return note.tags.indexOf(tag) === -1; });
 
-    resizeTextArea('.note-edit-input') ;
+    resizeTextArea('#' + $scope.getNodeDOMId(note)) ;
+  }
+
+  $scope.searchButtonClicked = function() {
+    $scope.searchTextBoxVisible = !$scope.searchTextBoxVisible ;
+    $scope.organizeNotes($scope.server.notes, false) ;
   }
   
-  $scope.setFilter = function(tag) {
+  $scope.searchTextChanged = function(searchText) {
+    $scope.organizeNotes($scope.server.notes, false) ;
+  }
+
+  $scope.selectTag = function(tag) {
     
     var update = false ;
 
@@ -89,17 +108,27 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       $scope.selectedTags = [] ;
       update = true ;
     }
-    else if ($scope.selectedTags.indexOf(tag) === -1) {
-      $scope.selectedTags.push(tag);
+    else if (Object.prototype.toString.call(tag) === '[object Array]')
+    {
+      $scope.selectedTags = tag.slice() ;
       $scope.selectedTags.sort(function(a, b) {return a.toLowerCase().localeCompare(b.toLowerCase());})  
       update = true ;
     }
+    else if (Object.prototype.toString.call(tag) === '[object String]') {
+      if ($scope.selectedTags.indexOf(tag) === -1) {
+        $scope.selectedTags.push(tag);
+        $scope.selectedTags.sort(function(a, b) {return a.toLowerCase().localeCompare(b.toLowerCase());})  
+        update = true ;
+      }
+    }
 
     if (update) {
-      $scope.getItems() ;
+      $('.search-box').outerWidth(0) ;
+  
+      $scope.organizeNotes($scope.server.notes, false) ;
       
-      $timeout(repositionList, 0) ;
-
+      $timeout(repositionSearchBar, 0) ;
+  
       $http
         .put('/api/user/config', {tags: $scope.selectedTags})
         .success(function() {
@@ -107,20 +136,55 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     }
   }
 
+  $scope.notesCount = function() {
+    if ($scope.data !== undefined)
+      return $scope.data.notes.filter(function(note){return note._id !== undefined;}).length ;
+    else
+      return 0 ;
+  }
+
   $scope.cancelFilter = function(tag) {
     $scope.selectedTags.splice($scope.selectedTags.indexOf(tag), 1);  
-    $scope.getItems() ;    
 
-    $timeout(repositionList, 0) ;
+    $scope.organizeNotes($scope.server.notes, false) ;
 
+    $timeout(repositionSearchBar, 1000);
+  
     $http
       .put('/api/user/config', {tags: $scope.selectedTags})
       .success(function() {
       });
   }
 
-  $scope.filterNotes = function(notes, fromServer) {
+  $scope.transformNoteForView = function(note, clear) {
+    //if (clear) {
+      note.editing = false ;
+      note.modified = false ;
+      note.removedTags = [] ;
+      note.newTags = [] ;
+    //}
+
+    note.outputText = escapeHtmlEntities(note.text);
+    note.outputText = note.outputText.replace(/(^\s*\s* )/gm, '&nbsp;');
+    note.outputText = note.outputText.replace(/\r\n/g, '\n');
+
+    note.outputText = detectPreformatedText(note.outputText);
+    note.outputText = detectBoldText(note.outputText);
+    note.outputText = detectItalicText(note.outputText);
+
+    note.outputText = note.outputText.replace(/\n/g, '<br/>');  
+    note.outputText = $sce.trustAsHtml(linkify.github(note.outputText)) ;
     
+    note.timeVerbose = getTimeString(note.timestamp);
+
+    if (note.tags !== undefined && note.tags !== null) {
+      note.tags.sort(function(a, b) {
+        return a.toLowerCase().localeCompare(b.toLowerCase());
+      });      
+    }
+  }
+
+  $scope.extractTagsFromNotes = function(notes) {
     $scope.tags = [] ;
     notes.forEach(function(note) {
       if ($scope.selectedTags.length > 0) {
@@ -152,6 +216,11 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     $scope.selectedTags.forEach(function(tag){
       $scope.tags.splice($scope.tags.indexOf(tag), 1) ;
     }) ;
+  }
+
+  $scope.filterNotes = function(notes, fromServer) {
+    
+    $scope.extractTagsFromNotes(notes);
 
     var taggedNotes = [] ;
 
@@ -200,6 +269,21 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     var refreshDelay = ((1000 * 60) * 60) ; // one hour
     var lowestRefreshDelay = (1000 * 15) ; 
 
+    if ($scope.searchTextBoxVisible) {
+      if ($scope.searchText !== null && $scope.searchText.length > 0) {
+        filteredNotes = filteredNotes.filter(function(note) { 
+
+          var textFoundInNoteText = note.text.toLowerCase().indexOf($scope.searchText.toLowerCase()) !== -1 ;
+          var textFoundInNoteTags = false ;
+          if (note.tags !== undefined && note.tags !== null) {
+            textFoundInNoteTags = note.tags.filter(function(tag) { return tag.toLowerCase().indexOf($scope.searchText.toLowerCase()) !== -1;}).length > 0;
+          }
+          return textFoundInNoteText || textFoundInNoteTags ;
+
+        }) ;
+      }
+    }
+
     filteredNotes.forEach(function(note) {
       var delta = Date.now() - (new Date(note.timestamp)) ;
       if (delta < refreshDelay) {
@@ -209,18 +293,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
           refreshDelay = lowestRefreshDelay ;    
       }
 
-      // extend model
-      if (fromServer) {
-        note.editing = false ;
-        note.modified = false ;
-        note.removedTags = [] ;
-      }
-      
-      note.outputText = $sce.trustAsHtml(linkify.twitter(note.text));
-
-      note.timeVerbose = getTimeString(note.timestamp);
-      if (note.tags !== undefined && note.tags !== null)
-        note.tags.sort(function(a, b) {return a.toLowerCase().localeCompare(b.toLowerCase());});
+      $scope.transformNoteForView(note, fromServer);
     });
 
     return {refreshDelay: refreshDelay, notes: filteredNotes} ;
@@ -237,12 +310,11 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     var result = $scope.filterNotes(notes, fromServer) ;
     $scope.data = {notes: result.notes};
 
-    if ($scope.data.notes.length === 0){
+    if ($scope.data.notes.length === 0 && $scope.searchText.length == 0){
       $scope.createNewNote();
     }
 
     $scope.cancelTimer($scope.autoRefreshTimer) ;       
-    $scope.autoRefreshTimer = $timeout($scope.getItems, result.refreshDelay) ;
   }
 
   $scope.initialize = function() {
@@ -253,7 +325,6 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
           if (data.config.tags !== undefined) {
               $scope.selectedTags = data.config.tags;
               $scope.selectedTags.sort(function(a, b) {return a.toLowerCase().localeCompare(b.toLowerCase());})  
-              $timeout(repositionList, 0) ;
             }
 
         $scope.getItems() ;
@@ -271,6 +342,9 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     if (fromServer) {
       $http.get('/api/notes')
         .success(function(data) { 
+          // save server data for future filtering
+          $scope.server = {notes: data.notes} ;
+
           $scope.organizeNotes(data.notes, fromServer) ;
           $scope.userid = data.userid; 
         })
@@ -285,19 +359,21 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
   $scope.createNewNote = function() {
     $scope.cancelTimer($scope.autoRefreshTimer) ;  
+    $scope.cancelDeleyedRefresh();
 
     var note = {
         text: '', 
         checked: false,
         pinned: false,
-        tags: $scope.selectedTags,
+        tags: $scope.selectedTags.slice(),
         timestamp: Date.now(),
         editing: true,
         owner: $scope.userid,
-        users: []
+        users: [],
+        removedTags: []
       } ;
 
-      note.timeVerbose = "nowa" ;//getTimeString(note.timestamp) ;
+      note.timeVerbose = "nowa" ;
 
       // insert note stub
       $scope.data.notes.splice(0, 0, note);
@@ -305,6 +381,9 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   }
 
   $scope.enterEditingMode = function(note) {
+    $scope.cancelTimer($scope.autoRefreshTimer) ;  
+    $scope.cancelDeleyedRefresh();
+
     note.changeAccepted = false ;
 
     note.editing = true ;
@@ -315,9 +394,6 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       if (note._id != item._id)
           item.editing = false ;
     });
-
-    $scope.cancelTimer($scope.autoRefreshTimer) ;  
-    $scope.cancelDeleyedRefresh();
   }
 
   $scope.acceptChanges = function(note) {
@@ -333,11 +409,10 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       note.text = $scope.removeTags(note.text, note.tags) ;
     }
 
-    note.removedTags = [] ;
-    note.newTags = [] ;
-    note.editing = false ;
-    note.modified = false ;
-    note.outputText = $sce.trustAsHtml(linkify.github(note.text)) ;
+    $scope.transformNoteForView(note, true) ;
+    $scope.extractTagsFromNotes($scope.data.notes) ;
+
+    $scope.selectTag(note.tags) ;
 
     if (note._id === undefined) {
       $http
@@ -354,7 +429,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     }
 
     $scope.adding = false ;
-    $scope.deleyedRefresh() ;
+    $scope.deleyedRefresh(0) ;
   };
 
   $scope.cancelChanges = function($event, note){
@@ -362,7 +437,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     $scope.adding = false ;
 
     if (note._id === undefined) {
-      $scope.data.notes.splice($scope.data.notesindexOf(note), 1);
+      $scope.data.notes.splice($scope.data.notes.indexOf(note), 1);
     }
     else {
       note.text = note.originalText ;
@@ -387,6 +462,8 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     note.removedTags.push(tag);
     note.tags.splice(note.tags.indexOf(tag), 1) ;
     note.modified = true ;
+
+    // $scope.cancelFilter(tag) ;
   }
 
   $scope.deleteItem = function(note) {
@@ -456,21 +533,21 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   };
 
   $scope.cancelDeleyedRefresh = function() {
-    if ($scope.deleyedRefreshTimeout !== undefined) {
-      if ($scope.deleyedRefreshTimeout !== null) {
-        $timeout.cancel($scope.deleyedRefreshTimeout) ;  
-        $scope.deleyedRefreshTimeout = null ;
+    if ($scope.delayedRefreshTimeout !== undefined) {
+      if ($scope.delayedRefreshTimeout !== null) {
+        $timeout.cancel($scope.delayedRefreshTimeout) ;  
+        $scope.delayedRefreshTimeout = null ;
       }
     }
   }
 
   $scope.deleyedRefresh = function() {
-    if ($scope.deleyedRefreshTimeout === undefined)
-        $scope.deleyedRefreshTimeout = null ;
+    if ($scope.delayedRefreshTimeout === undefined)
+        $scope.delayedRefreshTimeout = null ;
 
     $scope.cancelDeleyedRefresh();
       
-    $scope.deleyedRefreshTimeout = $timeout(function() {$scope.getItems(false)}, 5000) ;
+    $scope.delayedRefreshTimeout = $timeout(function() {$scope.getItems(false)}, 5000) ;
   }
 
   $scope.refresh = function()
@@ -479,6 +556,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   }
 
   $scope.initialize() ;
+  $timeout(repositionSearchBar, 1000);
 }) ;
 
 angular.module('Index').directive('focus', function($timeout, $parse) {
@@ -489,8 +567,12 @@ angular.module('Index').directive('focus', function($timeout, $parse) {
         if(value === true) { 
           $timeout(function() {
             element[0].focus(); 
-            resizeTextArea('.note-edit-input');
+            resizeTextArea('#' + attrs.id);
           }, 0);
+          $timeout(function() {
+            element[0].focus(); 
+            resizeTextArea('#' + attrs.id);
+          }, 100);
         }
       });
       // element.bind('blur', function() {
@@ -500,11 +582,26 @@ angular.module('Index').directive('focus', function($timeout, $parse) {
   };
 });
 
-// angular.module('Index').directive('resizable', function($timeout) {
-//   return {
-//     link: function(scope, element, attrs) { $timeout(repositionList, 0); }
-//   };
-// });
+angular.module('Index').directive('focusSearch', function($timeout, $parse) {
+  return {
+    link: function(scope, element, attrs) {
+      var model = $parse(attrs.focusSearch);
+      scope.$watch(model, function(value) {
+        if(value === true) { 
+          $timeout(function() {
+            element[0].focus(); 
+          }, 0);
+          $timeout(function() {
+            element[0].focus(); 
+          }, 100);
+        }
+      });
+      // element.bind('blur', function() {
+      //    scope.$apply(model.assign(scope, false));
+      // });
+    }
+  };
+});
 
 angular.module('Index').controller('delete-note-controller', function ($scope, $uibModalInstance, note)
 {
