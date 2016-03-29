@@ -165,8 +165,8 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     //}
 
     note.outputText = escapeHtmlEntities(note.text);
-    note.outputText = note.outputText.replace(/(^\s*\s* )/gm, '&nbsp;');
     note.outputText = note.outputText.replace(/\r\n/g, '\n');
+    note.outputText = removeLeadingSpaces(note.outputText) ;
 
     note.outputText = detectPreformatedText(note.outputText);
     note.outputText = detectBoldText(note.outputText);

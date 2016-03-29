@@ -187,6 +187,25 @@ function detectPreformatedText(text) {
 	return text ;
 }
 
+function removeLeadingSpaces(text) {
+	var lines = text.split('\n') ;
+	var out = '' ;
+
+	lines.forEach(function(src) {
+		var i = 0;
+
+		while (src[i] === ' ' && i < src.length) {
+			out += '&nbsp;' ;
+			i++
+		}
+
+		out += src.substr(i, src.length - i) ;
+		out += '\n';		
+	}) ;
+
+	return out ;
+}
+
 $(document).ready(function() {
     $('[data-toggle="tooltip"]').tooltip() ;
     
