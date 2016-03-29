@@ -195,5 +195,6 @@ $(document).ready(function() {
 }) ;
 
 $(window).resize(function() {
+    repositionSearchBar(0) ;
     repositionSearchBar() ;
 }) ;
