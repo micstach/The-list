@@ -101,7 +101,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   }
 
   $scope.selectTag = function(tag) {
-    // $timeout(function() { repositionSearchBar(0); } , 0) ;
+    
     $('.search-box').outerWidth(0) ;
     var update = false ;
 
@@ -109,10 +109,18 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       $scope.selectedTags = [] ;
       update = true ;
     }
-    else if ($scope.selectedTags.indexOf(tag) === -1) {
-      $scope.selectedTags.push(tag);
+    else if (Object.prototype.toString.call(tag) === '[object Array]')
+    {
+      $scope.selectedTags = tag.slice() ;
       $scope.selectedTags.sort(function(a, b) {return a.toLowerCase().localeCompare(b.toLowerCase());})  
       update = true ;
+    }
+    else if (Object.prototype.toString.call(tag) === '[object String]') {
+      if ($scope.selectedTags.indexOf(tag) === -1) {
+        $scope.selectedTags.push(tag);
+        $scope.selectedTags.sort(function(a, b) {return a.toLowerCase().localeCompare(b.toLowerCase());})  
+        update = true ;
+      }
     }
 
     if (update) {
@@ -357,7 +365,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
         text: '', 
         checked: false,
         pinned: false,
-        tags: $scope.selectedTags,
+        tags: $scope.selectedTags.slice(),
         timestamp: Date.now(),
         editing: true,
         owner: $scope.userid,
@@ -403,6 +411,8 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
     $scope.transformNoteForView(note, true) ;
     $scope.extractTagsFromNotes($scope.data.notes) ;
+
+    $scope.selectTag(note.tags) ;
 
     if (note._id === undefined) {
       $http
@@ -452,6 +462,8 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     note.removedTags.push(tag);
     note.tags.splice(note.tags.indexOf(tag), 1) ;
     note.modified = true ;
+
+    // $scope.cancelFilter(tag) ;
   }
 
   $scope.deleteItem = function(note) {
