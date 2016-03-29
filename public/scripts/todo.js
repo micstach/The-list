@@ -102,7 +102,6 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
   $scope.selectTag = function(tag) {
     
-    $('.search-box').outerWidth(0) ;
     var update = false ;
 
     if (tag === null) {
@@ -124,11 +123,12 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     }
 
     if (update) {
+      $('.search-box').outerWidth(0) ;
+  
       $scope.organizeNotes($scope.server.notes, false) ;
       
-      $timeout(repositionList, 0) ;
       $timeout(repositionSearchBar, 0) ;
-
+  
       $http
         .put('/api/user/config', {tags: $scope.selectedTags})
         .success(function() {
@@ -148,7 +148,6 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
     $scope.organizeNotes($scope.server.notes, false) ;
 
-    $timeout(repositionList, 0) ;
     $timeout(repositionSearchBar, 1000);
   
     $http
@@ -324,7 +323,6 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
           if (data.config.tags !== undefined) {
               $scope.selectedTags = data.config.tags;
               $scope.selectedTags.sort(function(a, b) {return a.toLowerCase().localeCompare(b.toLowerCase());})  
-              $timeout(repositionList, 0) ;
             }
 
         $scope.getItems() ;
@@ -602,12 +600,6 @@ angular.module('Index').directive('focusSearch', function($timeout, $parse) {
     }
   };
 });
-
-// angular.module('Index').directive('resizable', function($timeout) {
-//   return {
-//     link: function(scope, element, attrs) { $timeout(repositionList, 0); }
-//   };
-// });
 
 angular.module('Index').controller('delete-note-controller', function ($scope, $uibModalInstance, note)
 {

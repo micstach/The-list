@@ -89,26 +89,6 @@ function resizeTextArea(className) {
 	element.height(scrollHeight);
 }
 
-var repositionListCallCounter = 0 ;
-var repositionListHeaderSizeParameter = 0 ;
-function repositionList() {
-	
-	// var currentSize = $('.application-header').outerHeight()+10;
-	
-	// if (currentSize != repositionListHeaderSizeParameter) {
-	// 	$('.application-list').css('margin-top', currentSize +  'px') ;
-	// 	repositionListHeaderSizeParameter = currentSize ;
-	// 	repositionListCallCounter = 0 ;
-	// }
-	// else {
-	// 	// call repositionList until we detect change in size ;
-	// 	if (repositionListCallCounter < 100)
-	// 		setTimeout(repositionList, repositionListCallCounter * 10) ;
-
-	// 	repositionListCallCounter ++ ;
-	// }
-}
-
 function repositionSearchBar(width) {
 	if (width === undefined) {
 		var tagsButtonWidth = $('.tags-button').outerWidth(true) ;
