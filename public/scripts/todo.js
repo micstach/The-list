@@ -392,11 +392,14 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     $scope.cancelTimer($scope.autoRefreshTimer) ;  
     $scope.cancelDeleyedRefresh();
 
+    var tags = $scope.selectedTags.slice() ;
+    tags.splice(tags.indexOf($scope.InternalTags.Flagged), 1) ;
+    
     var note = {
         text: '', 
         checked: false,
-        pinned: false,
-        tags: $scope.selectedTags.slice(),
+        pinned: ($scope.selectedTags.indexOf($scope.InternalTags.Flagged) !== -1),
+        tags: tags,
         timestamp: Date.now(),
         editing: true,
         owner: $scope.userid,
