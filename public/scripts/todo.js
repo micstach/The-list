@@ -25,6 +25,17 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   $scope.autoRefreshTimer = null;
   $scope.adding = false ;
 
+  $scope.InternalTags = {
+    Flagged: 'status:flagged'
+  } ;
+
+  $scope.IsInternalTag = function(tag) {
+    if (tag === $scope.InternalTags.Flagged)
+      return true ;
+    else
+      return false ;
+  }
+
   $scope.isNullOrUndefined = function(obj){
     return (obj === null || obj === undefined) ;
   }
@@ -159,13 +170,18 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       });
   }
 
+  $scope.transformTagForView = function(tag) {
+    if (tag === $scope.InternalTags.Flagged)
+      return $sce.trustAsHtml("<span class='glyphicon glyphicon-flag'></span>") ;
+    else
+      return $sce.trustAsHtml(tag) ;
+  }
+
   $scope.transformNoteForView = function(note, clear) {
-    //if (clear) {
-      note.editing = false ;
-      note.modified = false ;
-      note.removedTags = [] ;
-      note.newTags = [] ;
-    //}
+    note.editing = false ;
+    note.modified = false ;
+    note.removedTags = [] ;
+    note.newTags = [] ;
 
     note.outputText = escapeHtmlEntities(note.text);
     note.outputText = note.outputText.replace(/\r\n/g, '\n');
@@ -188,11 +204,21 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   }
 
   $scope.extractTagsFromNotes = function(notes) {
+    
+    $scope.internalTags = [] ;
+    notes.forEach(function(note) {
+      if (note.pinned)
+        if ($scope.internalTags.indexOf($scope.InternalTags.Flagged) === -1)
+          $scope.internalTags.push($scope.InternalTags.Flagged);
+    }) ;
+
     $scope.tags = [] ;
     notes.forEach(function(note) {
       if ($scope.selectedTags.length > 0) {
 
         var foundTagsCount = $scope.selectedTags.filter(function(tag) {
+          if (tag === $scope.InternalTags.Flagged)
+            return note.pinned ;
           if (note.tags === undefined)
             return false ;
           else if (note.tags != null) {
@@ -215,6 +241,8 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
     $scope.tags.sort(function(a, b) {return a.toLowerCase().localeCompare(b.toLowerCase());});
 
+    $scope.tags = $scope.mergeTags($scope.internalTags, $scope.tags);
+
     // remove from tags, tags from filterTags
     $scope.selectedTags.forEach(function(tag){
       $scope.tags.splice($scope.tags.indexOf(tag), 1) ;
@@ -223,14 +251,14 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
   $scope.filterNotes = function(notes, fromServer) {
     
-    $scope.extractTagsFromNotes(notes);
-
     var taggedNotes = [] ;
 
     if ($scope.selectedTags.length > 0) {       
       notes.forEach(function(note) {
         
         var foundTagsCount = $scope.selectedTags.filter(function(tag) {
+          if (tag === $scope.InternalTags.Flagged)
+            return note.pinned;
           if (note.tags === undefined)
             return false ;
           else if (note.tags != null) {
@@ -240,7 +268,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
             return false ;
         }).length ;    
 
-        if (foundTagsCount == $scope.selectedTags.length)
+        if (foundTagsCount === $scope.selectedTags.length)
           taggedNotes.push(note) ;
       }) ;
     }
@@ -255,12 +283,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       .forEach(function(note) { filteredNotes.push(note); });
 
     taggedNotes
-      .filter(function(note) { return note.pinned === true;})
-      .sort(function(a, b) { return b.timestamp - a.timestamp;})
-      .forEach(function(note) { filteredNotes.push(note); });
-
-    taggedNotes
-      .filter(function(note) { return note.checked === false && note.pinned === false;})
+      .filter(function(note) { return note.checked === false; })
       .sort(function(a, b) { return b.timestamp - a.timestamp;})
       .forEach(function(note) { filteredNotes.push(note);});
 
@@ -299,6 +322,8 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       $scope.transformNoteForView(note, fromServer);
     });
 
+    $scope.extractTagsFromNotes(filteredNotes);
+
     return {refreshDelay: refreshDelay, notes: filteredNotes} ;
   }
 
@@ -313,7 +338,10 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     var result = $scope.filterNotes(notes, fromServer) ;
     $scope.data = {notes: result.notes};
 
-    if ($scope.data.notes.length === 0 && $scope.searchText.length == 0){
+    if ($scope.data.notes.length === 0 && 
+        $scope.searchText.length === 0 &&
+        $scope.selectedTags.length === 0 )
+    {
       $scope.createNewNote();
     }
 
