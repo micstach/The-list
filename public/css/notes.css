@@ -233,20 +233,20 @@ body {
 
 .note-edit-accept
 {
-	color:rgba(0,128,0,1.0);
-	float:right;
+	color: rgba(0, 225, 0, 1.0);
+	float: right;
 }
 
 .note-edit-cancel
 {
-	color:rgba(128,0,0,1.0);
+	color: rgba(225, 0, 0, 1.0);
 	float: right;
 }
 
 .note-edit-accept-disabled
 {
-	color:rgba(128,128,128,1.0);
-	float:right;
+	color: rgba(128, 128, 128, 0.5);
+	float: right;
 }
 
 .note-edit-input
