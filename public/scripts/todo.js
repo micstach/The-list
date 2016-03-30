@@ -26,11 +26,17 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   $scope.adding = false ;
 
   $scope.InternalTags = {
-    Flagged: 'status:flagged'
+    Flagged: 'status:flagged',
+    Checked: 'status:checked',
+    Unchecked: 'status:unchecked'
   } ;
 
   $scope.IsInternalTag = function(tag) {
     if (tag === $scope.InternalTags.Flagged)
+      return true ;
+    else if (tag === $scope.InternalTags.Checked)
+      return true ;
+    else if (tag === $scope.InternalTags.Unchecked)
       return true ;
     else
       return false ;
@@ -172,7 +178,11 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
   $scope.transformTagForView = function(tag) {
     if (tag === $scope.InternalTags.Flagged)
-      return $sce.trustAsHtml("<span class='glyphicon glyphicon-flag'></span>") ;
+      return $sce.trustAsHtml("<span class='special-tag glyphicon glyphicon-flag'></span>") ;
+    if (tag === $scope.InternalTags.Checked)
+      return $sce.trustAsHtml("<span class='special-tag glyphicon glyphicon-check'></span>") ;
+    if (tag === $scope.InternalTags.Unchecked)
+      return $sce.trustAsHtml("<span class='special-tag glyphicon glyphicon-unchecked'></span>") ;
     else
       return $sce.trustAsHtml(tag) ;
   }
@@ -207,6 +217,12 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     
     $scope.internalTags = [] ;
     notes.forEach(function(note) {
+      if (note.checked)
+        if ($scope.internalTags.indexOf($scope.InternalTags.Checked) === -1)
+          $scope.internalTags.push($scope.InternalTags.Checked);
+      if (!note.checked)
+        if ($scope.internalTags.indexOf($scope.InternalTags.Unchecked) === -1)
+          $scope.internalTags.push($scope.InternalTags.Unchecked);
       if (note.pinned)
         if ($scope.internalTags.indexOf($scope.InternalTags.Flagged) === -1)
           $scope.internalTags.push($scope.InternalTags.Flagged);
@@ -219,6 +235,13 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
         var foundTagsCount = $scope.selectedTags.filter(function(tag) {
           if (tag === $scope.InternalTags.Flagged)
             return note.pinned ;
+          
+          if (tag === $scope.InternalTags.Checked)
+            return note.checked ;
+          
+          if (tag === $scope.InternalTags.Unchecked)
+            return !note.checked ;
+
           if (note.tags === undefined)
             return false ;
           else if (note.tags != null) {
@@ -258,7 +281,14 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
         
         var foundTagsCount = $scope.selectedTags.filter(function(tag) {
           if (tag === $scope.InternalTags.Flagged)
-            return note.pinned;
+            return note.pinned ;
+          
+          if (tag === $scope.InternalTags.Checked)
+            return note.checked ;
+          
+          if (tag === $scope.InternalTags.Unchecked)
+            return !note.checked ;
+
           if (note.tags === undefined)
             return false ;
           else if (note.tags != null) {
@@ -394,7 +424,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
     var tags = $scope.selectedTags.slice() ;
     tags.splice(tags.indexOf($scope.InternalTags.Flagged), 1) ;
-    
+
     var note = {
         text: '', 
         checked: false,
