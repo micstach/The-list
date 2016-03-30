@@ -88,6 +88,9 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     if (note.tags !== undefined)
       note.newTags = note.newTags.filter(function(tag) { return note.tags.indexOf(tag) === -1; });
 
+    if (note.text.length == 0)
+      note.modified = false ;
+
     resizeTextArea('#' + $scope.getNodeDOMId(note)) ;
   }
 
