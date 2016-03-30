@@ -315,6 +315,13 @@ body {
     margin-right: 10px;
 }
 
+.typing-helper
+{
+	color:gray;
+	font-weight: normal;
+	font-size: small;
+}
+
 .menu-items
 {
 	color: rgba(192, 192, 235);
@@ -391,4 +398,13 @@ body {
 .modal-header:before,
 .modal-header:after {
     display: table;
+}
+
+@media(max-width:640px){
+	.typing-helper
+	{
+		color:gray;
+		font-weight: normal;
+		font-size: 50%;
+	}
 }

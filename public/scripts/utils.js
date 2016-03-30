@@ -99,7 +99,7 @@ function repositionSearchBar(width) {
 
 		var diff = searchBarWidth - (tagsButtonWidth + tagsSelectedWidth);
 
-		$('.search-box').outerWidth(diff - 10) ;
+		$('.search-box').outerWidth(diff - 20) ;
 	}
 	else
 	{
