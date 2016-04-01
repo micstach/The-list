@@ -150,7 +150,7 @@ body {
 	font-size: 1.0em;
 	overflow: hidden;
 	cursor: default;
-	/*word-break: break-all;*/
+	word-break: break-all;
 }
 
 .tags-button
