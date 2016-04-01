@@ -323,7 +323,7 @@ body {
 
 .typing-helper
 {
-	color:gray;
+	color:lightgray;
 	font-weight: normal;
 	font-size: small;
 }
@@ -409,8 +409,6 @@ body {
 @media(max-width:640px){
 	.typing-helper
 	{
-		color:gray;
-		font-weight: normal;
 		font-size: 50%;
 	}
 }

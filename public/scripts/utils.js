@@ -206,6 +206,14 @@ function removeLeadingSpaces(text) {
 	return out ;
 }
 
+function removeElementFromArray(array, value)
+{
+	var i = array.indexOf(value) ;
+	if (i !== -1) {
+		array.splice(i, 1) ;
+	}
+}
+
 $(document).ready(function() {
     $('[data-toggle="tooltip"]').tooltip() ;
     

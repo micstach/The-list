@@ -28,7 +28,10 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   $scope.InternalTags = {
     Flagged: 'status:flagged',
     Checked: 'status:checked',
-    Unchecked: 'status:unchecked'
+    Unchecked: 'status:unchecked',
+    toArray: function() { 
+      return [this.Flagged, this.Checked, this.Unchecked]; 
+    }
   } ;
 
   $scope.IsInternalTag = function(tag) {
@@ -423,7 +426,10 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     $scope.cancelDeleyedRefresh();
 
     var tags = $scope.selectedTags.slice() ;
-    tags.splice(tags.indexOf($scope.InternalTags.Flagged), 1) ;
+
+    $scope.InternalTags.toArray().forEach(function(internalTag) {
+      removeElementFromArray(tags, internalTag) ;
+    }) ;
 
     var note = {
         text: '', 
