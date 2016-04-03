@@ -123,6 +123,19 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     $scope.organizeNotes($scope.server.notes, false) ;
   }
 
+  $scope.sortSelectedTags = function(tags) {
+      tags.sort(function(a, b) {
+        if (a.indexOf("status:") === b.indexOf("status:"))
+          return a.toLowerCase().localeCompare(b.toLowerCase());
+        else if (a.indexOf("status:") !== -1)
+          return -1 ;
+        else if (b.indexOf("status:") !== -1)
+          return 1 ;
+        else
+          return 0 ;
+      }) ;  
+  }
+
   $scope.selectTag = function(tag) {
     
     var update = false ;
@@ -134,18 +147,18 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     else if (Object.prototype.toString.call(tag) === '[object Array]')
     {
       $scope.selectedTags = tag.slice() ;
-      $scope.selectedTags.sort(function(a, b) {return a.toLowerCase().localeCompare(b.toLowerCase());})  
       update = true ;
     }
     else if (Object.prototype.toString.call(tag) === '[object String]') {
       if ($scope.selectedTags.indexOf(tag) === -1) {
         $scope.selectedTags.push(tag);
-        $scope.selectedTags.sort(function(a, b) {return a.toLowerCase().localeCompare(b.toLowerCase());})  
         update = true ;
       }
     }
 
     if (update) {
+      $scope.sortSelectedTags($scope.selectedTags) ;
+
       $('.search-box').outerWidth(0) ;
   
       $scope.organizeNotes($scope.server.notes, false) ;
@@ -216,20 +229,46 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     }
   }
 
+  $scope.countUnselectedNoteTags = function(note) {
+    var tags = note.tags.slice() ;
+
+    if (!note.editing) {
+      $scope.selectedTags.forEach(function(selectedTag) {
+        removeElementFromArray(tags, selectedTag) ;
+      }) ;
+    }
+
+    return tags.length ;
+  }
+
   $scope.extractTagsFromNotes = function(notes) {
     
     $scope.internalTags = [] ;
+
+    var addCheckedTag = false ;
+    var addUncheckedTag = false ;
+    var addFlaggedTag = false ;
+
     notes.forEach(function(note) {
       if (note.checked)
         if ($scope.internalTags.indexOf($scope.InternalTags.Checked) === -1)
-          $scope.internalTags.push($scope.InternalTags.Checked);
+          addCheckedTag = true ;
+
       if (!note.checked)
         if ($scope.internalTags.indexOf($scope.InternalTags.Unchecked) === -1)
-          $scope.internalTags.push($scope.InternalTags.Unchecked);
+          addUncheckedTag = true ;
+
       if (note.pinned)
         if ($scope.internalTags.indexOf($scope.InternalTags.Flagged) === -1)
-          $scope.internalTags.push($scope.InternalTags.Flagged);
+          addFlaggedTag = true ;
     }) ;
+
+    if (addCheckedTag)
+      $scope.internalTags.push($scope.InternalTags.Checked);
+    if (addUncheckedTag)
+      $scope.internalTags.push($scope.InternalTags.Unchecked);
+    if (addFlaggedTag)
+      $scope.internalTags.push($scope.InternalTags.Flagged);
 
     $scope.tags = [] ;
     notes.forEach(function(note) {
@@ -388,7 +427,8 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
         if (data.config !== undefined)
           if (data.config.tags !== undefined) {
               $scope.selectedTags = data.config.tags;
-              $scope.selectedTags.sort(function(a, b) {return a.toLowerCase().localeCompare(b.toLowerCase());})  
+              $scope.sortSelectedTags($scope.selectedTags) ;
+              // $scope.selectedTags.sort(function(a, b) {return a.toLowerCase().localeCompare(b.toLowerCase());})  
             }
 
         $scope.getItems() ;

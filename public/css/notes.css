@@ -323,7 +323,7 @@ body {
 
 .typing-helper
 {
-	color:lightgray;
+	color:rgb(162,162,164);
 	font-weight: normal;
 	font-size: small;
 }
@@ -367,6 +367,11 @@ body {
 .label-as-badge 
 {
     border-radius: 1em;
+}
+
+.label-invisible
+{
+	display: none;
 }
 
 .list-group-item
