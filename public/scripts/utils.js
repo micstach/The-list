@@ -99,7 +99,7 @@ function repositionSearchBar(width) {
 
 		var diff = searchBarWidth - (tagsButtonWidth + tagsSelectedWidth);
 
-		$('.search-box').outerWidth(diff - 10) ;
+		$('.search-box').outerWidth(diff - 20) ;
 	}
 	else
 	{
@@ -111,7 +111,7 @@ function detectBoldText(text) {
 
   	var textToReplace = [] ;
 	var preformatedTags = [] ;
-	var tags = text.match(/([*][A-Za-z\d- ]+[*])/g) ;
+	var tags = text.match(/([*][</>_A-Za-z\d- ]+[*])/g) ;
 
 	if (tags !== null) {
 		tags.forEach(function(tag){
@@ -128,7 +128,7 @@ function detectItalicText(text) {
 
   	var textToReplace = [] ;
 	var preformatedTags = [] ;
-	var tags = text.match(/([_][A-Za-z\d- ]+[_])/g) ;
+	var tags = text.match(/([_][</>*A-Za-z\d- ]+[_])/g) ;
 
 	if (tags !== null) {
 		tags.forEach(function(tag){
@@ -187,6 +187,33 @@ function detectPreformatedText(text) {
 	return text ;
 }
 
+function removeLeadingSpaces(text) {
+	var lines = text.split('\n') ;
+	var out = '' ;
+
+	lines.forEach(function(src) {
+		var i = 0;
+
+		while (src[i] === ' ' && i < src.length) {
+			out += '&nbsp;' ;
+			i++
+		}
+
+		out += src.substr(i, src.length - i) ;
+		out += '\n';		
+	}) ;
+
+	return out ;
+}
+
+function removeElementFromArray(array, value)
+{
+	var i = array.indexOf(value) ;
+	if (i !== -1) {
+		array.splice(i, 1) ;
+	}
+}
+
 $(document).ready(function() {
     $('[data-toggle="tooltip"]').tooltip() ;
     
@@ -195,5 +222,6 @@ $(document).ready(function() {
 }) ;
 
 $(window).resize(function() {
+    repositionSearchBar(0) ;
     repositionSearchBar() ;
 }) ;

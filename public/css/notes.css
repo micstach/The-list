@@ -233,20 +233,20 @@ body {
 
 .note-edit-accept
 {
-	color:rgba(0,128,0,1.0);
-	float:right;
+	color: rgba(0, 225, 0, 1.0);
+	float: right;
 }
 
 .note-edit-cancel
 {
-	color:rgba(128,0,0,1.0);
+	color: rgba(225, 0, 0, 1.0);
 	float: right;
 }
 
 .note-edit-accept-disabled
 {
-	color:rgba(128,128,128,1.0);
-	float:right;
+	color: rgba(128, 128, 128, 0.5);
+	float: right;
 }
 
 .note-edit-input
@@ -288,10 +288,16 @@ body {
 	opacity: 0.25;
 }
 
+.special-tag
+{
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
 .note-time
 {
 	color: rgba(162, 162, 205, 0.75);
-	font-size: 0.75em;
+	font-size: 75%;
 	cursor: default;
 }
 
@@ -313,6 +319,13 @@ body {
     padding:0px;
     margin:0px;
     margin-right: 10px;
+}
+
+.typing-helper
+{
+	color:lightgray;
+	font-weight: normal;
+	font-size: small;
 }
 
 .menu-items
@@ -391,4 +404,11 @@ body {
 .modal-header:before,
 .modal-header:after {
     display: table;
+}
+
+@media(max-width:640px){
+	.typing-helper
+	{
+		font-size: 50%;
+	}
 }
