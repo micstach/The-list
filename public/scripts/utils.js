@@ -109,7 +109,6 @@ function repositionSearchBar(width) {
 
 function replaceCharWithTags(text, char, begin, end)
 {
-
   	var textToReplace = [] ;
 	var preformatedTags = [] ;
 
@@ -117,7 +116,32 @@ function replaceCharWithTags(text, char, begin, end)
 	idx = text.indexOf(char, idx) ;
 
 	while (idx !== -1) {
-		preformatedTags.push(idx) ;
+
+		var add = false ;
+		if (preformatedTags.length%2 == 0) {
+			if (idx == 0) {
+				add = true ;
+			}
+			else if (text[idx-1] == ' ' || 
+				     text[idx-1] == '\n' ||
+				     text[idx-1] == '>') {
+				add = true ;
+			}
+		}
+		else {
+			if (idx == text.length - 1) {
+				add = true ;
+			} 
+			else if (text[idx+1] == ' ' || 
+				     text[idx+1] == '\n' ||
+				     text[idx+1] == '<') {
+				add = true ;
+			}
+		}
+
+		if (add)
+			preformatedTags.push(idx) ;
+
 		idx = text.indexOf(char, idx + 1) ;
 	}
 
@@ -138,7 +162,7 @@ function replaceCharWithTags(text, char, begin, end)
 	}	
 
 	textToReplace.forEach(function(transformation) {
-		text = text.replace(transformation.src, transformation.dst) ;
+		text = text.split(transformation.src).join(transformation.dst) ;
 	}) ;
 
 	return text ;

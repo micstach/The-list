@@ -213,9 +213,9 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     note.outputText = note.outputText.replace(/\r\n/g, '\n');
     note.outputText = removeLeadingSpaces(note.outputText) ;
 
-    note.outputText = detectPreformatedText(note.outputText);
     note.outputText = detectBoldText(note.outputText);
     note.outputText = detectItalicText(note.outputText);
+    note.outputText = detectPreformatedText(note.outputText);
 
     note.outputText = note.outputText.replace(/\n/g, '<br/>');  
     note.outputText = $sce.trustAsHtml(linkify.github(note.outputText)) ;
