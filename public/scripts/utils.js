@@ -107,38 +107,73 @@ function repositionSearchBar(width) {
 	}
 }
 
-function detectBoldText(text) {
-
+function replaceCharWithTags(text, char, begin, end)
+{
   	var textToReplace = [] ;
 	var preformatedTags = [] ;
-	var tags = text.match(/([*][</>_A-Za-z\d- ]+[*])/g) ;
 
-	if (tags !== null) {
-		tags.forEach(function(tag){
-			var originalTextBlock = tag ;
-			var transformedTextBlock = '<b>' + tag.replace('*','').replace('*','') + '</b>';	
-			text = text.replace(originalTextBlock, transformedTextBlock);
-		}) ;
+	var idx = 0 ;
+	idx = text.indexOf(char, idx) ;
+
+	while (idx !== -1) {
+
+		var add = false ;
+		if (preformatedTags.length%2 == 0) {
+			if (idx == 0) {
+				add = true ;
+			}
+			else if (text[idx-1] == ' ' || 
+				     text[idx-1] == '\n' ||
+				     text[idx-1] == '>') {
+				add = true ;
+			}
+		}
+		else {
+			if (idx == text.length - 1) {
+				add = true ;
+			} 
+			else if (text[idx+1] == ' ' || 
+				     text[idx+1] == '\n' ||
+				     text[idx+1] == '<') {
+				add = true ;
+			}
+		}
+
+		if (add)
+			preformatedTags.push(idx) ;
+
+		idx = text.indexOf(char, idx + 1) ;
 	}
+
+	if (preformatedTags.length > 0 && preformatedTags.length % 2 === 0) 
+	{
+	  for (var i=0; i<preformatedTags.length; i+=2)
+	  {
+	    var originalTextBlock = text.slice(preformatedTags[i], preformatedTags[i+1] + char.length) ;
+
+	    var transformedTextBlock = originalTextBlock ;
+	    var index = 0 ;
+	    transformedTextBlock = transformedTextBlock.substr(0, index)  + begin + transformedTextBlock.substr(index+1, transformedTextBlock.length-(index+1));
+	    index = transformedTextBlock.length - 1;
+	    transformedTextBlock = transformedTextBlock.substr(0, index)  + end + transformedTextBlock.substr(index+1, transformedTextBlock.length-(index+1));
+
+      	textToReplace.push({src: originalTextBlock, dst: transformedTextBlock});
+	  }
+	}	
+
+	textToReplace.forEach(function(transformation) {
+		text = text.split(transformation.src).join(transformation.dst) ;
+	}) ;
 
 	return text ;
 }
 
+function detectBoldText(text) {
+	return replaceCharWithTags(text, '*', '<b>', '</b>') ;
+}
+
 function detectItalicText(text) {
-
-  	var textToReplace = [] ;
-	var preformatedTags = [] ;
-	var tags = text.match(/([_][</>*A-Za-z\d- ]+[_])/g) ;
-
-	if (tags !== null) {
-		tags.forEach(function(tag){
-			var originalTextBlock = tag ;
-			var transformedTextBlock = '<i>' + tag.replace('_','').replace('_','') + '</i>';	
-			text = text.replace(originalTextBlock, transformedTextBlock);
-		}) ;
-	}
-
-	return text ;
+	return replaceCharWithTags(text, '_', '<i>', '</i>') ;
 }
 
 function detectPreformatedText(text) {
