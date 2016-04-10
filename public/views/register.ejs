@@ -21,33 +21,52 @@
       <div class="application-header"></div>
     </a>
     <div class="container centered">
-      <form action="/register" method="post" class="message-form">
-        <div class="form-group">
-          <label for="email">E-mail</label>
-          <input name="email" class="form-control input-default" placeholder="Podaj adres e-mail">
-        </div>
-        <% if (locals.email_error) { %>
-          <div class="alert alert-danger" role="alert"><%= email_error%></div>
-        <% } %>        
-        <div class="form-group">
-          <label for="user">Nazwa użytkownika</label>
-          <input name="user" class="form-control input-default" placeholder="Podaj nazwę użytkownika">
-        </div>
-        <% if (locals.user_error) { %>
-          <div class="alert alert-danger" role="alert"><%= user_error %></div>
-        <% } %>        
-        <div class="form-group">
-          <label for="pwd">Hasło</label>
-          <input type="password" name="pwd" class="form-control input-default" placeholder="Podaj hasło">
-        </div>
-        <div class="form-group">
-          <input type="password" name="re-pwd" class="retyped form-control input-default" placeholder="Powtórz hasło">
-        </div>
-        <% if (locals.error) { %>
-          <div class="alert alert-danger" role="alert"><%= error %></div>
-        <% } %>
-        <button type="submit" class="form-control btn btn-primary"><strong>Zarejestruj się</strong></button>
-      </form>
+    <% if (locals.verificationSent) { %>
+      <div>Email weryfikacyjny został wysłany na <%= email %>, sprawdż skrzynkę pocztową.</div>
+    <% } else { %>
+      <% if (locals.id) { %>
+        <form action="/register?id=<%= id %>&email=<%= email %>" method="post" class="message-form">
+      <% } else { %>
+        <form action="/register" method="post" class="message-form">
+      <% } %>
+          <% if (locals.email) { %>
+            <div class="form-group">
+              <label for="email">E-mail</label>
+              <input name="email" class="form-control input-default" placeholder="Podaj adres e-mail" readonly="readonly" value="<%= email %>">
+            </div>
+          <% } else { %>
+            <div class="form-group">
+              <label for="email">E-mail</label>
+              <input name="email" class="form-control input-default" placeholder="Podaj adres e-mail">
+            </div>
+            <% if (locals.email_error) { %>
+              <div class="alert alert-danger" role="alert"><%= email_error%></div>
+            <% } %>        
+          <% } %>
+          <% if (locals.id) { %>
+            <div class="form-group">
+              <label for="user">Nazwa użytkownika</label>
+              <input name="user" class="form-control input-default" placeholder="Podaj nazwę użytkownika">
+            </div>
+            <% if (locals.user_error) { %>
+              <div class="alert alert-danger" role="alert"><%= user_error %></div>
+            <% } %>        
+            <div class="form-group">
+              <label for="pwd">Hasło</label>
+              <input type="password" name="pwd" class="form-control input-default" placeholder="Podaj hasło">
+            </div>
+            <div class="form-group">
+              <input type="password" name="re-pwd" class="retyped form-control input-default" placeholder="Powtórz hasło">
+            </div>
+            <% if (locals.error) { %>
+              <div class="alert alert-danger" role="alert"><%= error %></div>
+            <% } %>
+            <button type="submit" class="form-control btn btn-primary"><strong>Zarejestruj się</strong></button>
+          <% } else { %>
+            <button type="submit" class="form-control btn btn-primary"><strong>Wyślij link do rejestracji</strong></button>
+          <% } %>
+        </form>
+      <% } %>
     </div>  
   </body>
 </html>

@@ -88,7 +88,7 @@ app.get('/home', authorize, function(req, res) {
 
   MongoClient.connect(mongoUrl, function(err, db) {
     db.collection('users').findOne({_id: mongodb.ObjectID(userid)}, function(err, user){
-      res.render('notes', {desktopClient: desktopClient, username: user.name, userid:userid}) ;
+      res.render('home', {desktopClient: desktopClient, username: user.name, userid:userid}) ;
       db.close();
     }) ;
   });
@@ -112,51 +112,100 @@ app.get('/login', function(req, res, next) {
 }) ;
 
 app.get('/register', function(req, res) {
-  res.render('register', {user: null, error:null}) ;
+  
+  var parameters = {
+    user: null, 
+    error: null,
+  };
+
+  if (req.query.id !== undefined) {
+    parameters.id = req.query.id ;
+    parameters.email = req.query.email ;
+  }
+  else {
+  }
+ 
+  res.render('register', parameters) ;
 }) ;
 
 app.post('/register', function(req, res) {
   console.log('api register: %s', JSON.stringify(req.body)); 
 
-  if (req.body.user.length == 0) {
-    res.render('register', {user: req.body.user, user_error:"Niepoprawna nazwa użytkownika !"});      
-  }
+  if (req.query.id === undefined || req.query.email === undefined)
+  {
+    var mongoUrl = environment.config.db() ;  
+    MongoClient.connect(mongoUrl, function(err, db) {
+      var registerRequest = db.collection('registerRequest') ;
 
-  var pwd = utils.security.hashValue(req.body.pwd) ;
-  var retypedPwd = utils.security.hashValue(req.body['re-pwd']) ;
-
-  var mongoUrl = environment.config.db() ;  
-  
-  // register if not exists
-  MongoClient.connect(mongoUrl, function(err, db) {
-
-    var users = db.collection('users') ;
-
-    users.findOne({name: req.body.user, email: req.body.email}, function(err, user) {
-      if (user == null) {
-        if (pwd == retypedPwd) {
-          var usr = {email: req.body.email, name: req.body.user, password: pwd} ;
+      registerRequest.findOne({email: req.query.email}, function(err, request) {
+        if (request === null) {
+          var newRequest = {email: req.body.email} ;
           
-          users.save(usr, null, function(err, result) {           
-            users.findOne(usr, function(err, user) {
-              utils.helpers.storeUserInSessionAndRedirect(req, res, user) ;
+          registerRequest.save(newRequest, null, function(err, result) {           
+            registerRequest.findOne(newRequest, function(err, request) {
               db.close();
-
-              sendEmail(user, getRegisterEmailContent(user)) ;
+              sendEmail(request, getPreRegisterEmailContent(request)) ;
+              res.render('register', {verificationSent: true, email: request.email});
             }) ;
           }) ;
         }
         else {
           db.close() ;
-          res.render('register', {user: req.body.user, error:"Hasła nie pasują !"});
+          sendEmail(request, getPreRegisterEmailContent(request)) ;
+          res.render('register', {verificationSent: true, email: request.email});
         }
-      }
-      else {
-        db.close() ;
-        res.render('register', {user: req.body.user, user_error:"Użytkownik o tej nazwie już istnieje !"});      
-      }
+      });
     });
-  }) ;
+  }
+  else 
+  {
+    // check pair:
+    // - req.query.id
+    // - req.query.email
+    // if found perform registration, remove from db {req.query.id, req.query.email}
+
+    if (req.body.user.length == 0) {
+      res.render('register', {user: req.body.user, user_error:"Niepoprawna nazwa użytkownika !"});      
+    }
+
+    var pwd = utils.security.hashValue(req.body.pwd) ;
+    var retypedPwd = utils.security.hashValue(req.body['re-pwd']) ;
+
+    var mongoUrl = environment.config.db() ;  
+    
+    // register if not exists
+    MongoClient.connect(mongoUrl, function(err, db) {
+
+      db.collection('registerRequest').remove({_id: mongodb.ObjectID(req.query.id)}) ;
+      
+      var users = db.collection('users') ;
+
+      users.findOne({name: req.body.user, email: req.body.email}, function(err, user) {
+        if (user == null) {
+          if (pwd == retypedPwd) {
+            var usr = {email: req.body.email, name: req.body.user, password: pwd} ;
+            
+            users.save(usr, null, function(err, result) {           
+              users.findOne(usr, function(err, user) {
+                utils.helpers.storeUserInSessionAndRedirect(req, res, user) ;
+                db.close();
+
+                sendEmail(user, getRegisterEmailContent(user)) ;
+              }) ;
+            }) ;
+          }
+          else {
+            db.close() ;
+            res.render('register', {user: req.body.user, error:"Hasła nie pasują !"});
+          }
+        }
+        else {
+          db.close() ;
+          res.render('register', {user: req.body.user, user_error:"Użytkownik o tej nazwie już istnieje !"});      
+        }
+      });
+    }) ;
+  }
 }) ;
 
 app.get('/logoff', function(req, res){
@@ -398,6 +447,26 @@ function getEmailSignature()
   return signature ;
 }
 
+function getPreRegisterEmailContent(request)
+{
+  var subject = '2do service - verification step';
+
+  var body = "" ;
+
+  body += "Hi !"
+  body += "<br/>";
+  body += "<br/>";
+  body += "This is 2do service verification email.";
+  body += "<br/>";
+  body += "<br/>";
+  body += "Please click this link to contiunue registeration <a href='http://todo-micstach.rhcloud.com/register?id=" + request._id + "&email=" + request.email + "'>http://todo-micstach.rhcloud.com/register?id=" + request._id + "&email=" + request.email + "</a>" ;
+  body += "<br/>";
+  body += "<br/>";
+  body += getEmailSignature() ;
+
+  return {subject: subject, body: body} ;
+}
+
 function getRegisterEmailContent(user)
 {
   var subject = '2do service - welcome!';
@@ -427,7 +496,7 @@ function getAccountChangedEmailContent(user)
   body += "Hi " + user.name + "!" ;
   body += "<br/>";
   body += "<br/>";
-  body += "Your account email has been changed."
+  body += "Your 2do account email has been changed."
   body += "<br/>";
   body += "<br/>";
   body += "Please login at <a href='http://todo-micstach.rhcloud.com/login'>http://todo-micstach.rhcloud.com/login</a> and start working !" ;
