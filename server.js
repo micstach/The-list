@@ -115,7 +115,7 @@ app.get('/register', function(req, res) {
 }) ;
 
 app.post('/register', function(req, res) {
-  console.log('api register: %s, %s, %s', req.body.user, req.body.pwd, req.body['re-pwd']); 
+  console.log('api register: %s', JSON.stringify(req.body)); 
 
   if (req.body.user.length == 0) {
     res.render('register', {user: req.body.user, user_error:"Niepoprawna nazwa użytkownika !"});      
@@ -131,15 +131,17 @@ app.post('/register', function(req, res) {
 
     var users = db.collection('users') ;
 
-    users.findOne({name: req.body.user}, function(err, user) {
+    users.findOne({name: req.body.user, email: req.body.email}, function(err, user) {
       if (user == null) {
         if (pwd == retypedPwd) {
-          var usr = {name: req.body.user, password: pwd} ;
+          var usr = {email: req.body.email, name: req.body.user, password: pwd} ;
           
           users.save(usr, null, function(err, result) {           
             users.findOne(usr, function(err, user) {
               utils.helpers.storeUserInSession(req, res, user) ;
               db.close();
+
+              sendEmail(user, getRegisterEmailContent(user)) ;
             }) ;
           }) ;
         }
@@ -344,6 +346,51 @@ app.put('/api/user/config', authorizeAPI, function(req, res) {
     }) ;
   }) ;
 }) ;
+
+function getRegisterEmailContent(user)
+{
+  var subject = '2do service - Welcome!';
+
+  var body = "" ;
+
+  body += "Hi " + user.name + "!" ;
+  body += "<br/>";
+  body += "<br/>";
+  body += "Please login at <a href='http://todo-micstach.rhcloud.com/login'>http://todo-micstach.rhcloud.com/login</a> and start working !" ;
+  body += "<br/>";
+  body += "<br/>";
+  body += "Download desktop application or find more details at <a href='http://todo-micstach.rhcloud.com'>http://todo-micstach.rhcloud.com</a>" ;
+  body += "<br/>";
+  body += "<br/>";
+  body += "Thanks, <br/>";
+  body += "2do Service Team" ;
+
+  return {subject: subject, body: body} ;
+}
+
+function sendEmail(user, emailContent) {
+  if (process.env.LOCAL_NODEJS_IP !== undefined) {
+    
+    console.log(JSON.stringify(user)) ;
+
+    var transporter = nodemailer.createTransport('smtps://todo.noreply%40poczta.onet.pl:Stasiek1@smtp.poczta.onet.pl') ;
+
+    var mailOptions = {
+        from: 'todo.noreply@poczta.onet.pl', // sender address
+        to: user.email, // list of receivers
+        subject: emailContent.subject, // Subject line
+        html: emailContent.body
+    };
+
+    // send mail with defined transport object
+    transporter.sendMail(mailOptions, function(error, info){
+        if(error){
+            return console.log(error);
+        }
+        console.log('Message sent: ' + info.response);
+    });
+  }
+}
 
 app.post('/api/reset', function(req, res){
   var response = {
