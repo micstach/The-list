@@ -45,11 +45,15 @@ var authorizeAPI = function(req, res, next) {
 
 var authorize = function(req, res, next) {
   console.log('autohrize, session user: %s', req.session.userid)
-  if (req.session.userid != undefined)
-    return next();
+  console.log('params:' + JSON.stringify(req.params));
+
+  if (req.session.userid !== undefined)
+    return next() ;//res.redirect(req.params.path);
   else
   {
-    return res.redirect('/login');
+    console.log('Unauthorized access: ' + req.url + ', please login!') ;
+
+    return res.redirect('/login?path=' + req.url);
   }
 };
 
@@ -73,87 +77,135 @@ app.get('/', function(req, res) {
 });
 
 app.get('/home', authorize, function(req, res) {
-  if (req.session.userid === undefined) {
-    res.redirect('/login') ;
-  }
-  else {
-    console.log("ui: user %s", req.session.userid) ;
-    console.log("ui: user-agent: " + req.headers['user-agent']);
+  console.log("ui: user %s", req.session.userid) ;
+  console.log("ui: user-agent: " + req.headers['user-agent']);
 
-    var desktopClient = (req.headers['user-agent'] === 'desktop client') ;
-    console.log("desktopClient: " + desktopClient);
+  var desktopClient = (req.headers['user-agent'] === 'desktop client') ;
+  console.log("desktopClient: " + desktopClient);
 
-    var mongoUrl = environment.config.db();  
-    var userid = req.session.userid ;
+  var mongoUrl = environment.config.db();  
+  var userid = req.session.userid ;
 
-    MongoClient.connect(mongoUrl, function(err, db) {
-      db.collection('users').findOne({_id: mongodb.ObjectID(userid)}, function(err, user){
-        res.render('notes', {desktopClient: desktopClient, username: user.name, userid:userid}) ;
-        db.close();
-      }) ;
-    });
-  }
+  MongoClient.connect(mongoUrl, function(err, db) {
+    db.collection('users').findOne({_id: mongodb.ObjectID(userid)}, function(err, user){
+      res.render('home', {desktopClient: desktopClient, username: user.name, userid:userid}) ;
+      db.close();
+    }) ;
+  });
 });
 
-app.get('/login', function(req, res) {
-  if (req.session.userid !== undefined){
-    res.redirect('/home');
+app.get('/login', function(req, res, next) {
+  if (req.session.userid !== undefined) {
+    res.redirect('/home') ;
   }
   else {
-    console.log("Request parameters: " + JSON.stringify(req.query));
+    console.log("Login request parameters: " + JSON.stringify(req.query));
 
     var parameters = {
       error: null,
-      user: req.query.user
+      user: req.query.user,
+      path: req.query.path
     } ;
+
     res.render('login', parameters) ;
   }
 }) ;
 
 app.get('/register', function(req, res) {
-  res.render('register', {user: null, error:null}) ;
+  
+  var parameters = {
+    user: null, 
+    error: null,
+  };
+
+  if (req.query.id !== undefined) {
+    parameters.id = req.query.id ;
+    parameters.email = req.query.email ;
+  }
+  else {
+  }
+ 
+  res.render('register', parameters) ;
 }) ;
 
 app.post('/register', function(req, res) {
-  console.log('api register: %s, %s, %s', req.body.user, req.body.pwd, req.body['re-pwd']); 
+  console.log('api register: %s', JSON.stringify(req.body)); 
 
-  if (req.body.user.length == 0) {
-    res.render('register', {user: req.body.user, user_error:"Niepoprawna nazwa użytkownika !"});      
-  }
+  if (req.query.id === undefined || req.query.email === undefined)
+  {
+    var mongoUrl = environment.config.db() ;  
+    MongoClient.connect(mongoUrl, function(err, db) {
+      var registerRequest = db.collection('registerRequest') ;
 
-  var pwd = utils.security.hashValue(req.body.pwd) ;
-  var retypedPwd = utils.security.hashValue(req.body['re-pwd']) ;
-
-  var mongoUrl = environment.config.db() ;  
-  
-  // register if not exists
-  MongoClient.connect(mongoUrl, function(err, db) {
-
-    var users = db.collection('users') ;
-
-    users.findOne({name: req.body.user}, function(err, user) {
-      if (user == null) {
-        if (pwd == retypedPwd) {
-          var usr = {name: req.body.user, password: pwd} ;
+      registerRequest.findOne({email: req.query.email}, function(err, request) {
+        if (request === null) {
+          var newRequest = {email: req.body.email} ;
           
-          users.save(usr, null, function(err, result) {           
-            users.findOne(usr, function(err, user) {
-              utils.helpers.storeUserInSession(req, res, user) ;
+          registerRequest.save(newRequest, null, function(err, result) {           
+            registerRequest.findOne(newRequest, function(err, request) {
               db.close();
+              sendEmail(request, getPreRegisterEmailContent(request)) ;
+              res.render('register', {verificationSent: true, email: request.email});
             }) ;
           }) ;
         }
         else {
           db.close() ;
-          res.render('register', {user: req.body.user, error:"Hasła nie pasują !"});
+          // sendEmail(request, getPreRegisterEmailContent(request)) ;
+          res.render('register', {verificationSent: true, email: request.email});
         }
-      }
-      else {
-        db.close() ;
-        res.render('register', {user: req.body.user, user_error:"Użytkownik o tej nazwie już istnieje !"});      
-      }
+      });
     });
-  }) ;
+  }
+  else 
+  {
+    // check pair:
+    // - req.query.id
+    // - req.query.email
+    // if found perform registration, remove from db {req.query.id, req.query.email}
+
+    if (req.body.user.length == 0) {
+      res.render('register', {user: req.body.user, user_error:"Niepoprawna nazwa użytkownika !"});      
+    }
+
+    var pwd = utils.security.hashValue(req.body.pwd) ;
+    var retypedPwd = utils.security.hashValue(req.body['re-pwd']) ;
+
+    var mongoUrl = environment.config.db() ;  
+    
+    // register if not exists
+    MongoClient.connect(mongoUrl, function(err, db) {
+
+      db.collection('registerRequest').remove({_id: mongodb.ObjectID(req.query.id)}) ;
+
+      var users = db.collection('users') ;
+
+      users.findOne({name: req.body.user, email: req.body.email}, function(err, user) {
+        if (user == null) {
+          if (pwd == retypedPwd) {
+            var usr = {email: req.body.email, name: req.body.user, password: pwd} ;
+            
+            users.save(usr, null, function(err, result) {           
+              users.findOne(usr, function(err, user) {
+                utils.helpers.storeUserInSessionAndRedirect(req, res, user) ;
+                db.close();
+
+                sendEmail(user, getRegisterEmailContent(user)) ;
+              }) ;
+            }) ;
+          }
+          else {
+            db.close() ;
+            res.render('register', {id: req.query.id, email: req.query.email, user: req.body.user, error:"Hasła nie pasują !"});
+          }
+        }
+        else {
+          db.close() ;
+          res.render('register', {id: req.query.id, email: req.query.email, user: req.body.user, user_error:"Użytkownik o tej nazwie już istnieje !"});      
+        }
+      });
+    }) ;
+  }
 }) ;
 
 app.get('/logoff', function(req, res){
@@ -162,7 +214,7 @@ app.get('/logoff', function(req, res){
 }) ;
 
 app.post('/login', function(req, res) {
-  console.log('login user: %s, %s', req.body.user, req.body.pwd);
+  console.log('login user, request: ', JSON.stringify(req.params));
 
   if (req.body.user.length == 0 || req.body.pwd.length == 0) {
     res.render('login', {error: "Niepoprawny użytkownik lub hasło !"}); 
@@ -174,12 +226,54 @@ app.post('/login', function(req, res) {
     MongoClient.connect(mongoUrl, function(err, db) {
       db.collection('users').findOne({name: req.body.user, password: pwd}, function(err, user) {
           
-          utils.helpers.storeUserInSession(req, res, user) ;
+          utils.helpers.storeUserInSessionAndRedirect(req, res, user) ;
           
           db.close();
         });
     }) ;
   }
+}) ;
+
+app.get('/account', authorize, function(req, res) {
+ 
+  MongoClient.connect(environment.config.db(), function(err, db) {
+    var users = db.collection('users') ;
+    users.findOne({_id: mongodb.ObjectID(req.session.userid)}, function(err, user) {
+      if (user !== null) {
+         var usr = {name: user.name, email: user.email, error: null} ;
+         console.log("Account, user: " + JSON.stringify(usr)) ;
+         res.render('account', usr) ;
+       }
+       db.close();
+    });
+  });
+}) ;
+
+app.post('/account', authorize, function(req, res) {
+  console.log("POST, Account: " + JSON.stringify(req.body)) ;
+
+  MongoClient.connect(environment.config.db(), function(err, db) {
+    var users = db.collection('users') ;
+    users.findOne({_id: mongodb.ObjectID(req.session.userid)}, function(err, user) {
+      
+      if (user !== null) {
+        user.email = req.body.email ;
+
+        users.save(user, null, function(err, result) {           
+          users.findOne(user, function(err, user) {
+            utils.helpers.storeUserInSessionAndRedirect(req, res, user) ;
+            db.close();
+
+            sendEmail(user, getAccountChangedEmailContent(user)) ;
+          }) ;
+        }) ;
+      }
+      else
+      {
+        db.close();
+      }
+    });
+  });
 }) ;
 
 app.get('/api/notes', authorizeAPI, function(req, res) {
@@ -344,6 +438,101 @@ app.put('/api/user/config', authorizeAPI, function(req, res) {
     }) ;
   }) ;
 }) ;
+
+function getEmailSignature()
+{
+  var signature = "";
+  signature += "Cheers, <br/>";
+  signature += "2do Team" ;
+  return signature ;
+}
+
+function getPreRegisterEmailContent(request)
+{
+  var subject = '2do service - verification step';
+
+  var body = "" ;
+
+  body += "Hi !"
+  body += "<br/>";
+  body += "<br/>";
+  body += "This is 2do service verification email.";
+  body += "<br/>";
+  body += "<br/>";
+  body += "Please click this link to contiunue registeration <a href='http://todo-micstach.rhcloud.com/register?id=" + request._id + "&email=" + request.email + "'>http://todo-micstach.rhcloud.com/register?id=" + request._id + "&email=" + request.email + "</a>" ;
+  body += "<br/>";
+  body += "<br/>";
+  body += getEmailSignature() ;
+
+  return {subject: subject, body: body} ;
+}
+
+function getRegisterEmailContent(user)
+{
+  var subject = '2do service - welcome!';
+
+  var body = "" ;
+
+  body += "Hi " + user.name + "!" ;
+  body += "<br/>";
+  body += "<br/>";
+  body += "Please login at <a href='http://todo-micstach.rhcloud.com/login'>http://todo-micstach.rhcloud.com/login</a> and start working !" ;
+  body += "<br/>";
+  body += "<br/>";
+  body += "Download desktop application or find more details at <a href='http://todo-micstach.rhcloud.com'>http://todo-micstach.rhcloud.com</a>" ;
+  body += "<br/>";
+  body += "<br/>";
+  body += getEmailSignature() ;
+
+  return {subject: subject, body: body} ;
+}
+
+function getAccountChangedEmailContent(user)
+{
+  var subject = '2do service - account changed';
+
+  var body = "" ;
+
+  body += "Hi " + user.name + "!" ;
+  body += "<br/>";
+  body += "<br/>";
+  body += "Your 2do account email has been changed."
+  body += "<br/>";
+  body += "<br/>";
+  body += "Please login at <a href='http://todo-micstach.rhcloud.com/login'>http://todo-micstach.rhcloud.com/login</a> and start working !" ;
+  body += "<br/>";
+  body += "<br/>";
+  body += "Download desktop application or find more details at <a href='http://todo-micstach.rhcloud.com'>http://todo-micstach.rhcloud.com</a>" ;
+  body += "<br/>";
+  body += "<br/>";
+  body += getEmailSignature() ;
+  
+  return {subject: subject, body: body} ;
+}
+
+function sendEmail(user, emailContent) {
+  //if (process.env.LOCAL_NODEJS_IP !== undefined) {
+    
+    console.log(JSON.stringify(user)) ;
+
+    var transporter = nodemailer.createTransport('smtps://todo.noreply%40poczta.onet.pl:Stasiek1@smtp.poczta.onet.pl') ;
+
+    var mailOptions = {
+        from: 'todo.noreply@poczta.onet.pl', // sender address
+        to: user.email, // list of receivers
+        subject: emailContent.subject, // Subject line
+        html: emailContent.body
+    };
+
+    // send mail with defined transport object
+    transporter.sendMail(mailOptions, function(error, info){
+        if(error){
+            return console.log(error);
+        }
+        console.log('Message sent: ' + info.response);
+    });
+  //}
+}
 
 app.post('/api/reset', function(req, res){
   var response = {
