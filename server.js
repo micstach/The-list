@@ -151,7 +151,7 @@ app.post('/register', function(req, res) {
         }
         else {
           db.close() ;
-          sendEmail(request, getPreRegisterEmailContent(request)) ;
+          // sendEmail(request, getPreRegisterEmailContent(request)) ;
           res.render('register', {verificationSent: true, email: request.email});
         }
       });
@@ -177,7 +177,7 @@ app.post('/register', function(req, res) {
     MongoClient.connect(mongoUrl, function(err, db) {
 
       db.collection('registerRequest').remove({_id: mongodb.ObjectID(req.query.id)}) ;
-      
+
       var users = db.collection('users') ;
 
       users.findOne({name: req.body.user, email: req.body.email}, function(err, user) {
