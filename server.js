@@ -196,12 +196,12 @@ app.post('/register', function(req, res) {
           }
           else {
             db.close() ;
-            res.render('register', {user: req.body.user, error:"Hasła nie pasują !"});
+            res.render('register', {id: req.query.id, email: req.query.email, user: req.body.user, error:"Hasła nie pasują !"});
           }
         }
         else {
           db.close() ;
-          res.render('register', {user: req.body.user, user_error:"Użytkownik o tej nazwie już istnieje !"});      
+          res.render('register', {id: req.query.id, email: req.query.email, user: req.body.user, user_error:"Użytkownik o tej nazwie już istnieje !"});      
         }
       });
     }) ;
@@ -511,7 +511,7 @@ function getAccountChangedEmailContent(user)
 }
 
 function sendEmail(user, emailContent) {
-  if (process.env.LOCAL_NODEJS_IP !== undefined) {
+  //if (process.env.LOCAL_NODEJS_IP !== undefined) {
     
     console.log(JSON.stringify(user)) ;
 
@@ -531,7 +531,7 @@ function sendEmail(user, emailContent) {
         }
         console.log('Message sent: ' + info.response);
     });
-  }
+  //}
 }
 
 app.post('/api/reset', function(req, res){
