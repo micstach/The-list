@@ -218,7 +218,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     note.outputText = detectPreformatedText(note.outputText);
 
     note.outputText = note.outputText.replace(/\n/g, '<br/>');  
-    note.outputText = $sce.trustAsHtml(linkify.github(note.outputText)) ;
+    note.outputText = $sce.trustAsHtml(linkify.normal(note.outputText)) ;
     
     note.timeVerbose = getTimeString(note.timestamp);
 

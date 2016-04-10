@@ -10,13 +10,18 @@ exports.security = {
 }
 
 exports.helpers = {
-	storeUserInSession: function(req, res, user) {
+	storeUserInSessionAndRedirect: function(req, res, user) {
     console.log("User settings: %s", JSON.stringify(user));
 
 	  if (user !== null) {
 	    req.session.userid = user._id ;
-	    console.log(JSON.stringify(req.session)) ;
-	    res.redirect('/home');
+	    console.log("storeUserInSessionAndRedirect, session: " + JSON.stringify(req.session)) ;
+      console.log("storeUserInSessionAndRedirect, params: " + JSON.stringify(req.query)) ;
+
+      if (req.query.path !== undefined)
+  	    res.redirect(req.query.path);
+      else
+        res.redirect('/home')
 	  }
 	  else {
 	    req.session.destroy();

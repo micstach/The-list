@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <link href="../css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="../css/main.css" rel="stylesheet" type="text/css" >
+    <link href="../css/credentials.css" rel="stylesheet" type="text/css" >
+
+    <link rel="icon" type="image/png" sizes="16x16" href="/res/todo_16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/res/todo_32.png">
+    <link rel="icon" type="image/png" sizes="64x64" href="/res/todo_64.png">  
+
+    <script src="../libs/jquery.min.js"></script>
+    <script src="../scripts/register.js"></script>  
+  </head>
+  <body>
+    <a href="/">
+      <div class="application-header"></div>
+    </a>
+    <div class="container centered">
+      <form action="/account" method="post" class="message-form">
+        <div class="form-group">
+          <label for="email">E-mail</label>
+          <input name="email" class="form-control input-default" placeholder="Podaj adres e-mail" value="<%= email %>">
+        </div>
+        <% if (locals.email_error) { %>
+          <div class="alert alert-danger" role="alert"><%= email_error%></div>
+        <% } %>        
+        <div class="form-group">
+          <label for="user">Nazwa użytkownika</label>
+          <input name="user" class="form-control input-default" placeholder="Podaj nazwę użytkownika" value="<%= name %>" readonly="readonly">
+        </div>
+        <% if (locals.user_error) { %>
+          <div class="alert alert-danger" role="alert"><%= user_error %></div>
+        <% } %>        
+        <button type="submit" class="form-control btn btn-primary"><strong>Akceptuj</strong></button>
+      </form>
+    </div>  
+  </body>
+</html>

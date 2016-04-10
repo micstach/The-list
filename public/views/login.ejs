@@ -21,7 +21,11 @@
       <div class="application-header"></div>
     </a>
     <div class="container">
+    <% if (locals.path) { %>
+      <form action="/login?path=<%= path %>" method="post" class="message-form">
+    <% } else { %> 
       <form action="/login" method="post" class="message-form">
+    <% } %> 
         <div class="form-group">
           <% if (locals.error) { %>
             <div class="alert alert-danger" role="alert"><%= error %></div>
