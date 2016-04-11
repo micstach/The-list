@@ -307,17 +307,24 @@ app.post('/account', authorize, function(req, res) {
     var users = db.collection('users') ;
     users.findOne({_id: mongodb.ObjectID(req.session.userid)}, function(err, user) {
       
-      if (user !== null) {
-        user.email = req.body.email ;
+      if (user !== null)
+      {
+        if (user.email !== req.body.email) {
+          user.email = req.body.email ;
 
-        users.save(user, null, function(err, result) {           
-          users.findOne(user, function(err, user) {
-            utils.helpers.storeUserInSessionAndRedirect(req, res, user) ;
-            db.close();
-
-            sendEmail(user, getAccountChangedEmailContent(user)) ;
+          users.save(user, null, function(err, result) {           
+            users.findOne(user, function(err, user) {
+              utils.helpers.storeUserInSessionAndRedirect(req, res, user) ;
+              db.close();
+              
+              sendEmail(user, getAccountChangedEmailContent(user)) ;
+            }) ;
           }) ;
-        }) ;
+        }
+        else
+        {
+          res.redirect('/home') ;
+        }
       }
       else
       {
