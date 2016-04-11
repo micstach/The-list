@@ -268,7 +268,7 @@ app.post('/login', function(req, res) {
   console.log('login user, request: ', JSON.stringify(req.params));
 
   if (req.body.user.length == 0 || req.body.pwd.length == 0) {
-    res.render('login', {error: "Niepoprawny użytkownik lub hasło !"}); 
+    res.render('login', {user: req.body.user, error: "Niepoprawny użytkownik lub hasło!"}); 
   }
   else {
     var mongoUrl = environment.config.db();

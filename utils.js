@@ -26,7 +26,7 @@ exports.helpers = {
 	  }
 	  else {
 	    req.session.destroy();
-	    res.render('login', {error: "Niepoprawny użytkownik lub hasło !"}); 
+	    res.render('login', {user: req.body.user, error: "Niepoprawny użytkownik lub hasło!"}); 
 	  }		
 	},
   validateEmail: function(email) {
