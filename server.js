@@ -95,20 +95,34 @@ app.get('/home', authorize, function(req, res) {
 });
 
 app.get('/login', function(req, res, next) {
+ 
   if (req.session.userid !== undefined) {
-    res.redirect('/home') ;
+    if (req.query.user !== undefined) {
+      if (req.query.user === req.session.username) {
+        res.redirect('/home') ;
+        return ;
+      }
+      else {
+        req.session.destroy();
+      }
+    }
+    else
+    {
+      res.redirect('/home') ;
+      return ;
+    }
   }
-  else {
-    console.log("Login request parameters: " + JSON.stringify(req.query));
 
-    var parameters = {
-      error: null,
-      user: req.query.user,
-      path: req.query.path
-    } ;
+  console.log("Login request parameters: " + JSON.stringify(req.query));
 
-    res.render('login', parameters) ;
-  }
+  var parameters = {
+    error: null,
+    user: req.query.user,
+    path: req.query.path
+  } ;
+
+  res.render('login', parameters) ;
+  
 }) ;
 
 app.get('/register', function(req, res) {
@@ -119,92 +133,129 @@ app.get('/register', function(req, res) {
   };
 
   if (req.query.id !== undefined) {
-    parameters.id = req.query.id ;
-    parameters.email = req.query.email ;
-  }
-  else {
-  }
- 
-  res.render('register', parameters) ;
-}) ;
-
-app.post('/register', function(req, res) {
-  console.log('api register: %s', JSON.stringify(req.body)); 
-
-  if (req.query.id === undefined || req.query.email === undefined)
-  {
     var mongoUrl = environment.config.db() ;  
     MongoClient.connect(mongoUrl, function(err, db) {
       var registerRequest = db.collection('registerRequest') ;
 
-      registerRequest.findOne({email: req.query.email}, function(err, request) {
-        if (request === null) {
-          var newRequest = {email: req.body.email} ;
-          
-          registerRequest.save(newRequest, null, function(err, result) {           
-            registerRequest.findOne(newRequest, function(err, request) {
-              db.close();
-              sendEmail(request, getPreRegisterEmailContent(request)) ;
-              res.render('register', {verificationSent: true, email: request.email});
-            }) ;
-          }) ;
-        }
-        else {
-          db.close() ;
-          // sendEmail(request, getPreRegisterEmailContent(request)) ;
-          res.render('register', {verificationSent: true, email: request.email});
-        }
-      });
+      try
+      {
+        var id = mongodb.ObjectID(req.query.id);
+        
+        registerRequest.findOne({_id: id}, function(err, request) {
+          console.log("Registration request: " + JSON.stringify(request)) ;
+          if (request !== null) {
+            db.close();
+            parameters.id = req.query.id ;
+            parameters.email = request.email ;
+            res.render('register', parameters);
+          }
+          else
+          {
+            parameters.invalidRequestId = true ;
+            res.render('register', parameters);
+          }
+        });
+      }
+      catch (ex)
+      {
+        console.log("Register exception");
+        parameters.invalidRequestId = true ;
+        res.render('register', parameters);               
+      }
     });
   }
-  else 
+  else {
+    res.render('register', parameters) ;
+  }
+ 
+}) ;
+
+app.post('/register', function(req, res) {
+  console.log('Register api'); 
+
+  if (req.query.id === undefined)
   {
-    // check pair:
-    // - req.query.id
-    // - req.query.email
-    // if found perform registration, remove from db {req.query.id, req.query.email}
+    if (utils.helpers.validateEmail(req.body.email))
+    {
+      var mongoUrl = environment.config.db() ;  
+      MongoClient.connect(mongoUrl, function(err, db) {
+        var registerRequest = db.collection('registerRequest') ;
 
-    if (req.body.user.length == 0) {
-      res.render('register', {user: req.body.user, user_error:"Niepoprawna nazwa użytkownika !"});      
-    }
-
-    var pwd = utils.security.hashValue(req.body.pwd) ;
-    var retypedPwd = utils.security.hashValue(req.body['re-pwd']) ;
-
-    var mongoUrl = environment.config.db() ;  
-    
-    // register if not exists
-    MongoClient.connect(mongoUrl, function(err, db) {
-
-      db.collection('registerRequest').remove({_id: mongodb.ObjectID(req.query.id)}) ;
-
-      var users = db.collection('users') ;
-
-      users.findOne({name: req.body.user, email: req.body.email}, function(err, user) {
-        if (user == null) {
-          if (pwd == retypedPwd) {
-            var usr = {email: req.body.email, name: req.body.user, password: pwd} ;
+        registerRequest.findOne({email: req.body.email}, function(err, request) {
+          if (request === null) {
+            var newRequest = {email: req.body.email} ;
             
-            users.save(usr, null, function(err, result) {           
-              users.findOne(usr, function(err, user) {
-                utils.helpers.storeUserInSessionAndRedirect(req, res, user) ;
+            registerRequest.save(newRequest, null, function(err, result) {           
+              registerRequest.findOne(newRequest, function(err, request) {
                 db.close();
 
-                sendEmail(user, getRegisterEmailContent(user)) ;
+                sendEmail(request, getPreRegisterEmailContent(request), null, null);
+
+                res.render('register', {verificationSent: 'true', email: request.email});
               }) ;
             }) ;
           }
           else {
             db.close() ;
-            res.render('register', {id: req.query.id, email: req.query.email, user: req.body.user, error:"Hasła nie pasują !"});
+            
+            console.log('Registeration request already defined, id: ' + request._id);
+
+            res.render('register', {verificationSent: 'true', email: request.email});
           }
-        }
-        else {
-          db.close() ;
-          res.render('register', {id: req.query.id, email: req.query.email, user: req.body.user, user_error:"Użytkownik o tej nazwie już istnieje !"});      
-        }
+        });
       });
-    }) ;
+    }
+    else
+    {
+      console.log("Invalid email address") ;
+      res.render('register', {verificationSent: 'false', email: req.body.email});
+    }
+  }
+  else 
+  {
+    console.log("Registration confirmation") ;
+
+    if (req.body.user.length == 0) {
+      res.render('register', {id: req.query.id, email: req.body.email, user: req.body.user, user_error: "Niepoprawna, pusta, nazwa użytkownika"});      
+    }
+    else
+    {
+      var pwd = utils.security.hashValue(req.body.pwd) ;
+      var retypedPwd = utils.security.hashValue(req.body['re-pwd']) ;
+      if (pwd !== retypedPwd) {
+         res.render('register', {id: req.query.id, email: req.body.email, user: req.body.user, error: "Hasła nie pasują"});
+      }
+      else
+      {
+        var mongoUrl = environment.config.db() ;  
+        
+        // register if not exists
+        MongoClient.connect(mongoUrl, function(err, db) {
+
+          var users = db.collection('users') ;
+
+          users.findOne({name: req.body.user, email: req.body.email}, function(err, user) {
+            if (user === null) {
+              db.collection('registerRequest').remove({_id: mongodb.ObjectID(req.query.id)}) ;
+              var usr = {email: req.body.email, name: req.body.user, password: pwd} ;
+              
+              users.save(usr, null, function(err, result) {           
+                users.findOne(usr, function(err, user) {
+                  utils.helpers.storeUserInSessionAndRedirect(req, res, user) ;
+                  db.close();
+
+                  sendEmail(user, getRegisterEmailContent(user), null, null);
+                }) ;
+              }) ;
+            }
+            else {
+              db.close() ;
+              res.render('register', {id: req.query.id, email: req.body.email, user: req.body.user, user_error:"Użytkownik o tej nazwie już istnieje"});      
+            }
+          });
+        }) ;
+      }
+    }
   }
 }) ;
 
@@ -256,17 +307,24 @@ app.post('/account', authorize, function(req, res) {
     var users = db.collection('users') ;
     users.findOne({_id: mongodb.ObjectID(req.session.userid)}, function(err, user) {
       
-      if (user !== null) {
-        user.email = req.body.email ;
+      if (user !== null)
+      {
+        if (user.email !== req.body.email) {
+          user.email = req.body.email ;
 
-        users.save(user, null, function(err, result) {           
-          users.findOne(user, function(err, user) {
-            utils.helpers.storeUserInSessionAndRedirect(req, res, user) ;
-            db.close();
-
-            sendEmail(user, getAccountChangedEmailContent(user)) ;
+          users.save(user, null, function(err, result) {           
+            users.findOne(user, function(err, user) {
+              utils.helpers.storeUserInSessionAndRedirect(req, res, user) ;
+              db.close();
+              
+              sendEmail(user, getAccountChangedEmailContent(user)) ;
+            }) ;
           }) ;
-        }) ;
+        }
+        else
+        {
+          res.redirect('/home') ;
+        }
       }
       else
       {
@@ -370,9 +428,9 @@ app.post('/api/notes/removeall', authorizeAPI, function(req, res){
   var userid = req.session.userid ;
 
   MongoClient.connect(mongoUrl, function(err, db) {
-    var query = {owner: userid} ;//{users: {$elemMatch: {$eq:userid}}} ;
+    var query = {owner: userid} ;
 
-    db.collection('notes').drop(query) ;
+    db.collection('notes').remove(query) ;
     db.close() ;
     res.redirect('/');
   }) ;
@@ -449,17 +507,17 @@ function getEmailSignature()
 
 function getPreRegisterEmailContent(request)
 {
-  var subject = '2do service - verification step';
+  var subject = '2do service - invitation!';
 
   var body = "" ;
 
   body += "Hi !"
   body += "<br/>";
   body += "<br/>";
-  body += "This is 2do service verification email.";
+  body += "This is 2do's service invitation email.";
   body += "<br/>";
   body += "<br/>";
-  body += "Please click this link to contiunue registeration <a href='http://todo-micstach.rhcloud.com/register?id=" + request._id + "&email=" + request.email + "'>http://todo-micstach.rhcloud.com/register?id=" + request._id + "&email=" + request.email + "</a>" ;
+  body += "Please click this private link to continue registeration <a href='http://todo-micstach.rhcloud.com/register?id=" + request._id + "'>http://todo-micstach.rhcloud.com/register?id=" + request._id + "</a>" ;
   body += "<br/>";
   body += "<br/>";
   body += getEmailSignature() ;
@@ -476,7 +534,7 @@ function getRegisterEmailContent(user)
   body += "Hi " + user.name + "!" ;
   body += "<br/>";
   body += "<br/>";
-  body += "Please login at <a href='http://todo-micstach.rhcloud.com/login'>http://todo-micstach.rhcloud.com/login</a> and start working !" ;
+  body += "Please login at <a href='http://todo-micstach.rhcloud.com/login?user=" + user.name + "'>http://todo-micstach.rhcloud.com/login?user=" + user.name + "'</a> and start working !" ;
   body += "<br/>";
   body += "<br/>";
   body += "Download desktop application or find more details at <a href='http://todo-micstach.rhcloud.com'>http://todo-micstach.rhcloud.com</a>" ;
@@ -499,7 +557,7 @@ function getAccountChangedEmailContent(user)
   body += "Your 2do account email has been changed."
   body += "<br/>";
   body += "<br/>";
-  body += "Please login at <a href='http://todo-micstach.rhcloud.com/login'>http://todo-micstach.rhcloud.com/login</a> and start working !" ;
+  body += "Please login at <a href='http://todo-micstach.rhcloud.com/login?user=" + user.name + "'>http://todo-micstach.rhcloud.com/login?user=" + user.name + "'</a> and start working !" ;
   body += "<br/>";
   body += "<br/>";
   body += "Download desktop application or find more details at <a href='http://todo-micstach.rhcloud.com'>http://todo-micstach.rhcloud.com</a>" ;
@@ -510,28 +568,32 @@ function getAccountChangedEmailContent(user)
   return {subject: subject, body: body} ;
 }
 
-function sendEmail(user, emailContent) {
-  //if (process.env.LOCAL_NODEJS_IP !== undefined) {
-    
-    console.log(JSON.stringify(user)) ;
+function sendEmail(user, emailContent, onOk, onError) {
+  console.log(JSON.stringify(user)) ;
 
-    var transporter = nodemailer.createTransport('smtps://todo.noreply%40poczta.onet.pl:Stasiek1@smtp.poczta.onet.pl') ;
+  var transporter = nodemailer.createTransport('smtps://todo.noreply%40poczta.onet.pl:Stasiek1@smtp.poczta.onet.pl') ;
 
-    var mailOptions = {
-        from: 'todo.noreply@poczta.onet.pl', // sender address
-        to: user.email, // list of receivers
-        subject: emailContent.subject, // Subject line
-        html: emailContent.body
-    };
+  var mailOptions = {
+      from: 'todo.noreply@poczta.onet.pl', 
+      to: user.email, 
+      subject: emailContent.subject, 
+      html: emailContent.body
+  };
 
-    // send mail with defined transport object
-    transporter.sendMail(mailOptions, function(error, info){
-        if(error){
-            return console.log(error);
-        }
+  transporter.sendMail(mailOptions, function(error, info){
+      if (error) {
+        if (onError !== undefined && onError !== null)
+          onError() ;
+
+        return console.log("Sending error: " + error);
+      }
+      else {
         console.log('Message sent: ' + info.response);
-    });
-  //}
+        
+        if (onOk !== undefined && onOk !== null)
+          onOk() ;
+      }
+  });
 }
 
 app.post('/api/reset', function(req, res){
