@@ -33,12 +33,12 @@
         <form action="/register?id=<%= id %>" method="post" class="message-form">
       <% } else { %>
         <% if (locals.invalidRequestId) { %>
-          <div class="alert alert-danger" role="alert"><strong>Ups!</strong> Niepoprawny link rejestracji, wygeneruj poprawny link wpisując adres e-mail</div>
+          <div class="alert alert-danger" role="alert"><strong>Ups!</strong> Nieaktualny link do rejestracji.<br/><br/>Wygeneruj nowy link podając swój adres e-mail, a następnie kliknij przycisk <i>Wyślij zaproszenie...</i></div>
         <% } %>        
         <form action="/register" method="post" class="message-form">
       <% } %>
           <div class="form-group">
-            <label for="email">E-mail</label>
+            <label for="email">Adres e-mail</label>
             <% if (locals.email) { %>
                 <input name="email" class="form-control input-default" placeholder="Podaj adres e-mail" readonly="readonly" value="<%= email %>">
             <% } else { %>
