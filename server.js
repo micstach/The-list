@@ -63,10 +63,10 @@ app.get('/', function(req, res) {
     var downloadLink = null ;
    
     if (req.headers['user-agent'].indexOf('Windows') != -1) {
-      downloadLink = '/clients/windows/TheListClientPackage.zip';
+      downloadLink = '/clients/windows/2do.zip';
     }
     else if (req.headers['user-agent'].indexOf('Android') != -1) {
-      downloadLink = '/clients/android/TheListClient.apk';
+      downloadLink = '/clients/android/2do.apk';
     }
 
     res.render('landing', {downloadLink:downloadLink, userAgent:req.headers['user-agent']}) ;
@@ -517,7 +517,7 @@ function getPreRegisterEmailContent(request)
   body += "This is 2do's service invitation email.";
   body += "<br/>";
   body += "<br/>";
-  body += "Please click this private link to continue registeration <a href='http://todo-micstach.rhcloud.com/register?id=" + request._id + "'>http://todo-micstach.rhcloud.com/register?id=" + request._id + "</a>" ;
+  body += "Please click this private link to continue registeration <a href='https://todo-micstach.rhcloud.com/register?id=" + request._id + "'>https://todo-micstach.rhcloud.com/register?id=" + request._id + "</a>" ;
   body += "<br/>";
   body += "<br/>";
   body += getEmailSignature() ;
@@ -534,10 +534,10 @@ function getRegisterEmailContent(user)
   body += "Hi " + user.name + "!" ;
   body += "<br/>";
   body += "<br/>";
-  body += "Please login at <a href='http://todo-micstach.rhcloud.com/login?user=" + user.name + "'>http://todo-micstach.rhcloud.com/login?user=" + user.name + "'</a> and start working !" ;
+  body += "Please login at <a href='https://todo-micstach.rhcloud.com/login?user=" + user.name + "'>https://todo-micstach.rhcloud.com/login?user=" + user.name + "'</a> and start working !" ;
   body += "<br/>";
   body += "<br/>";
-  body += "Download desktop application or find more details at <a href='http://todo-micstach.rhcloud.com'>http://todo-micstach.rhcloud.com</a>" ;
+  body += "Download desktop application or find more details at <a href='https://todo-micstach.rhcloud.com'>https://todo-micstach.rhcloud.com</a>" ;
   body += "<br/>";
   body += "<br/>";
   body += getEmailSignature() ;
@@ -557,10 +557,10 @@ function getAccountChangedEmailContent(user)
   body += "Your 2do account email has been changed."
   body += "<br/>";
   body += "<br/>";
-  body += "Please login at <a href='http://todo-micstach.rhcloud.com/login?user=" + user.name + "'>http://todo-micstach.rhcloud.com/login?user=" + user.name + "'</a> and start working !" ;
+  body += "Please login at <a href='https://todo-micstach.rhcloud.com/login?user=" + user.name + "'>https://todo-micstach.rhcloud.com/login?user=" + user.name + "'</a> and start working !" ;
   body += "<br/>";
   body += "<br/>";
-  body += "Download desktop application or find more details at <a href='http://todo-micstach.rhcloud.com'>http://todo-micstach.rhcloud.com</a>" ;
+  body += "Download desktop application or find more details at <a href='https://todo-micstach.rhcloud.com'>https://todo-micstach.rhcloud.com</a>" ;
   body += "<br/>";
   body += "<br/>";
   body += getEmailSignature() ;
