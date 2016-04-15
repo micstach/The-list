@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     
-    <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" type="text/css" >
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" type="text/css" >
     <link href="../css/bootstrap.min.css" rel="stylesheet" type="text/css">
     <link href="../css/main.css" rel="stylesheet" type="text/css">
     <link href="../css/landing.css" rel="stylesheet" type="text/css">
@@ -19,7 +19,21 @@
     <script src="../scripts/landing.js"></script>
   </head>
   <body>
-    <div class="application-header"></div>
+    <div class="application-header">
+      <div class="container">
+        <div class="btn-group pull-right" style="padding-top:10px;">
+          <button type="button" class="btn btn-link dropdown-toggle" data-toggle="dropdown" style="text-decoration: none; padding-right: 0px; color:white;">
+            <%= language %> <span class="glyphicon glyphicon-menu-down">
+          </button>
+          <!-- <div class="dropdown-menu"> -->
+            <ul class="dropdown-menu-right dropdown-menu scrollable-menu">
+              <li><a class="locale dropdown-item" href="" data-locale="en-US">English (United States)</a></li>
+              <li><a class="locale dropdown-item" href="" data-locale="pl-PL">Polski</a></li>
+            </ul>
+          <!-- </div> -->
+        </div>
+      </div>
+    </div>
     <div class="container">
       <div class="welcome-container">
         <div class="welcome-message">

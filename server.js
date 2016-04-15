@@ -29,7 +29,8 @@ app.use(cookieParser('cookie-guid'));
 app.use(session({
   secret: '8637DA5C-F544-4132-AE53-309005ECC4D0',
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: true,
+  HttpOnly: true
 }));
 
 
@@ -61,8 +62,23 @@ var authorize = function(req, res, next) {
 app.use(locale(supported)) ;
 
 app.get('/', function(req, res) { 
+    
+  var languages = {
+    "en-US": "English (United States)",
+    "pl-PL": "Polski"
+  } ;
+
+  var locale = req.locale ;  
+  if (req.cookies['locale'] === undefined) {
+    res.cookie('locale', locale) ;
+  }
+  else {
+    locale = req.cookies['locale'] ;
+  }
+
   if (req.session.userid === undefined) {
-    console.log("launguage: " + req.headers["accept-language"] + ", " + req.locale) ;
+
+    console.log("launguage: " + locale + ", " + req.locale) ;
 
     var downloadLink = null ;
    
@@ -73,13 +89,19 @@ app.get('/', function(req, res) {
       downloadLink = '/clients/android/2do.apk';
     }
 
-    var resourcePath = './private/landing.' + req.locale + '.js' ;
-    res.render('landing', {resources: require(resourcePath).resources, downloadLink:downloadLink, userAgent:req.headers['user-agent']}) ;
+    var resourcePath = './private/landing.' + locale + '.js' ;
+    console.log('Resource path: ' + resourcePath) ;
+    res.render('landing', {language: languages[locale], resources: require(resourcePath).resources, downloadLink:downloadLink, userAgent:req.headers['user-agent']}) ;
   }
   else {
     res.redirect('/home') ;
   }
 });
+
+app.post('/locale/:locale', function(req, res){
+  console.log("POST: /locale/" + req.params.locale) ;
+  res.cookie('locale', req.params.locale).send();
+}) ;
 
 app.get('/home', authorize, function(req, res) {
   console.log("ui: user %s", req.session.userid) ;
@@ -101,6 +123,14 @@ app.get('/home', authorize, function(req, res) {
 
 app.get('/login', function(req, res, next) {
  
+  var locale = req.locale ;  
+  if (req.cookies['locale'] === undefined) {
+    res.cookie('locale', locale) ;
+  }
+  else {
+    locale = req.cookies['locale'] ;
+  }
+
   if (req.session.userid !== undefined) {
     if (req.query.user !== undefined) {
       if (req.query.user === req.session.username) {
@@ -119,13 +149,13 @@ app.get('/login', function(req, res, next) {
   }
 
   console.log("Login request parameters: " + JSON.stringify(req.query));
-  console.log("Locale: " + req.locale) ;
+  console.log("Locale: " + locale) ;
 
   var parameters = {
     error: null,
     user: req.query.user,
     path: req.query.path,
-    resources: require('./private/login.' + req.locale + '.js').resources
+    resources: require('./private/login.' + locale + '.js').resources
   } ;
 
   res.render('login', parameters) ;
