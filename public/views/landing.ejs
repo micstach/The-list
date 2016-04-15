@@ -23,54 +23,55 @@
     <div class="container">
       <div class="welcome-container">
         <div class="welcome-message">
-          <div class="welcome-text">Pamietaj o wszystkim</div> 
-          <div class="welcome-text">...wszędzie <span class="glyphicon glyphicon-check"></span></div>
+          <div class="welcome-text"><%= resources.title1 %></div> 
+          <div class="welcome-text"><%= resources.title2 %> <span class="glyphicon glyphicon-check"></span></div>
         </div>
         <div>
           <div class="centered">
-            <button onclick="location.href='/login'" class="menu-button btn btn-primary">Zaloguj się</button>
+            <button onclick="location.href='/login'" class="menu-button btn btn-primary"><%= resources.loginButtonText %></button>
           </div>
-          <div class="centered">lub</div>
+          <div class="centered"><%= resources.actionOr %></div>
           <div class="centered">
-            <a href="/register">Zarejestruj się</a>
+            <a href="/register"><%= resources.registerLinkText %></a>
           </div>
         </div>        
         <div id="learning-carousel" class="carousel slide" data-ride="carousel">
           <div class="carousel-inner" role="listbox">
             <div class="item active">
               <p class="welcome-description"> 
-                Masz dostęp do swoich zadań z dowolnego miejsca i na dowolnym urządzeniu.
+                <%= resources.helperText1 %>
               </p>
             </div>
             <div class="item">
               <p class="welcome-description"> 
-                Porządkuj swoje notatki za pomocą znaczników.
+                <%= resources.helperText2 %>
               </p>
             </div>
             <div class="item">
               <p class="welcome-description"> 
-                Dodaj znacznik #dom aby zacząć grupować swoje domowe zadania.
+                <%= resources.helperText3 %>
               </p>
             </div>
             <div class="item">
               <p class="welcome-description"> 
-                Filtruj notatki wygodnie i szybko dzieki opcji filtrowania znaczników              </p>
-            </div>
-            <div class="item">
-              <p class="welcome-description"> 
-                Konfiguracja filtra znaczników zapisywana jest na serwerze.
+                <%= resources.helperText4 %>
               </p>
             </div>
             <div class="item">
               <p class="welcome-description"> 
-                Logując się ponownie lub z innego urządzenia masz od razu dostęp do ostatniego widoku.
+                <%= resources.helperText5 %>
+              </p>
+            </div>
+            <div class="item">
+              <p class="welcome-description"> 
+                <%= resources.helperText6 %>
               </p>
             </div>
           </div>          
         </div>
         <div class="welcome-actions">    
           <% if (locals.downloadLink) { %>
-            <button onclick="location.href='<%= downloadLink %>'" class="btn btn-warning">Pobierz aplikacje</button>
+            <button onclick="location.href='<%= downloadLink %>'" class="btn btn-warning"><%= resources.downloadLinkText %></button>
           <% } %>
         </div>
       </div>

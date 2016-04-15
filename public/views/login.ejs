@@ -28,20 +28,20 @@
     <% } %> 
         <div class="form-group">
           <% if (locals.error) { %>
-            <div class="alert alert-danger" role="alert"><%= error %></div>
+            <div class="alert alert-danger" role="alert"><strong><%= resources.errorTag %></strong> <%= error %></div>
           <% } %> 
-          <label for="user">Użytkownik</label>
+          <label for="user"><%= resources.userName %></label>
           <% if (locals.user) { %>
-            <input id="user" name="user" class="form-control input-default" placeholder="Podaj nazwę użytkownika" value="<%= user %>">
+            <input id="user" name="user" class="form-control input-default" placeholder="<%= resources.userNamePlaceholder %>" value="<%= user %>">
           <% } else { %>
-            <input id="user" name="user" class="form-control input-default" placeholder="Podaj nazwę użytkownika">
+            <input id="user" name="user" class="form-control input-default" placeholder="<%= resources.userNamePlaceholder %>">
           <% } %>
         </div>
         <div class="form-group">
-          <label for="pwd">Hasło</label>
-          <input id="pwd" type="password" name="pwd" class="form-control input-default" placeholder="Podaj hasło">
+          <label for="pwd"><%= resources.userPassword %></label>
+          <input id="pwd" type="password" name="pwd" class="form-control input-default" placeholder="<%= resources.userPasswordPlaceholder %>">
         </div> 
-        <button type="submit" class="form-control btn btn-primary"><strong>Zaloguj się</strong></button>
+        <button type="submit" class="form-control btn btn-primary"><strong><%= resources.signInButtonText %></strong></button>
       </form>
     </div>
   </body>
