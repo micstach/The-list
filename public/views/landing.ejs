@@ -5,8 +5,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     
-    <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" type="text/css" >
-    <link href="../css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" type="text/css" >
+    <!-- <link href="../css/bootstrap.min.css" rel="stylesheet" type="text/css"> -->
     <link href="../css/main.css" rel="stylesheet" type="text/css">
     <link href="../css/landing.css" rel="stylesheet" type="text/css">
 
@@ -19,58 +19,71 @@
     <script src="../scripts/landing.js"></script>
   </head>
   <body>
-    <div class="application-header"></div>
+    <div class="application-header">
+      <div class="container">
+        <div class="btn-group pull-right" style="padding-top:10px;">
+          <button type="button" class="locale-button btn btn-link dropdown-toggle" data-toggle="dropdown" style="text-decoration: none; padding-right: 0px; color:white">
+            <span class="glyphicon glyphicon-globe"></span> <%= language %> <span class="glyphicon glyphicon-menu-down">
+          </button>
+          <ul class="dropdown-menu-right dropdown-menu scrollable-menu">
+            <li><a class="locale dropdown-item" href="" data-locale="en-US">English (United States)</a></li>
+            <li><a class="locale dropdown-item" href="" data-locale="pl-PL">Polski</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
     <div class="container">
       <div class="welcome-container">
         <div class="welcome-message">
-          <div class="welcome-text">Pamietaj o wszystkim</div> 
-          <div class="welcome-text">...wszędzie <span class="glyphicon glyphicon-check"></span></div>
+          <div class="welcome-text"><%= resources.title1 %></div> 
+          <div class="welcome-text"><%= resources.title2 %> <span class="glyphicon glyphicon-check"></span></div>
         </div>
         <div>
           <div class="centered">
-            <button onclick="location.href='/login'" class="menu-button btn btn-primary">Zaloguj się</button>
+            <button onclick="location.href='/login'" class="menu-button btn btn-primary"><%= resources.loginButtonText %></button>
           </div>
-          <div class="centered">lub</div>
+          <div class="centered"><%= resources.actionOr %></div>
           <div class="centered">
-            <a href="/register">Zarejestruj się</a>
+            <a href="/register"><%= resources.registerLinkText %></a>
           </div>
         </div>        
         <div id="learning-carousel" class="carousel slide" data-ride="carousel">
           <div class="carousel-inner" role="listbox">
             <div class="item active">
               <p class="welcome-description"> 
-                Masz dostęp do swoich zadań z dowolnego miejsca i na dowolnym urządzeniu.
+                <%= resources.helperText1 %>
               </p>
             </div>
             <div class="item">
               <p class="welcome-description"> 
-                Porządkuj swoje notatki za pomocą znaczników.
+                <%= resources.helperText2 %>
               </p>
             </div>
             <div class="item">
               <p class="welcome-description"> 
-                Dodaj znacznik #dom aby zacząć grupować swoje domowe zadania.
+                <%= resources.helperText3 %>
               </p>
             </div>
             <div class="item">
               <p class="welcome-description"> 
-                Filtruj notatki wygodnie i szybko dzieki opcji filtrowania znaczników              </p>
-            </div>
-            <div class="item">
-              <p class="welcome-description"> 
-                Konfiguracja filtra znaczników zapisywana jest na serwerze.
+                <%= resources.helperText4 %>
               </p>
             </div>
             <div class="item">
               <p class="welcome-description"> 
-                Logując się ponownie lub z innego urządzenia masz od razu dostęp do ostatniego widoku.
+                <%= resources.helperText5 %>
+              </p>
+            </div>
+            <div class="item">
+              <p class="welcome-description"> 
+                <%= resources.helperText6 %>
               </p>
             </div>
           </div>          
         </div>
         <div class="welcome-actions">    
           <% if (locals.downloadLink) { %>
-            <button onclick="location.href='<%= downloadLink %>'" class="btn btn-warning">Pobierz aplikacje</button>
+            <button onclick="location.href='<%= downloadLink %>'" class="btn btn-warning"><%= resources.downloadLinkText %></button>
           <% } %>
         </div>
       </div>

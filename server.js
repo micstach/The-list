@@ -5,10 +5,14 @@ var mongodb = require('mongodb') ;
 var bodyParser = require('body-parser') ;
 var moment = require('moment');
 var nodemailer = require('nodemailer') ;
-
+var locale = require("locale") ;
+var supportedLanguages = ["en-US", "pl-PL"] ;
+var languages = {
+  "en-US": "English (United States)",
+  "pl-PL": "Polski"
+} ;
 var environment = require('./environment.js') ;
 var utils = require('./utils.js');
-
 var MongoClient = mongodb.MongoClient ;
 
 var app = express() ;
@@ -28,7 +32,8 @@ app.use(cookieParser('cookie-guid'));
 app.use(session({
   secret: '8637DA5C-F544-4132-AE53-309005ECC4D0',
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: true,
+  HttpOnly: true
 }));
 
 
@@ -57,24 +62,44 @@ var authorize = function(req, res, next) {
   }
 };
 
-app.get('/', function(req, res) {
-  if (req.session.userid === undefined) {
+app.use(locale(supportedLanguages)) ;
+
+app.get('/', function(req, res) { 
     
+  var locale = req.locale ;  
+  if (req.cookies['locale'] === undefined) {
+    res.cookie('locale', locale) ;
+  }
+  else {
+    locale = req.cookies['locale'] ;
+  }
+
+  if (req.session.userid === undefined) {
+
+    console.log("launguage: " + locale + ", " + req.locale) ;
+
     var downloadLink = null ;
    
     if (req.headers['user-agent'].indexOf('Windows') != -1) {
-      downloadLink = '/clients/windows/TheListClientPackage.zip';
+      downloadLink = '/clients/windows/2do.zip';
     }
     else if (req.headers['user-agent'].indexOf('Android') != -1) {
-      downloadLink = '/clients/android/TheListClient.apk';
+      downloadLink = '/clients/android/2do.apk';
     }
 
-    res.render('landing', {downloadLink:downloadLink, userAgent:req.headers['user-agent']}) ;
+    var resourcePath = './private/landing.' + locale + '.js' ;
+    console.log('Resource path: ' + resourcePath) ;
+    res.render('landing', {language: languages[locale], resources: require(resourcePath).resources, downloadLink:downloadLink, userAgent:req.headers['user-agent']}) ;
   }
   else {
     res.redirect('/home') ;
   }
 });
+
+app.post('/locale/:locale', function(req, res){
+  console.log("POST: /locale/" + req.params.locale) ;
+  res.cookie('locale', req.params.locale).send();
+}) ;
 
 app.get('/home', authorize, function(req, res) {
   console.log("ui: user %s", req.session.userid) ;
@@ -96,6 +121,14 @@ app.get('/home', authorize, function(req, res) {
 
 app.get('/login', function(req, res, next) {
  
+  var locale = req.locale ;  
+  if (req.cookies['locale'] === undefined) {
+    res.cookie('locale', locale) ;
+  }
+  else {
+    locale = req.cookies['locale'] ;
+  }
+
   if (req.session.userid !== undefined) {
     if (req.query.user !== undefined) {
       if (req.query.user === req.session.username) {
@@ -114,15 +147,40 @@ app.get('/login', function(req, res, next) {
   }
 
   console.log("Login request parameters: " + JSON.stringify(req.query));
+  console.log("Locale: " + locale) ;
 
   var parameters = {
     error: null,
     user: req.query.user,
-    path: req.query.path
+    path: req.query.path,
+    resources: require('./private/login.' + locale + '.js').resources,
+    language: languages[locale]
   } ;
 
   res.render('login', parameters) ;
   
+}) ;
+
+app.post('/login', function(req, res) {
+  console.log('login user, request: ', JSON.stringify(req.params));
+  var resources = require('./private/login.' + req.locale + '.js').resources ;
+
+  if (req.body.user.length == 0 || req.body.pwd.length == 0) {
+    res.render('login', {resources: resources, user: req.body.user, error: resources.errorInvalidUserOrPassword}); 
+  }
+  else {
+    var mongoUrl = environment.config.db();
+    var pwd = utils.security.hashValue(req.body.pwd) ;
+
+    MongoClient.connect(mongoUrl, function(err, db) {
+      db.collection('users').findOne({name: req.body.user, password: pwd}, function(err, user) {
+          
+          utils.helpers.storeUserInSessionAndRedirect(req, res, user, resources) ;
+          
+          db.close();
+        });
+    }) ;
+  }
 }) ;
 
 app.get('/register', function(req, res) {
@@ -262,27 +320,6 @@ app.post('/register', function(req, res) {
 app.get('/logoff', function(req, res){
   req.session.destroy();
   res.redirect('/');
-}) ;
-
-app.post('/login', function(req, res) {
-  console.log('login user, request: ', JSON.stringify(req.params));
-
-  if (req.body.user.length == 0 || req.body.pwd.length == 0) {
-    res.render('login', {user: req.body.user, error: "Niepoprawny użytkownik lub hasło!"}); 
-  }
-  else {
-    var mongoUrl = environment.config.db();
-    var pwd = utils.security.hashValue(req.body.pwd) ;
-
-    MongoClient.connect(mongoUrl, function(err, db) {
-      db.collection('users').findOne({name: req.body.user, password: pwd}, function(err, user) {
-          
-          utils.helpers.storeUserInSessionAndRedirect(req, res, user) ;
-          
-          db.close();
-        });
-    }) ;
-  }
 }) ;
 
 app.get('/account', authorize, function(req, res) {
@@ -507,6 +544,11 @@ function getEmailSignature()
 
 function getPreRegisterEmailContent(request)
 {
+  var hostName = "https://todo-micstach.rhcloud.com";
+  
+  if (process.env.LOCAL_NODEJS_IP !== undefined)
+    hostName = "http://" + environment.config.ip() ;
+
   var subject = '2do service - invitation!';
 
   var body = "" ;
@@ -517,7 +559,7 @@ function getPreRegisterEmailContent(request)
   body += "This is 2do's service invitation email.";
   body += "<br/>";
   body += "<br/>";
-  body += "Please click this private link to continue registeration <a href='http://todo-micstach.rhcloud.com/register?id=" + request._id + "'>http://todo-micstach.rhcloud.com/register?id=" + request._id + "</a>" ;
+  body += "Please click this private link to continue registeration <a href='"+ hostName + "/register?id=" + request._id + "'>"+ hostName + "/register?id=" + request._id + "</a>" ;
   body += "<br/>";
   body += "<br/>";
   body += getEmailSignature() ;
@@ -527,6 +569,11 @@ function getPreRegisterEmailContent(request)
 
 function getRegisterEmailContent(user)
 {
+  var hostName = "https://todo-micstach.rhcloud.com";
+  
+  if (process.env.LOCAL_NODEJS_IP !== undefined)
+    hostName = "http://" + environment.config.ip() ;
+
   var subject = '2do service - welcome!';
 
   var body = "" ;
@@ -534,10 +581,10 @@ function getRegisterEmailContent(user)
   body += "Hi " + user.name + "!" ;
   body += "<br/>";
   body += "<br/>";
-  body += "Please login at <a href='http://todo-micstach.rhcloud.com/login?user=" + user.name + "'>http://todo-micstach.rhcloud.com/login?user=" + user.name + "'</a> and start working !" ;
+  body += "Please login at <a href='"+ hostName + "/login?user=" + user.name + "'>"+ hostName + "/login?user=" + user.name + "'</a> and start working !" ;
   body += "<br/>";
   body += "<br/>";
-  body += "Download desktop application or find more details at <a href='http://todo-micstach.rhcloud.com'>http://todo-micstach.rhcloud.com</a>" ;
+  body += "Download desktop application or find more details at <a href='"+ hostName + "'>"+ hostName + "</a>" ;
   body += "<br/>";
   body += "<br/>";
   body += getEmailSignature() ;
@@ -547,6 +594,11 @@ function getRegisterEmailContent(user)
 
 function getAccountChangedEmailContent(user)
 {
+  var hostName = "https://todo-micstach.rhcloud.com";
+  
+  if (process.env.LOCAL_NODEJS_IP !== undefined)
+    hostName = "http://" + environment.config.ip() ;
+
   var subject = '2do service - account changed';
 
   var body = "" ;
@@ -557,10 +609,10 @@ function getAccountChangedEmailContent(user)
   body += "Your 2do account email has been changed."
   body += "<br/>";
   body += "<br/>";
-  body += "Please login at <a href='http://todo-micstach.rhcloud.com/login?user=" + user.name + "'>http://todo-micstach.rhcloud.com/login?user=" + user.name + "'</a> and start working !" ;
+  body += "Please login at <a href='"+ hostName + "/login?user=" + user.name + "'>"+ hostName + "/login?user=" + user.name + "'</a> and start working !" ;
   body += "<br/>";
   body += "<br/>";
-  body += "Download desktop application or find more details at <a href='http://todo-micstach.rhcloud.com'>http://todo-micstach.rhcloud.com</a>" ;
+  body += "Download desktop application or find more details at <a href='"+ hostName + "'>"+ hostName + "</a>" ;
   body += "<br/>";
   body += "<br/>";
   body += getEmailSignature() ;
@@ -596,45 +648,45 @@ function sendEmail(user, emailContent, onOk, onError) {
   });
 }
 
-app.post('/api/reset', function(req, res){
-  var response = {
-    email: req.query.email
-  };
+// app.post('/api/reset', function(req, res){
+//   var response = {
+//     email: req.query.email
+//   };
 
-  if (process.env.LOCAL_NODEJS_IP !== undefined) {
-    var transporter = nodemailer.createTransport('smtps://todo.noreply%40poczta.onet.pl:Stasiek1@smtp.poczta.onet.pl') ;
+//   if (process.env.LOCAL_NODEJS_IP !== undefined) {
+//     var transporter = nodemailer.createTransport('smtps://todo.noreply%40poczta.onet.pl:Stasiek1@smtp.poczta.onet.pl') ;
 
-    // setup e-mail data with unicode symbols
-    var mailOptions = {
-        from: 'todo.noreply@poczta.onet.pl', // sender address
-        to: req.query.email, // list of receivers
-        subject: 'Hello !', // Subject line
-        text: 'Hello world !', // plaintext body
-        html: '<b>Hello world !</b>' // html body
-    };
+//     // setup e-mail data with unicode symbols
+//     var mailOptions = {
+//         from: 'todo.noreply@jamajka.com', // sender address
+//         to: req.query.email, // list of receivers
+//         subject: 'Hello !', // Subject line
+//         text: 'Hello world !', // plaintext body
+//         html: '<b>Hello world !</b>' // html body
+//     };
 
-    // send mail with defined transport object
-    transporter.sendMail(mailOptions, function(error, info){
-        if(error){
-            return console.log(error);
-        }
-        console.log('Message sent: ' + info.response);
+//     // send mail with defined transport object
+//     transporter.sendMail(mailOptions, function(error, info){
+//         if(error){
+//             return console.log(error);
+//         }
+//         console.log('Message sent: ' + info.response);
         
-        response.info = info.response ;
-        res.writeHead(200, {'Content-Type': 'application/json'});
-        res.end(JSON.stringify(response));
-    });
-  }
-  else {
-    response.info = "unavailable" ;
-    res.writeHead(200, {'Content-Type': 'application/json'});
-    res.end(JSON.stringify(response));
-  }
-}) ;
+//         response.info = info.response ;
+//         res.writeHead(200, {'Content-Type': 'application/json'});
+//         res.end(JSON.stringify(response));
+//     });
+//   }
+//   else {
+//     response.info = "unavailable" ;
+//     res.writeHead(200, {'Content-Type': 'application/json'});
+//     res.end(JSON.stringify(response));
+//   }
+// }) ;
 
-app.get('*', function(req, res){
-  res.redirect('/');
-});
+// app.get('*', function(req, res){
+//   res.redirect('/');
+// });
 
 app.listen(environment.config.port(), environment.config.ip(), function(){
   console.log('2do server started: %s:%s', environment.config.ip(), environment.config.port()) ;
