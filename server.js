@@ -36,6 +36,24 @@ app.use(session({
   HttpOnly: true
 }));
 
+var redirectSec = function(req, res, next) {
+  if (process.env.OPENSHIFT_NODEJS_IP !== undefined) {
+    if (req.headers['x-forwarded-proto'] == 'http') {
+      var safeUrl = 'https://' + req.headers.host + req.path ;
+
+      if (req.query.length > 0)
+        safeUrl += '?' + req.query ;
+
+      res.redirect(safeUrl);
+    } else {
+        return next();
+    }
+  }
+  else
+  {
+    return next();
+  }
+}
 
 var authorizeAPI = function(req, res, next) {
   if (req.session.userid !== undefined)
@@ -64,7 +82,7 @@ var authorize = function(req, res, next) {
 
 app.use(locale(supportedLanguages)) ;
 
-app.get('/', function(req, res) { 
+app.get('/', redirectSec, function(req, res) { 
     
   var locale = req.locale ;  
   if (req.cookies['locale'] === undefined) {
@@ -119,7 +137,7 @@ app.get('/home', authorize, function(req, res) {
   });
 });
 
-app.get('/login', function(req, res, next) {
+app.get('/login', redirectSec, function(req, res, next) {
  
   var locale = req.locale ;  
   if (req.cookies['locale'] === undefined) {
@@ -161,7 +179,7 @@ app.get('/login', function(req, res, next) {
   
 }) ;
 
-app.post('/login', function(req, res) {
+app.post('/login', redirectSec, function(req, res) {
   console.log('login user, request: ', JSON.stringify(req.params));
   var resources = require('./private/login.' + req.locale + '.js').resources ;
 
@@ -183,7 +201,7 @@ app.post('/login', function(req, res) {
   }
 }) ;
 
-app.get('/register', function(req, res) {
+app.get('/register', redirectSec, function(req, res) {
   
   var parameters = {
     user: null, 
@@ -228,7 +246,7 @@ app.get('/register', function(req, res) {
  
 }) ;
 
-app.post('/register', function(req, res) {
+app.post('/register', redirectSec, function(req, res) {
   console.log('Register api'); 
 
   if (req.query.id === undefined)
