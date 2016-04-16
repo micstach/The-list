@@ -1,5 +1,5 @@
-# The list
-It's a todo-list project: http://todo-micstach.rhcloud.com
+# 2do
+It's a todo-list project: https://todo-micstach.rhcloud.com
 
 ## Requirements
 - nodejs
