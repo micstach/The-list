@@ -342,13 +342,31 @@ app.get('/logoff', function(req, res){
 
 app.get('/account', authorize, function(req, res) {
  
+  var locale = req.locale ;  
+  if (req.cookies['locale'] === undefined) {
+    res.cookie('locale', locale) ;
+  }
+  else {
+    locale = req.cookies['locale'] ;
+  }
+
   MongoClient.connect(environment.config.db(), function(err, db) {
     var users = db.collection('users') ;
     users.findOne({_id: mongodb.ObjectID(req.session.userid)}, function(err, user) {
       if (user !== null) {
-         var usr = {name: user.name, email: user.email, error: null} ;
-         console.log("Account, user: " + JSON.stringify(usr)) ;
-         res.render('account', usr) ;
+
+        var parameters = {
+          resources: require('./private/account.' + locale + '.js').resources,
+          language: languages[locale], 
+          user: {
+            name: user.name, 
+            email: user.email
+          }, 
+          error: null
+        } ;
+        
+        console.log("Account, user: " + JSON.stringify(parameters)) ;
+        res.render('account', parameters) ;
        }
        db.close();
     });
