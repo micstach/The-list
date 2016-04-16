@@ -202,10 +202,22 @@ app.post('/login', redirectSec, function(req, res) {
 }) ;
 
 app.get('/register', redirectSec, function(req, res) {
-  
+
+  var locale = req.locale ;  
+  if (req.cookies['locale'] === undefined) {
+    res.cookie('locale', locale) ;
+  }
+  else {
+    locale = req.cookies['locale'] ;
+  }
+
+  console.log("Locale: " + locale) ;
+
   var parameters = {
     user: null, 
     error: null,
+    language: languages[locale],
+    resources: require('./private/register.' + locale + '.js').resources
   };
 
   if (req.query.id !== undefined) {
@@ -248,6 +260,19 @@ app.get('/register', redirectSec, function(req, res) {
 
 app.post('/register', redirectSec, function(req, res) {
   console.log('Register api'); 
+  
+  var locale = req.locale ;  
+  if (req.cookies['locale'] === undefined) {
+    res.cookie('locale', locale) ;
+  }
+  else {
+    locale = req.cookies['locale'] ;
+  }
+
+  var parameters = {
+    language: languages[locale],
+    resources: require('./private/register.' + locale + '.js').resources
+  }
 
   if (req.query.id === undefined)
   {
@@ -267,7 +292,10 @@ app.post('/register', redirectSec, function(req, res) {
 
                 sendEmail(request, getPreRegisterEmailContent(request), null, null);
 
-                res.render('register', {verificationSent: 'true', email: request.email});
+                parameters.verificationSent = 'true' ;
+                parameters.email = request.email ;
+
+                res.render('register', parameters);
               }) ;
             }) ;
           }
@@ -276,7 +304,10 @@ app.post('/register', redirectSec, function(req, res) {
             
             console.log('Registeration request already defined, id: ' + request._id);
 
-            res.render('register', {verificationSent: 'true', email: request.email});
+            parameters.verificationSent = 'true' ;
+            parameters.email = request.email ;
+
+            res.render('register', parameters);
           }
         });
       });
@@ -284,7 +315,7 @@ app.post('/register', redirectSec, function(req, res) {
     else
     {
       console.log("Invalid email address") ;
-      res.render('register', {verificationSent: 'false', email: req.body.email});
+      res.render('register', {language: languages[locale], verificationSent: 'false', email: req.body.email});
     }
   }
   else 
@@ -292,14 +323,14 @@ app.post('/register', redirectSec, function(req, res) {
     console.log("Registration confirmation") ;
 
     if (req.body.user.length == 0) {
-      res.render('register', {id: req.query.id, email: req.body.email, user: req.body.user, user_error: "Niepoprawna, pusta, nazwa użytkownika"});      
+      res.render('register', {language: languages[locale], id: req.query.id, email: req.body.email, user: req.body.user, user_error: "Niepoprawna, pusta, nazwa użytkownika"});      
     }
     else
     {
       var pwd = utils.security.hashValue(req.body.pwd) ;
       var retypedPwd = utils.security.hashValue(req.body['re-pwd']) ;
       if (pwd !== retypedPwd) {
-         res.render('register', {id: req.query.id, email: req.body.email, user: req.body.user, error: "Hasła nie pasują"});
+         res.render('register', {language: languages[locale], id: req.query.id, email: req.body.email, user: req.body.user, error: "Hasła nie pasują"});
       }
       else
       {
