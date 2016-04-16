@@ -6,8 +6,11 @@ var bodyParser = require('body-parser') ;
 var moment = require('moment');
 var nodemailer = require('nodemailer') ;
 var locale = require("locale") ;
-var supported = ["en-US", "pl-PL"] ;
-
+var supportedLanguages = ["en-US", "pl-PL"] ;
+var languages = {
+  "en-US": "English (United States)",
+  "pl-PL": "Polski"
+} ;
 var environment = require('./environment.js') ;
 var utils = require('./utils.js');
 var MongoClient = mongodb.MongoClient ;
@@ -59,15 +62,10 @@ var authorize = function(req, res, next) {
   }
 };
 
-app.use(locale(supported)) ;
+app.use(locale(supportedLanguages)) ;
 
 app.get('/', function(req, res) { 
     
-  var languages = {
-    "en-US": "English (United States)",
-    "pl-PL": "Polski"
-  } ;
-
   var locale = req.locale ;  
   if (req.cookies['locale'] === undefined) {
     res.cookie('locale', locale) ;
@@ -155,7 +153,8 @@ app.get('/login', function(req, res, next) {
     error: null,
     user: req.query.user,
     path: req.query.path,
-    resources: require('./private/login.' + locale + '.js').resources
+    resources: require('./private/login.' + locale + '.js').resources,
+    language: languages[locale]
   } ;
 
   res.render('login', parameters) ;
