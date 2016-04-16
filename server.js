@@ -49,6 +49,10 @@ var redirectSec = function(req, res, next) {
         return next();
     }
   }
+  else
+  {
+    return next();
+  }
 }
 
 var authorizeAPI = function(req, res, next) {
