@@ -563,7 +563,7 @@ app.put('/api/note/update/:id', authorizeAPI, function(req, res){
     db.collection('notes').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, item){
       item.text = req.body.text ;
       item.tags = req.body.tags ;
-      item.timestamp = moment().valueOf() ;
+      // item.timestamp = moment().valueOf() ;
       db.collection('notes').save(item) ;
       db.close() ;
       res.sendStatus(200); 
@@ -594,7 +594,7 @@ app.put('/api/note/check/:id/:state', authorizeAPI, function(req, res){
   MongoClient.connect(environment.config.db(), function(err, db) {
     db.collection('notes').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, item){
       item.checked = (req.params.state === "true") ;
-      item.timestamp = moment().valueOf() ;
+      //item.timestamp = moment().valueOf() ;
       db.collection('notes').save(item) ;
       db.close() ;
       res.sendStatus(200); 
