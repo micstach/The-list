@@ -577,10 +577,10 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   }
 
   $scope.deleteItem = function(note) {
-      
+    var locale = getCookie('locale') ;
     var modalInstance = $uibModal.open({
       animation: true,
-      templateUrl: 'views/dialog-delete-note.html',
+      templateUrl: 'views/dialog-delete-note.' + locale + '.html',
       controller: 'delete-note-controller',
       size: 'lg',
       resolve: {
@@ -600,10 +600,10 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   }
 
   $scope.deleteAllItems = function() {
-      
+    var locale = getCookie('locale') ;
     var modalInstance = $uibModal.open({
       animation: true,
-      templateUrl: 'views/dialog-delete-all-notes.html',
+      templateUrl: 'views/dialog-delete-all-notes.' + locale + '.html',
       controller: 'delete-all-notes-controller',
       size: 'lg'
     });

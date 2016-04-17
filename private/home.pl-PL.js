@@ -1,5 +1,5 @@
 exports.resources = {
-	searchNotePlaceholder: "Wyszukaj notatki..."
+	searchNotePlaceholder: "Wyszukaj notatki...",
 	notePlaceholder: "Zanotujmy coś...",
 	boldText: "pogrubienie",
 	italicText: "kursywa",

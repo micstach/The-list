@@ -4,8 +4,8 @@
 <div class="modal-body">
   <div class="message-header">
     <span class="message-header-left">
-      <span class="message-time">{{note.timeVerbose}}</span>
       <button ng-class="(note.checked) ? 'glyphicon-check' : 'glyphicon-unchecked'" class="note-header-icon glyphicon"></button>
+      <span class="note-time">{{note.timeVerbose}}</span>
     </span> 
   </div>
   <div ng-bind-html="note.outputText" class="note-text">{{note.outputText}}</div>
@@ -15,6 +15,6 @@
 
 </div>
 <div class="modal-footer">
-  <button class="btn btn-default" type="button" ng-click="ok()">Tak, chcę</button>
-  <button class="btn btn-primary" type="button" ng-click="cancel()">Nie, jednak nie</button>
+  <button class="btn btn-default" type="button" ng-click="ok()">Tak</button>
+  <button class="btn btn-primary" type="button" ng-click="cancel()">Nie</button>
 </div>
