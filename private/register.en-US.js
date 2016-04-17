@@ -5,7 +5,7 @@ exports.resources = {
 	},
 	checkEmail: "Please check e-mail box to continue registeration.",
 	emailInvalidAddress: function(email){
-		return "Inavlid e-mail address <email>".replace("<email>", email) ;
+		return "Invalid e-mail address <email>".replace("<email>", email) ;
 	},
 	errorPrefix: "Ouch!",
 	emailInvalidRegisterationLink: "Invalid registeration link.",
@@ -18,5 +18,10 @@ exports.resources = {
 	inputPasswordPlaceholder: "Enter password",
 	inputPasswordRepeatPlaceholder: "Re-enter password",
 	buttonSignIn: "Sign up",
-	buttonSendRegisterationLink: "Send registeration link"
+	buttonSendRegisterationLink: "Send registeration link",
+	errorInvalidUserName: "Invalid user name",
+	errorPasswordsDoesNotMatch: "Password does not match",
+	errorUserNameExists: "User name already exists",
+	errorInvalidUserOrPassword: "Invalid user name or password",
+	errorPasswordNotSet: "Password not set"
 }

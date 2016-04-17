@@ -18,5 +18,10 @@ exports.resources = {
 	inputPasswordPlaceholder: "Podaj hasło",
 	inputPasswordRepeatPlaceholder: "Powtórz hasło",
 	buttonSignIn: "Zarejestruj się",
-	buttonSendRegisterationLink: "Wyślij link do rejestracji"
+	buttonSendRegisterationLink: "Wyślij link do rejestracji",
+	errorInvalidUserName: "Niepoprawna nazwa użytkownika",
+	errorPasswordsDoesNotMatch: "Hasła nie pasują",
+	errorUserNameExists: "Użytkownik o tej nazwie już istnieje",
+	errorInvalidUserOrPassword: "Niepoprawna nazwa użytkownika lub hasło",
+	errorPasswordNotSet: "Hasło nie ustawione"
 }

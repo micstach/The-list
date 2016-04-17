@@ -1,0 +1,22 @@
+exports.resources = {
+	searchNotePlaceholder: "Search notes...",
+	notePlaceholder: "Let's write some note...",
+	boldText: "bold",
+	italicText: "italic",
+	preformatedText: "preformatted",
+	resetFilter: "Reset filter",
+	removeAllNotes: "Remove all notes",
+	accountSettings: "Account settings",
+	logOut: "Log out",
+	aDayAgo: "a day ago",
+	daysAgo: "days ago",
+	anHourAgo: "an hour ago",
+	hoursAgo1: "hours ago",
+	hoursAgo2: "hours ago",
+	aMinuteAgo: "a minute ago",
+	minutesAgo1: "minutes ago",
+	minutesAgo2: "minutes ago",
+	justNow: "just now",
+	halfAMinuteAgo: "half a minute ago",
+	almostAMinuteAgo: "almost a minute ago"	
+}

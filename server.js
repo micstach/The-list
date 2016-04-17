@@ -120,6 +120,20 @@ app.post('/locale/:locale', function(req, res){
 }) ;
 
 app.get('/home', authorize, function(req, res) {
+
+  var locale = req.locale ;  
+  if (req.cookies['locale'] === undefined) {
+    res.cookie('locale', locale) ;
+  }
+  else {
+    locale = req.cookies['locale'] ;
+  }
+
+  var parameters = {
+    resources: require('./private/home.' + locale + '.js').resources,
+    desktopClient: desktopClient
+  }
+
   console.log("ui: user %s", req.session.userid) ;
   console.log("ui: user-agent: " + req.headers['user-agent']);
 
@@ -131,7 +145,10 @@ app.get('/home', authorize, function(req, res) {
 
   MongoClient.connect(mongoUrl, function(err, db) {
     db.collection('users').findOne({_id: mongodb.ObjectID(userid)}, function(err, user){
-      res.render('home', {desktopClient: desktopClient, username: user.name, userid:userid}) ;
+      parameters.username = user.name;
+      parameters.userid = user.userid;
+      
+      res.render('home', parameters) ;
       db.close();
     }) ;
   });
@@ -269,9 +286,11 @@ app.post('/register', redirectSec, function(req, res) {
     locale = req.cookies['locale'] ;
   }
 
+  var resources = require('./private/register.' + locale + '.js').resources ;
+
   var parameters = {
     language: languages[locale],
-    resources: require('./private/register.' + locale + '.js').resources
+    resources: resources
   }
 
   if (req.query.id === undefined)
@@ -315,7 +334,10 @@ app.post('/register', redirectSec, function(req, res) {
     else
     {
       console.log("Invalid email address") ;
-      res.render('register', {language: languages[locale], verificationSent: 'false', email: req.body.email});
+     
+      parameters.verificationSent = 'false';
+      parameters.email = req.body.email ;
+      res.render('register', parameters);
     }
   }
   else 
@@ -323,14 +345,34 @@ app.post('/register', redirectSec, function(req, res) {
     console.log("Registration confirmation") ;
 
     if (req.body.user.length == 0) {
-      res.render('register', {language: languages[locale], id: req.query.id, email: req.body.email, user: req.body.user, user_error: "Niepoprawna, pusta, nazwa użytkownika"});      
+      parameters.id = req.query.id ;
+      parameters.email = req.body.email ;
+      parameters.user = req.body.user ;
+      parameters.user_error = resources.errorInvalidUserName
+  
+      res.render('register', parameters);      
     }
     else
     {
       var pwd = utils.security.hashValue(req.body.pwd) ;
       var retypedPwd = utils.security.hashValue(req.body['re-pwd']) ;
-      if (pwd !== retypedPwd) {
-         res.render('register', {language: languages[locale], id: req.query.id, email: req.body.email, user: req.body.user, error: "Hasła nie pasują"});
+      
+      if (req.body.pwd.length === 0)
+      {
+        parameters.id = req.query.id ;
+        parameters.email = req.body.email ;
+        parameters.user = req.body.user ;
+        parameters.user_error = resources.errorPasswordNotSet ;         
+
+        res.render('register', parameters);
+      }
+      else if (pwd !== retypedPwd) {
+        parameters.id = req.query.id ;
+        parameters.email = req.body.email ;
+        parameters.user = req.body.user ;
+        parameters.user_error = resources.errorPasswordsDoesNotMatch ;      
+
+        res.render('register', parameters);
       }
       else
       {
@@ -348,7 +390,7 @@ app.post('/register', redirectSec, function(req, res) {
               
               users.save(usr, null, function(err, result) {           
                 users.findOne(usr, function(err, user) {
-                  utils.helpers.storeUserInSessionAndRedirect(req, res, user) ;
+                  utils.helpers.storeUserInSessionAndRedirect(req, res, user, resources) ;
                   db.close();
 
                   sendEmail(user, getRegisterEmailContent(user), null, null);
@@ -357,7 +399,12 @@ app.post('/register', redirectSec, function(req, res) {
             }
             else {
               db.close() ;
-              res.render('register', {id: req.query.id, email: req.body.email, user: req.body.user, user_error:"Użytkownik o tej nazwie już istnieje"});      
+              parameters.id = req.query.id;
+              parameters.email = req.body.email;
+              parameters.user = req.body.user;
+              parameters.user_error = resources.errorUserNameExists;
+
+              res.render('register', parameters);      
             }
           });
         }) ;

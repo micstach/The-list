@@ -34,14 +34,17 @@
       </div>       
     </div>
     <div class="credentials-container container centered">
+    <% if (locals.user_error) { %>
+      <div class="alert alert-danger" role="alert"><strong><%= resources.errorPrefix %></strong> <%= user_error %></div>
+    <% } %>        
     <% if (locals.verificationSent) { %>
       <% if (verificationSent === 'true') { %>
         <div class="alert alert-success" role="alert"><strong><%= resources.successPrefix %></strong> <%= resources.emailSendSuccessMessage(email) %><br/><br/><%= resources.checkEmail %></div>
       <% } %>
       <% if (verificationSent === 'false') { %>
-        <div class="alert alert-danger" role="alert"><strong><%= resources.errorPrefix %></strong> Błędny adres email <i><%= email %></i></div>
+        <div class="alert alert-danger" role="alert"><strong><%= resources.errorPrefix %></strong> <%= resources.emailInvalidAddress(email)%></i></div>
       <% } %>
-    <% } else { %>
+    <% } %>
       <% if (locals.id) { %>
         <form action="/register?id=<%= id %>" method="post" class="message-form">
       <% } else { %>
@@ -50,37 +53,33 @@
         <% } %>        
         <form action="/register" method="post" class="message-form">
       <% } %>
+        <div class="form-group">
+          <label for="email"><%= resources.labelEmailAddress %></label>
+          <input name="email" class="form-control input-default" placeholder="<%= resources.inputEmailAddressPlaceholder %>" <% if(locals.email && locals.verificationSent === undefined) { %> readonly="readonly" <% } %> value="<%= locals.email ? email : '' %>">
+          <% if (locals.email_error) { %>
+            <div class="alert alert-danger" role="alert"><%= email_error%></div>
+          <% } %>        
+        </div>
+        <% if (locals.id) { %>
           <div class="form-group">
-            <label for="email"><%= resources.labelEmailAddress %></label>
-            <input name="email" class="form-control input-default" placeholder="<%= resources.inputEmailAddressPlaceholder %>" <% if(locals.email) { %> readonly="readonly" <% } %> value="<% if (locals.email) { email } %>">
-            <% if (locals.email_error) { %>
-              <div class="alert alert-danger" role="alert"><%= email_error%></div>
-            <% } %>        
+            <label for="user"><%= resources.labelUserName %></label>
+            <input name="user" class="form-control input-default" placeholder="<%= resources.inputUserNamePlaceholder %>" value="<%= locals.user ? user : '' %>">
           </div>
-          <% if (locals.id) { %>
-            <div class="form-group">
-              <label for="user"><%= resources.labelUserName %></label>
-              <input name="user" class="form-control input-default" placeholder="<%= resources.inputUserNamePlaceholder %>" value="<% if(locals.user) { user } %>">
-            </div>
-            <% if (locals.user_error) { %>
-              <div class="alert alert-danger" role="alert"><strong><%= resources.errorPrefix %></strong> <%= user_error %></div>
-            <% } %>        
-            <div class="form-group">
-              <label for="pwd"><%= resources.labelPassword%></label>
-              <input type="password" name="pwd" class="form-control input-default" placeholder="<%= resources.inputPasswordPlaceholder%>">
-            </div>
-            <div class="form-group">
-              <input type="password" name="re-pwd" class="retyped form-control input-default" placeholder="<%= resources.inputPasswordRepeatPlaceholder%>">
-            </div>
-            <% if (locals.error) { %>
-              <div class="alert alert-danger" role="alert"><strong><%= resources.errorPrefix %></strong> <%= error %></div>
-            <% } %>
-            <button type="submit" class="form-control btn btn-primary"><strong><%= resources.buttonSignIn %></strong></button>
-          <% } else { %>
-            <button type="submit" class="form-control btn btn-primary"><strong><%= resources.buttonSendRegisterationLink %></strong></button>
+          <div class="form-group">
+            <label for="pwd"><%= resources.labelPassword%></label>
+            <input type="password" name="pwd" class="form-control input-default" placeholder="<%= resources.inputPasswordPlaceholder%>">
+          </div>
+          <div class="form-group">
+            <input type="password" name="re-pwd" class="retyped form-control input-default" placeholder="<%= resources.inputPasswordRepeatPlaceholder%>">
+          </div>
+          <% if (locals.error) { %>
+            <div class="alert alert-danger" role="alert"><strong><%= resources.errorPrefix %></strong> <%= error %></div>
           <% } %>
-        </form>
-      <% } %>
+          <button type="submit" class="form-control btn btn-primary"><strong><%= resources.buttonSignIn %></strong></button>
+        <% } else { %>
+          <button type="submit" class="form-control btn btn-primary"><strong><%= resources.buttonSendRegisterationLink %></strong></button>
+        <% } %>
+      </form>
     </div>  
   </body>
 </html>
