@@ -3,5 +3,5 @@ exports.resources = {
 	emailAddress: "E-mail",
 	emailAddressPlaceholder: "Podaj adres e-mail",
 	acceptButtonText: "Akceptuj zmiany",
-	cancelLinkText: "Anuluj"
+	cancelLinkText: "Wróć"
 }
