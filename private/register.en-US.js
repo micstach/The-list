@@ -4,9 +4,7 @@ exports.resources = {
 		return "Invitation e-mail was sent to <email>.".replace("<email>", email) ;
 	},
 	checkEmail: "Please check e-mail box to continue registeration.",
-	emailInvalidAddress: function(email){
-		return "Invalid e-mail address <email>".replace("<email>", email) ;
-	},
+	emailInvalidAddress: "Invalid e-mail address",
 	errorPrefix: "Ouch!",
 	emailInvalidRegisterationLink: "Invalid registeration link.",
 	emailGetNewRegistrationLink: "Generate a new registeration link by entering your e-mail address, than click button below.",	

@@ -10,7 +10,7 @@
 	background-color: rgb(0, 148, 255) 
 }
 
-@media(max-width:640px){
+@media(max-width:480px){
 	.application-header {
 		background-position: left;
 	}

@@ -37,14 +37,12 @@
     <% if (locals.user_error) { %>
       <div class="alert alert-danger" role="alert"><strong><%= resources.errorPrefix %></strong> <%= user_error %></div>
     <% } %>        
-    <% if (locals.verificationSent) { %>
-      <% if (verificationSent === 'true') { %>
-        <div class="alert alert-success" role="alert"><strong><%= resources.successPrefix %></strong> <%= resources.emailSendSuccessMessage(email) %><br/><br/><%= resources.checkEmail %></div>
+    <% if (locals.verificationSent && verificationSent === 'true') { %>
+      <div class="alert alert-success" role="alert"><strong><%= resources.successPrefix %></strong> <%= resources.emailSendSuccessMessage(email) %><br/><br/><%= resources.checkEmail %></div>
+    <% } else { %>
+      <% if (locals.verificationSent && verificationSent === 'false') { %>
+        <div class="alert alert-danger" role="alert"><strong><%= resources.errorPrefix %></strong> <%= resources.emailInvalidAddress %></i></div>
       <% } %>
-      <% if (verificationSent === 'false') { %>
-        <div class="alert alert-danger" role="alert"><strong><%= resources.errorPrefix %></strong> <%= resources.emailInvalidAddress(email)%></i></div>
-      <% } %>
-    <% } %>
       <% if (locals.id) { %>
         <form action="/register?id=<%= id %>" method="post" class="message-form">
       <% } else { %>
@@ -79,7 +77,8 @@
         <% } else { %>
           <button type="submit" class="form-control btn btn-primary"><strong><%= resources.buttonSendRegisterationLink %></strong></button>
         <% } %>
-      </form>
+        </form>
+      <% } %>
     </div>  
   </body>
 </html>
