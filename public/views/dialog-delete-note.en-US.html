@@ -1,0 +1,20 @@
+<div class="modal-header">
+  <strong>Are you sure you want to remove this note?</strong>
+</div>
+<div class="modal-body">
+  <div class="message-header">
+    <span class="message-header-left">
+      <button ng-class="(note.checked) ? 'glyphicon-check' : 'glyphicon-unchecked'" class="note-header-icon glyphicon"></button>
+      <span class="note-time">{{note.timeVerbose}}</span>
+    </span> 
+  </div>
+  <div ng-bind-html="note.outputText" class="note-text">{{note.outputText}}</div>
+  <div class="note-tags">
+    <span ng-repeat="tag in note.tags track by $index" class="note-tag-inactive label label-primary">{{tag}}</span>
+  </div>
+
+</div>
+<div class="modal-footer">
+  <button class="btn btn-default" type="button" ng-click="ok()">Yes</button>
+  <button class="btn btn-primary" type="button" ng-click="cancel()">No</button>
+</div>

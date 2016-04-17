@@ -1,5 +1,5 @@
 exports.resources = {
-	userName: "User",
+	userName: "User name",
 	userNamePlaceholder: "Enter user name",
 	userPassword: "Password",
 	userPasswordPlaceholder: "Enter password",
