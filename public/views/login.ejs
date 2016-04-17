@@ -20,17 +20,7 @@
   </head>
   <body>
     <div class="application-header">
-      <div class="container">
-        <div class="btn-group pull-right" style="padding-top:10px;">
-          <button type="button" class="locale-button btn btn-link dropdown-toggle" data-toggle="dropdown" style="text-decoration: none; padding-right: 0px; color:white">
-            <span class="glyphicon glyphicon-globe"></span> <%= language %> <span class="glyphicon glyphicon-menu-down">
-          </button>
-          <ul class="dropdown-menu-right dropdown-menu scrollable-menu">
-            <li><a class="locale dropdown-item" href="" data-locale="en-US">English (United States)</a></li>
-            <li><a class="locale dropdown-item" href="" data-locale="pl-PL">Polski</a></li>
-          </ul>
-        </div>
-      </div>        
+      <%- include partials/language.ejs %>
     </div>
     <div class="credentials-container container">
     <% if (locals.path) { %>
