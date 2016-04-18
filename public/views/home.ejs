@@ -1,6 +1,26 @@
 <!DOCTYPE html>
 <html ng-app="Index">
   <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta http-equiv="cache-control" content="no-cache" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <link rel="icon" type="image/png" sizes="16x16" href="/res/todo_16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/res/todo_32.png">
+    <link rel="icon" type="image/png" sizes="64x64" href="/res/todo_64.png">    
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/checkboxes-nojs.css" rel="stylesheet" type="text/css">
+    <link href="../css/notes.css" rel="stylesheet" type="text/css">
+
+    <script src="../libs/jquery.min.js"></script>
+    <script src="../libs/bootstrap.min.js"></script>
+    <script src="../libs/angular.min.js"></script>
+    <script src="../libs/angular-animate.js"></script>
+    <script src="../libs/angular-linkify.min.js "></script>    
+    <script src="../libs/ui-bootstrap-tpls-1.2.1.min.js"></script>
 
     <script>
       function getTimeString(timestamp)
@@ -59,30 +79,8 @@
         return timeString ;
       }    
     </script>
-
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta http-equiv="cache-control" content="no-cache" />
-
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-
-    <link rel="icon" type="image/png" sizes="16x16" href="/res/todo_16.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/res/todo_32.png">
-    <link rel="icon" type="image/png" sizes="64x64" href="/res/todo_64.png">    
-
-    <link href="../css/bootstrap.min.css" rel="stylesheet">
-    <link href="../css/checkboxes-nojs.css" rel="stylesheet" type="text/css">
-    <link href="../css/notes.css" rel="stylesheet" type="text/css">
-
-    <script src="../libs/jquery.min.js"></script>
-    <script src="../libs/bootstrap.min.js"></script>
-    <script src="../libs/angular.min.js"></script>
-    <script src="../libs/angular-animate.js"></script>
-    <script src="../libs/angular-linkify.min.js "></script>    
-    <script src="../libs/ui-bootstrap-tpls-1.2.1.min.js"></script>
     <script src="../scripts/utils.js"></script>
     <script src="../scripts/todo.js"></script>
-    <script src="../scripts/home.js"></script>
     <script src="../scripts/google-analytics.js"></script>
   </head>
   <body ng-controller="Notes">
@@ -93,11 +91,11 @@
         <!-- <span>Project name</span> -->
         <!-- <button ng-click="!adding && deleteAllItems()" class="btn glyph-menu-button glyphicon glyphicon-trash" ng-class="adding ? 'disabled':''" type="button" style="color:white;"></button> -->
         <span class="pull-right">
-          <% if (locals.desktopClient == true) { %>
-          <span class="user" data-toggle="tooltip" data-placement="bottom" title="Witaj <%= username %>!"><%= username %></span>
+          <% if (locals.desktopClient && desktopClient) { %>
+          <span class="user" data-toggle="tooltip" data-placement="bottom" title="Witaj <%= username %>!"><span class="glyphicon glyphicon-user" style="font-size: small;"></span>&nbsp<%= username %></span>
           <% } else { %>
             <div class="btn-group">
-              <button type="button" data-toggle="dropdown" class="btn btn-link btn-md dropdown-toggle" style="text-decoration: none; padding-right: 0px; color:white;"><%= username %> <span class="glyphicon glyphicon-option-vertical"></span></button>
+              <button type="button" data-toggle="dropdown" class="btn btn-link btn-md dropdown-toggle" style="text-decoration: none; padding-right: 0px; color:white;"><span class="glyphicon glyphicon-user" style="font-size: small;"></span>&nbsp<%= username %>&nbsp<span class="glyphicon glyphicon-menu-down"></span></button>
               <ul class="dropdown-menu-right dropdown-menu scrollable-menu">
                 <li><a ng-click="deleteAllItems()" href="#"><%= resources.removeAllNotes %></a></li>
                 <li role="separator" class="divider"></li>
