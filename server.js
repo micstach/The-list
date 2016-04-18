@@ -98,13 +98,16 @@ app.get('/', redirectSec, function(req, res) {
 
     var downloadLink = null ;
    
-    if (req.headers['user-agent'].indexOf('Windows') != -1) {
+    if (req.headers['user-agent'].indexOf('Windows') !== -1) {
       downloadLink = '/clients/windows/2do.zip';
     }
-    else if (req.headers['user-agent'].indexOf('Android') != -1) {
+    else if (req.headers['user-agent'].indexOf('Android') !== -1) {
       downloadLink = '/clients/android/2do.apk';
+    } 
+    else if (req.headers['user-agent'].indexOf('Mac OS X') !== -1) {
+      downloadLink = '/clients/osx/2do.app.zip';
     }
-
+    
     var resourcePath = './private/landing.' + locale + '.js' ;
     console.log('Resource path: ' + resourcePath) ;
     res.render('landing', {language: languages[locale], resources: require(resourcePath).resources, downloadLink:downloadLink, userAgent:req.headers['user-agent']}) ;
@@ -129,6 +132,8 @@ app.get('/home', authorize, function(req, res) {
     locale = req.cookies['locale'] ;
   }
 
+  var desktopClient = (req.headers['user-agent'] === 'desktop client') ;
+
   var parameters = {
     resources: require('./private/home.' + locale + '.js').resources,
     desktopClient: desktopClient
@@ -137,7 +142,6 @@ app.get('/home', authorize, function(req, res) {
   console.log("ui: user %s", req.session.userid) ;
   console.log("ui: user-agent: " + req.headers['user-agent']);
 
-  var desktopClient = (req.headers['user-agent'] === 'desktop client') ;
   console.log("desktopClient: " + desktopClient);
 
   var mongoUrl = environment.config.db();  
