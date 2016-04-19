@@ -360,7 +360,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       .forEach(function(note) { filteredNotes.push(note);});
 
     taggedNotes
-      .filter(function(note){return note.checked === true && note.pinned === false;})
+      .filter(function(note){return note.checked === true;})
       .sort(function(a, b) { return b.timestamp - a.timestamp;})
       .forEach(function(note) { filteredNotes.push(note);}) ;
 
@@ -522,7 +522,15 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     $scope.transformNoteForView(note, true) ;
     $scope.extractTagsFromNotes($scope.data.notes) ;
 
-    $scope.selectTag(note.tags) ;
+    var noteTags = note.tags.slice() ;
+    if (note.pinned) 
+      noteTags.push($scope.InternalTags.Flagged);
+    //if (note.checked)
+    //  noteTags.push($scope.InternalTags.Checked);
+    //if (!note.checked)
+    // noteTags.push($scope.InternalTags.Unchecked);
+
+    $scope.selectTag(noteTags) ;
 
     if (note._id === undefined) {
       $http
