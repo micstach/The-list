@@ -97,20 +97,24 @@ app.get('/', redirectSec, function(req, res) {
     console.log("launguage: " + locale + ", " + req.locale) ;
 
     var downloadLink = null ;
-   
+    var systemDetected = null ;
+
     if (req.headers['user-agent'].indexOf('Windows') !== -1) {
       downloadLink = '/clients/windows/2do.zip';
+      systemDetected = "Windows";
     }
     else if (req.headers['user-agent'].indexOf('Android') !== -1) {
       downloadLink = '/clients/android/2do.apk';
+      systemDetected = "Android";
     } 
     else if (req.headers['user-agent'].indexOf('Mac OS X') !== -1) {
       downloadLink = '/clients/osx/2do.app.zip';
+      systemDetected = "Mac OS X";
     }
     
     var resourcePath = './private/landing.' + locale + '.js' ;
     console.log('Resource path: ' + resourcePath) ;
-    res.render('landing', {language: languages[locale], resources: require(resourcePath).resources, downloadLink:downloadLink, userAgent:req.headers['user-agent']}) ;
+    res.render('landing', {language: languages[locale], resources: require(resourcePath).resources, downloadLink:downloadLink, systemDetected: systemDetected}) ;
   }
   else {
     res.redirect('/home') ;

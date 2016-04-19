@@ -10,5 +10,6 @@ exports.resources = {
 	helperText4: "Filtruj notatki wygodnie i szybko dzieki opcji filtrowania znaczników",
 	helperText5: "Konfiguracja filtra znaczników zapisywana jest na serwerze.",
 	helperText6: "Logując się ponownie lub z innego urządzenia masz od razu dostęp do ostatniego widoku.",
-	downloadLinkText: "Pobierz aplikację"
+	downloadLinkText: "Pobierz aplikację",
+	downloadFor: "dla"
 }

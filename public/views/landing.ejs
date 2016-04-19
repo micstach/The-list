@@ -74,7 +74,14 @@
         </div>
         <div class="welcome-actions">    
           <% if (locals.downloadLink) { %>
-            <button onclick="location.href='<%= downloadLink %>'" class="btn btn-warning"><%= resources.downloadLinkText %></button>
+            <button onclick="location.href='<%= downloadLink %>'" class="btn btn-warning">
+              <div>
+                <%= resources.downloadLinkText %>
+              </div>
+              <div style="font-size:x-small;opacity: 0.75;">
+                <%= resources.downloadFor %> <%= systemDetected %>
+              </div>
+            </button>
           <% } %>
         </div>
       </div>
