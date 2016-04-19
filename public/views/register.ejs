@@ -21,9 +21,12 @@
   </head>
   <body>
     <div class="application-header">
-      <%- include partials/language.ejs %>
+      <%- include partials/header.ejs %>
     </div>
     <div class="credentials-container container centered">
+    <% if (locals.email_error) { %>
+      <div class="alert alert-danger" role="alert"><%= email_error%></div>
+    <% } %>        
     <% if (locals.user_error) { %>
       <div class="alert alert-danger" role="alert"><strong><%= resources.errorPrefix %></strong> <%= user_error %></div>
     <% } %>        
@@ -44,10 +47,10 @@
         <div class="form-group">
           <label for="email"><%= resources.labelEmailAddress %></label>
           <input name="email" class="form-control input-default" placeholder="<%= resources.inputEmailAddressPlaceholder %>" <% if(locals.email && locals.verificationSent === undefined) { %> readonly="readonly" <% } %> value="<%= locals.email ? email : '' %>">
-          <% if (locals.email_error) { %>
-            <div class="alert alert-danger" role="alert"><%= email_error%></div>
-          <% } %>        
         </div>
+        <!-- <div class="form-group"> -->
+          <!-- <input name="confirm-email" class="form-control input-default" placeholder="<%= resources.inputEmailAddressPlaceholder %>" <% if(locals.email && locals.verificationSent === undefined) { %> readonly="readonly" <% } %> value="<%= locals.email ? email : '' %>"> -->
+        <!-- </div> -->
         <% if (locals.id) { %>
           <div class="form-group">
             <label for="user"><%= resources.labelUserName %></label>
