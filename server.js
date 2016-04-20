@@ -206,10 +206,27 @@ app.get('/login', redirectSec, function(req, res, next) {
 
 app.post('/login', redirectSec, function(req, res) {
   console.log('login user, request: ', JSON.stringify(req.params));
+  
   var resources = require('./private/login.' + req.locale + '.js').resources ;
+  
+  var locale = req.locale ;  
+  if (req.cookies['locale'] === undefined) {
+    res.cookie('locale', locale) ;
+  }
+  else {
+    locale = req.cookies['locale'] ;
+  }
+
+  var errorParameters = {
+    error: resources.errorInvalidUserOrPassword,
+    user: req.body.user,
+    path: req.query.path,
+    resources: resources,
+    language: languages[locale]
+  } ;
 
   if (req.body.user.length == 0 || req.body.pwd.length == 0) {
-    res.render('login', {resources: resources, user: req.body.user, error: resources.errorInvalidUserOrPassword}); 
+    res.render('login', errorParameters); 
   }
   else {
     var mongoUrl = environment.config.db();
@@ -218,7 +235,7 @@ app.post('/login', redirectSec, function(req, res) {
     MongoClient.connect(mongoUrl, function(err, db) {
       db.collection('users').findOne({name: req.body.user, password: pwd}, function(err, user) {
           
-          utils.helpers.storeUserInSessionAndRedirect(req, res, user, resources) ;
+          utils.helpers.storeUserInSessionAndRedirect(req, res, user, errorParameters) ;
           
           db.close();
         });
