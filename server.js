@@ -762,7 +762,7 @@ function getAccountChangedEmailContent(user)
 function sendEmail(user, emailContent, onOk, onError) {
   console.log(JSON.stringify(user)) ;
 
-  var transporter = nodemailer.createTransport('smtps://todo.noreply%40poczta.onet.pl:Stasiek1@smtp.poczta.onet.pl') ;
+  var transporter = nodemailer.createTransport('smtps://todo.noreply%40poczta.onet.pl:TodoPassword123@smtp.poczta.onet.pl') ;
 
   var mailOptions = {
       from: 'todo.noreply@poczta.onet.pl', 
