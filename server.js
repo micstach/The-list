@@ -697,6 +697,11 @@ function getPreRegisterEmailContent(request)
 
   var body = "" ;
 
+  body += "<a href='/''>";
+  body += "<img width='64' height='64' src='" + hostName + "/res/todo_256_no_corners.png'>";
+  body += "</a>";
+  body += "<br/>";
+  body += "<br/>";
   body += "Hi !"
   body += "<br/>";
   body += "<br/>";
@@ -722,6 +727,11 @@ function getRegisterEmailContent(user)
 
   var body = "" ;
 
+  body += "<a href='/''>";
+  body += "<img width='64' height='64' src='" + hostName + "/res/todo_256_no_corners.png'>";
+  body += "</a>";
+  body += "<br/>";
+  body += "<br/>";
   body += "Hi " + user.name + "!" ;
   body += "<br/>";
   body += "<br/>";
@@ -747,6 +757,11 @@ function getAccountChangedEmailContent(user)
 
   var body = "" ;
 
+  body += "<a href='/''>";
+  body += "<img width='64' height='64' src='" + hostName + "/res/todo_256_no_corners.png'>";
+  body += "</a>";
+  body += "<br/>";
+  body += "<br/>";
   body += "Hi " + user.name + "!" ;
   body += "<br/>";
   body += "<br/>";
