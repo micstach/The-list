@@ -81,8 +81,9 @@ var authorize = function(req, res, next) {
 };
 
 app.use(locale(supportedLanguages)) ;
+app.use(redirectSec);
 
-app.get('/', redirectSec, function(req, res) { 
+app.get('/', function(req, res) { 
     
   var locale = req.locale ;  
   if (req.cookies['locale'] === undefined) {
@@ -162,7 +163,7 @@ app.get('/home', authorize, function(req, res) {
   });
 });
 
-app.get('/login', redirectSec, function(req, res, next) {
+app.get('/login', function(req, res, next) {
  
   var locale = req.locale ;  
   if (req.cookies['locale'] === undefined) {
@@ -204,7 +205,7 @@ app.get('/login', redirectSec, function(req, res, next) {
   
 }) ;
 
-app.post('/login', redirectSec, function(req, res) {
+app.post('/login', function(req, res) {
   console.log('login user, request: ', JSON.stringify(req.params));
   
   var resources = require('./private/login.' + req.locale + '.js').resources ;
@@ -243,7 +244,7 @@ app.post('/login', redirectSec, function(req, res) {
   }
 }) ;
 
-app.get('/register', redirectSec, function(req, res) {
+app.get('/register', function(req, res) {
 
   var locale = req.locale ;  
   if (req.cookies['locale'] === undefined) {
@@ -300,7 +301,7 @@ app.get('/register', redirectSec, function(req, res) {
  
 }) ;
 
-app.post('/register', redirectSec, function(req, res) {
+app.post('/register', function(req, res) {
   console.log('Register api'); 
   
   var locale = req.locale ;  
