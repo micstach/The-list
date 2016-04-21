@@ -620,8 +620,10 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
     modalInstance.result.then(function () {
       $http
-        .post('/api/notes/removeall')
-        .success(function() { $scope.getItems(); });
+        .delete('/api/notes')
+        .success(function() { 
+          $scope.getItems(); 
+        });
       });
   }
 

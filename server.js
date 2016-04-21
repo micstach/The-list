@@ -411,7 +411,11 @@ app.post('/register', redirectSec, function(req, res) {
           users.findOne({name: req.body.user, email: req.body.email}, function(err, user) {
             if (user === null) {
               db.collection('registerRequest').remove({_id: mongodb.ObjectID(req.query.id)}) ;
-              var usr = {email: req.body.email, name: req.body.user, password: pwd} ;
+              var usr = {
+                email: req.body.email, 
+                name: req.body.user, 
+                password: pwd
+              } ;
               
               users.save(usr, null, function(err, result) {           
                 users.findOne(usr, function(err, user) {
@@ -597,8 +601,8 @@ app.put('/api/note/update/:id', authorizeAPI, function(req, res){
 
 }) ;
 
-app.post('/api/notes/removeall', authorizeAPI, function(req, res){
-  console.log("api: remove all notes(s)") ;
+app.delete('/api/notes', authorizeAPI, function(req, res){
+  console.log("DELETE /api/notes") ;
 
   var mongoUrl = environment.config.db() ;  
   var userid = req.session.userid ;
@@ -608,7 +612,7 @@ app.post('/api/notes/removeall', authorizeAPI, function(req, res){
 
     db.collection('notes').remove(query) ;
     db.close() ;
-    res.redirect('/');
+    res.sendStatus(200);
   }) ;
 }) ;
 
