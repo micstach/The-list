@@ -216,6 +216,8 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     note.outputText = detectBoldText(note.outputText);
     note.outputText = detectItalicText(note.outputText);
     note.outputText = detectPreformatedText(note.outputText);
+    if ($scope.searchText !== null && $scope.searchText.length > 0)
+      note.outputText = detectSubText(note.outputText, $scope.searchText);
 
     note.outputText = note.outputText.replace(/\n/g, '<br/>');  
     note.outputText = $sce.trustAsHtml(linkify.normal(note.outputText)) ;
@@ -360,7 +362,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       .forEach(function(note) { filteredNotes.push(note);});
 
     taggedNotes
-      .filter(function(note){return note.checked === true && note.pinned === false;})
+      .filter(function(note){return note.checked === true;})
       .sort(function(a, b) { return b.timestamp - a.timestamp;})
       .forEach(function(note) { filteredNotes.push(note);}) ;
 
@@ -522,7 +524,15 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     $scope.transformNoteForView(note, true) ;
     $scope.extractTagsFromNotes($scope.data.notes) ;
 
-    $scope.selectTag(note.tags) ;
+    var noteTags = note.tags.slice() ;
+    if (note.pinned) 
+      noteTags.push($scope.InternalTags.Flagged);
+    //if (note.checked)
+    //  noteTags.push($scope.InternalTags.Checked);
+    //if (!note.checked)
+    // noteTags.push($scope.InternalTags.Unchecked);
+
+    $scope.selectTag(noteTags) ;
 
     if (note._id === undefined) {
       $http
@@ -610,8 +620,10 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
     modalInstance.result.then(function () {
       $http
-        .post('/api/notes/removeall')
-        .success(function() { $scope.getItems(); });
+        .delete('/api/notes')
+        .success(function() { 
+          $scope.getItems(); 
+        });
       });
   }
 

@@ -17,10 +17,11 @@
     <script src="../libs/bootstrap.min.js"></script>
     <script src="../scripts/login.js"></script>
     <script src="../scripts/google-analytics.js"></script>
+
   </head>
   <body>
     <div class="application-header">
-      <%- include partials/language.ejs %>
+      <%- include partials/header.ejs %>
     </div>
     <div class="credentials-container container">
     <% if (locals.path) { %>
@@ -43,7 +44,7 @@
           <label for="pwd"><%= resources.userPassword %></label>
           <input id="pwd" type="password" name="pwd" class="form-control input-default" placeholder="<%= resources.userPasswordPlaceholder %>">
         </div> 
-        <button type="submit" class="form-control btn btn-primary"><strong><%= resources.signInButtonText %></strong></button>
+        <button type="submit" class="login-button form-control btn btn-primary"><strong><%= resources.signInButtonText %></strong></button>
       </form>
     </div>
   </body>

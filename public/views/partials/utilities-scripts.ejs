@@ -1,0 +1,57 @@
+<script>
+  function getTimeString(timestamp)
+  {
+    var now = Date.now() ;
+    var time = new Date(timestamp) ;
+
+    var seconds = Math.floor((now - timestamp) / 1000) ;
+    var minutes = Math.floor(seconds / 60) ;
+    var hours = Math.floor(minutes / 60) ;
+    var days = Math.floor(hours / 24) ;
+    var weeks = Math.floor(days / 7) ;
+
+    var timeString = 'error';
+
+    if (days > 0) {
+      if (days == 1) {
+        timeString = '<%= resources.aDayAgo %>';
+      } 
+      else {
+        timeString = days + ' <%= resources.daysAgo %>' ;
+      }
+    }
+    else if (hours > 0) {
+      if (hours == 1) {
+        timeString = '<%= resources.anHourAgo %>' ;
+      } 
+      else if (finishesWithArray(hours, [0, 1, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19])) {
+        timeString = hours + ' <%= resources.hoursAgo1 %>' ;
+      }
+      else if (finishesWithArray(hours, [2, 3, 4])) {
+        timeString = hours + ' <%= resources.hoursAgo2 %>' ;
+      }
+    }
+    else if (minutes > 0) {
+      if (minutes == 1) {
+        timeString = '<%= resources.aMinuteAgo %>';
+      } 
+      else if (finishesWithArray(minutes, [0, 1, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19])) {
+        timeString = minutes + ' <%= resources.minutesAgo1 %>';
+      }
+      else if (finishesWithArray(minutes, [2, 3, 4])) {
+        timeString = minutes + ' <%= resources.minutesAgo2 %>';
+      }
+    }
+    else if (seconds < 15) {
+      timeString = '<%= resources.justNow %>' ;
+    } 
+    else if (seconds <= 30) {
+      timeString = '<%= resources.halfAMinuteAgo %>' ;
+    } 
+    else {
+      timeString = '<%= resources.almostAMinuteAgo %>' ;
+    }
+    
+    return timeString ;
+  }    
+</script>

@@ -120,6 +120,23 @@ function detectItalicText(text) {
 	return replaceCharWithTags(text, '_', '<i>', '</i>') ;
 }
 
+function detectSubText(text, subtext) {
+	var unselectedParts = text.split(subtext) ;
+
+	if (unselectedParts.length > 0) {
+		text = "" ;
+		for (var i=0; i<unselectedParts.length; i++)
+		{
+			text += unselectedParts[i];
+
+			if (i + 1 < unselectedParts.length)
+				text += "<span class='selected-text'>" + subtext + "</span>" ;
+		}
+	}
+
+	return text ;
+}
+
 function detectPreformatedText(text) {
 
   	var textToReplace = [] ;
@@ -159,8 +176,8 @@ function detectPreformatedText(text) {
 	}	
 
 	textToReplace.forEach(function(transformation) {
-	text = text.replace(transformation.src, transformation.dst) ;
-	text = text.replace('</div>\n', '</div>');
+		text = text.replace(transformation.src, transformation.dst) ;
+		text = text.replace('</div>\n', '</div>');
 	}) ;
 
 	return text ;

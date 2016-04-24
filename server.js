@@ -81,8 +81,9 @@ var authorize = function(req, res, next) {
 };
 
 app.use(locale(supportedLanguages)) ;
+app.use(redirectSec);
 
-app.get('/', redirectSec, function(req, res) { 
+app.get('/', function(req, res) { 
     
   var locale = req.locale ;  
   if (req.cookies['locale'] === undefined) {
@@ -97,20 +98,24 @@ app.get('/', redirectSec, function(req, res) {
     console.log("launguage: " + locale + ", " + req.locale) ;
 
     var downloadLink = null ;
-   
+    var systemDetected = null ;
+
     if (req.headers['user-agent'].indexOf('Windows') !== -1) {
       downloadLink = '/clients/windows/2do.zip';
+      systemDetected = "Windows";
     }
     else if (req.headers['user-agent'].indexOf('Android') !== -1) {
       downloadLink = '/clients/android/2do.apk';
+      systemDetected = "Android";
     } 
     else if (req.headers['user-agent'].indexOf('Mac OS X') !== -1) {
       downloadLink = '/clients/osx/2do.app.zip';
+      systemDetected = "Mac OS X";
     }
     
     var resourcePath = './private/landing.' + locale + '.js' ;
     console.log('Resource path: ' + resourcePath) ;
-    res.render('landing', {language: languages[locale], resources: require(resourcePath).resources, downloadLink:downloadLink, userAgent:req.headers['user-agent']}) ;
+    res.render('landing', {language: languages[locale], resources: require(resourcePath).resources, downloadLink:downloadLink, systemDetected: systemDetected}) ;
   }
   else {
     res.redirect('/home') ;
@@ -158,7 +163,7 @@ app.get('/home', authorize, function(req, res) {
   });
 });
 
-app.get('/login', redirectSec, function(req, res, next) {
+app.get('/login', function(req, res, next) {
  
   var locale = req.locale ;  
   if (req.cookies['locale'] === undefined) {
@@ -200,12 +205,29 @@ app.get('/login', redirectSec, function(req, res, next) {
   
 }) ;
 
-app.post('/login', redirectSec, function(req, res) {
+app.post('/login', function(req, res) {
   console.log('login user, request: ', JSON.stringify(req.params));
+  
   var resources = require('./private/login.' + req.locale + '.js').resources ;
+  
+  var locale = req.locale ;  
+  if (req.cookies['locale'] === undefined) {
+    res.cookie('locale', locale) ;
+  }
+  else {
+    locale = req.cookies['locale'] ;
+  }
+
+  var errorParameters = {
+    error: resources.errorInvalidUserOrPassword,
+    user: req.body.user,
+    path: req.query.path,
+    resources: resources,
+    language: languages[locale]
+  } ;
 
   if (req.body.user.length == 0 || req.body.pwd.length == 0) {
-    res.render('login', {resources: resources, user: req.body.user, error: resources.errorInvalidUserOrPassword}); 
+    res.render('login', errorParameters); 
   }
   else {
     var mongoUrl = environment.config.db();
@@ -214,7 +236,7 @@ app.post('/login', redirectSec, function(req, res) {
     MongoClient.connect(mongoUrl, function(err, db) {
       db.collection('users').findOne({name: req.body.user, password: pwd}, function(err, user) {
           
-          utils.helpers.storeUserInSessionAndRedirect(req, res, user, resources) ;
+          utils.helpers.storeUserInSessionAndRedirect(req, res, user, errorParameters) ;
           
           db.close();
         });
@@ -222,7 +244,7 @@ app.post('/login', redirectSec, function(req, res) {
   }
 }) ;
 
-app.get('/register', redirectSec, function(req, res) {
+app.get('/register', function(req, res) {
 
   var locale = req.locale ;  
   if (req.cookies['locale'] === undefined) {
@@ -279,7 +301,7 @@ app.get('/register', redirectSec, function(req, res) {
  
 }) ;
 
-app.post('/register', redirectSec, function(req, res) {
+app.post('/register', function(req, res) {
   console.log('Register api'); 
   
   var locale = req.locale ;  
@@ -390,7 +412,11 @@ app.post('/register', redirectSec, function(req, res) {
           users.findOne({name: req.body.user, email: req.body.email}, function(err, user) {
             if (user === null) {
               db.collection('registerRequest').remove({_id: mongodb.ObjectID(req.query.id)}) ;
-              var usr = {email: req.body.email, name: req.body.user, password: pwd} ;
+              var usr = {
+                email: req.body.email, 
+                name: req.body.user, 
+                password: pwd
+              } ;
               
               users.save(usr, null, function(err, result) {           
                 users.findOne(usr, function(err, user) {
@@ -576,8 +602,8 @@ app.put('/api/note/update/:id', authorizeAPI, function(req, res){
 
 }) ;
 
-app.post('/api/notes/removeall', authorizeAPI, function(req, res){
-  console.log("api: remove all notes(s)") ;
+app.delete('/api/notes', authorizeAPI, function(req, res){
+  console.log("DELETE /api/notes") ;
 
   var mongoUrl = environment.config.db() ;  
   var userid = req.session.userid ;
@@ -587,7 +613,7 @@ app.post('/api/notes/removeall', authorizeAPI, function(req, res){
 
     db.collection('notes').remove(query) ;
     db.close() ;
-    res.redirect('/');
+    res.sendStatus(200);
   }) ;
 }) ;
 
@@ -671,6 +697,11 @@ function getPreRegisterEmailContent(request)
 
   var body = "" ;
 
+  body += "<a href='/''>";
+  body += "<img width='64' height='64' src='" + hostName + "/res/todo_256_no_corners.png'>";
+  body += "</a>";
+  body += "<br/>";
+  body += "<br/>";
   body += "Hi !"
   body += "<br/>";
   body += "<br/>";
@@ -696,6 +727,11 @@ function getRegisterEmailContent(user)
 
   var body = "" ;
 
+  body += "<a href='/''>";
+  body += "<img width='64' height='64' src='" + hostName + "/res/todo_256_no_corners.png'>";
+  body += "</a>";
+  body += "<br/>";
+  body += "<br/>";
   body += "Hi " + user.name + "!" ;
   body += "<br/>";
   body += "<br/>";
@@ -721,6 +757,11 @@ function getAccountChangedEmailContent(user)
 
   var body = "" ;
 
+  body += "<a href='/''>";
+  body += "<img width='64' height='64' src='" + hostName + "/res/todo_256_no_corners.png'>";
+  body += "</a>";
+  body += "<br/>";
+  body += "<br/>";
   body += "Hi " + user.name + "!" ;
   body += "<br/>";
   body += "<br/>";
@@ -741,7 +782,7 @@ function getAccountChangedEmailContent(user)
 function sendEmail(user, emailContent, onOk, onError) {
   console.log(JSON.stringify(user)) ;
 
-  var transporter = nodemailer.createTransport('smtps://todo.noreply%40poczta.onet.pl:Stasiek1@smtp.poczta.onet.pl') ;
+  var transporter = nodemailer.createTransport('smtps://todo.noreply%40poczta.onet.pl:TodoPassword123@smtp.poczta.onet.pl') ;
 
   var mailOptions = {
       from: 'todo.noreply@poczta.onet.pl', 

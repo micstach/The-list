@@ -10,7 +10,7 @@ exports.security = {
 }
 
 exports.helpers = {
-	storeUserInSessionAndRedirect: function(req, res, user, resources) {
+	storeUserInSessionAndRedirect: function(req, res, user, errorParameters) {
     console.log("User settings: %s", JSON.stringify(user));
 
 	  if (user !== null) {
@@ -26,7 +26,7 @@ exports.helpers = {
 	  }
 	  else {
 	    req.session.destroy();
-	    res.render('login', {resources: resources, user: req.body.user, error: resources.errorInvalidUserOrPassword}); 
+	    res.render('login', errorParameters); 
 	  }		
 	},
   validateEmail: function(email) {
