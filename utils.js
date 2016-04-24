@@ -15,7 +15,9 @@ exports.helpers = {
 
 	  if (user !== null) {
 	    req.session.userid = user._id ;
+      req.session.project_id = user.configuration.project_id ;
       req.session.username = user.name ;
+
 	    console.log("storeUserInSessionAndRedirect, session: " + JSON.stringify(req.session)) ;
       console.log("storeUserInSessionAndRedirect, params: " + JSON.stringify(req.query)) ;
 

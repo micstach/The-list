@@ -7,13 +7,17 @@ var moment = require('moment');
 var nodemailer = require('nodemailer') ;
 var locale = require("locale") ;
 var supportedLanguages = ["en-US", "pl-PL"] ;
+
 var languages = {
   "en-US": "English (United States)",
   "pl-PL": "Polski"
 } ;
+
 var environment = require('./environment.js') ;
 var utils = require('./utils.js');
 var MongoClient = mongodb.MongoClient ;
+
+
 
 var app = express() ;
 
@@ -36,7 +40,7 @@ app.use(session({
   HttpOnly: true
 }));
 
-var redirectSec = function(req, res, next) {
+var http2https = function(req, res, next) {
   if (process.env.OPENSHIFT_NODEJS_IP !== undefined) {
     if (req.headers['x-forwarded-proto'] == 'http') {
       var safeUrl = 'https://' + req.headers.host + req.path ;
@@ -81,7 +85,7 @@ var authorize = function(req, res, next) {
 };
 
 app.use(locale(supportedLanguages)) ;
-app.use(redirectSec);
+app.use(http2https);
 
 app.get('/', function(req, res) { 
     
@@ -266,13 +270,13 @@ app.get('/register', function(req, res) {
   if (req.query.id !== undefined) {
     var mongoUrl = environment.config.db() ;  
     MongoClient.connect(mongoUrl, function(err, db) {
-      var registerRequest = db.collection('registerRequest') ;
+      var registerationRequest = db.collection('registerationRequest') ;
 
       try
       {
         var id = mongodb.ObjectID(req.query.id);
         
-        registerRequest.findOne({_id: id}, function(err, request) {
+        registerationRequest.findOne({_id: id}, function(err, request) {
           console.log("Registration request: " + JSON.stringify(request)) ;
           if (request !== null) {
             db.close();
@@ -325,14 +329,14 @@ app.post('/register', function(req, res) {
     {
       var mongoUrl = environment.config.db() ;  
       MongoClient.connect(mongoUrl, function(err, db) {
-        var registerRequest = db.collection('registerRequest') ;
+        var registerationRequest = db.collection('registerationRequest') ;
 
-        registerRequest.findOne({email: req.body.email}, function(err, request) {
+        registerationRequest.findOne({email: req.body.email}, function(err, request) {
           if (request === null) {
             var newRequest = {email: req.body.email} ;
             
-            registerRequest.save(newRequest, null, function(err, result) {           
-              registerRequest.findOne(newRequest, function(err, request) {
+            registerationRequest.save(newRequest, null, function(err, result) {           
+              registerationRequest.findOne(newRequest, function(err, request) {
                 db.close();
 
                 sendEmail(request, getPreRegisterEmailContent(request), null, null);
@@ -408,27 +412,51 @@ app.post('/register', function(req, res) {
         MongoClient.connect(mongoUrl, function(err, db) {
 
           var users = db.collection('users') ;
+          var projects = db.collection('projects') ;
 
           users.findOne({name: req.body.user, email: req.body.email}, function(err, user) {
             if (user === null) {
-              db.collection('registerRequest').remove({_id: mongodb.ObjectID(req.query.id)}) ;
-              var usr = {
-                email: req.body.email, 
-                name: req.body.user, 
-                password: pwd
-              } ;
               
-              users.save(usr, null, function(err, result) {           
-                users.findOne(usr, function(err, user) {
-                  utils.helpers.storeUserInSessionAndRedirect(req, res, user, resources) ;
-                  db.close();
+              var defaultProject = {
+                name: "default",
+                users: [
+                  { name: req.body.user, role: "owner"}
+                ]
+              }
 
+              projects.insert(defaultProject, function(err, result) {
+                var project = result.ops[0] ;
+
+                console.log('Project created: ' + JSON.stringify(project)) ;
+
+                var newUser = {
+                  email: req.body.email, 
+                  name: req.body.user, 
+                  password: pwd,
+                  "configuration": {
+                    "project_id": project._id,
+                    "tags":[]
+                  }
+                } ;
+
+                users.insert(newUser, function(err, result) {           
+                  var user = result.ops[0];
+
+                  console.log('User created: ' + JSON.stringify(user)) 
+
+                  utils.helpers.storeUserInSessionAndRedirect(req, res, user, resources) ;
+                  
                   sendEmail(user, getRegisterEmailContent(user), null, null);
+
+                  db.collection('registerationRequest').remove({_id: mongodb.ObjectID(req.query.id)}) ;
+                  db.close();
                 }) ;
+
               }) ;
             }
             else {
               db.close() ;
+
               parameters.id = req.query.id;
               parameters.email = req.body.email;
               parameters.user = req.body.user;
@@ -516,28 +544,71 @@ app.post('/account', authorize, function(req, res) {
 }) ;
 
 app.get('/api/notes', authorizeAPI, function(req, res) {
-  console.log('GET: /notes') ;
-
   var userid = req.session.userid;
+  var user_name = req.session.username;
+  var project_id = req.session.project_id ;
 
   MongoClient.connect(environment.config.db(), function(err, db) {
-      var query = {owner: userid} ;//{users: {$elemMatch: {$eq:userid}}} ;
 
-      db.collection('notes').find(query).toArray(function(err, result) {
-    
-      result.forEach(function(note){
-        if (note.pinned === undefined) {
-          note.pinned = false ;
-        }
-        if (note.checked === undefined) {
-          note.checked = false ;
-        }
+      db.collection('projects').find().toArray(function(err, results) {
+        
+        console.log("Projects: " + JSON.stringify(results)) ;
+
+        var projects = [] 
+        results.forEach(function(project) {
+          if (project.users.filter(function(user) { return user.name == user_name ; }).length == 1) {
+            projects.push(project) ;
+          }
+        }) ;
+
+        console.log("Transformed projects: " + JSON.stringify(projects)) ;
+
+        db.collection('notes').find().toArray(function(err, results) {
+        console.log("Results: " + JSON.stringify(results));
+        
+        var notes = [] ;
+
+        results.forEach(function(note){
+
+          var projectsCount = projects.filter(function(project) {
+            console.log("Compare: " + project._id + " with: " + note.project_id);
+            return project._id == note.project_id ; 
+          }).length ;
+
+          console.log("Note.project_id: " + note.project_id + ", count: " + projectsCount);
+
+          if (projectsCount == 1) {
+            notes.push(note) ;
+          }
+
+        }) ;
+
+        console.log("Notes: " + JSON.stringify(notes));
+
+        // backward compatibility fix
+        notes.forEach(function(note){
+          if (note.pinned === undefined) {
+            note.pinned = false ;
+          }
+          if (note.checked === undefined) {
+            note.checked = false ;
+          }
+        }) ;
+
+
+
+        res.writeHead(200, {'Content-Type': 'application/json'});
+        
+        res.end(JSON.stringify({
+          userid:userid, 
+          notes:notes,
+          projects: projects
+        }));
+
+        db.close();
+
       }) ;
 
-      res.writeHead(200, {'Content-Type': 'application/json'});
-      res.end(JSON.stringify({userid:userid, notes:result}));
-
-      db.close();
     });
   }) ;
 }) ;
@@ -552,15 +623,20 @@ app.post('/api/note/create', authorizeAPI, function(req, res){
   }
   else {
     MongoClient.connect(environment.config.db(), function(err, db) {
-      db.collection('notes').save({
+      
+      var note = {
         text: req.body.text, 
         checked: false,
         pinned: req.body.pinned,
-        owner: userid,
-        users: [userid],
+        user_id: userid,
         tags: req.body.tags,
-        timestamp: moment().valueOf() 
-      }) ;
+        timestamp: moment().valueOf(),
+        project_id: req.session.project_id
+      } ;
+
+      console.log(JSON.stringify(note)) ;
+
+      db.collection('notes').save(note) ;
       db.close() ;
       res.writeHead(200);
       res.end();
@@ -593,7 +669,6 @@ app.put('/api/note/update/:id', authorizeAPI, function(req, res){
     db.collection('notes').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, item){
       item.text = req.body.text ;
       item.tags = req.body.tags ;
-      // item.timestamp = moment().valueOf() ;
       db.collection('notes').save(item) ;
       db.close() ;
       res.sendStatus(200); 
@@ -651,9 +726,9 @@ app.get('/api/user/config', authorizeAPI, function(req, res) {
 
   MongoClient.connect(environment.config.db(), function(err, db) {
      db.collection('users').findOne({_id: mongodb.ObjectID(req.session.userid)}, function(err, user) {
-      console.log("User config: " + JSON.stringify(user.config)) ;
+      console.log("User configuration: " + JSON.stringify(user.configuration)) ;
       res.writeHead(200, {'Content-Type': 'application/json'});
-      res.end(JSON.stringify({config:user.config}));
+      res.end(JSON.stringify({configuration:user.configuration}));
       db.close() ;
     }) ;
   }) ;
@@ -665,9 +740,10 @@ app.put('/api/user/config', authorizeAPI, function(req, res) {
   MongoClient.connect(environment.config.db(), function(err, db) {
     db.collection('users').findOne({_id: mongodb.ObjectID(req.session.userid)}, function(err, user) {
       
-      user.config = {
-        tags: req.body.tags
-      } ;
+      if (req.body.tags !== undefined)
+        user.configuration.tags = req.body.tags;
+      if (req.body.project_id !== undefined)
+        user.configuration.project_id = req.body.project_id ;
 
       console.log("Saving user: " + JSON.stringify(user));
 
@@ -676,6 +752,23 @@ app.put('/api/user/config', authorizeAPI, function(req, res) {
       res.sendStatus(200); 
     }) ;
   }) ;
+}) ;
+
+app.put('/api/project/:project/user/:user', authorizeAPI, function(req, res){
+
+  MongoClient.connect(environment.config.db(), function(err, db) {
+    db.collection('projects').findOne({_id: mongodb.ObjectID(req.params.project)}, function(err, project) {
+      
+      project.users.push({name: req.params.user, role: "read-only"}) ;
+      
+      console.log("Saving user: " + JSON.stringify(project));
+
+      db.collection('projects').save(project) ;
+      db.close() ;
+      res.sendStatus(200); 
+    }) ;
+  }) ;
+
 }) ;
 
 function getEmailSignature()
@@ -806,46 +899,6 @@ function sendEmail(user, emailContent, onOk, onError) {
       }
   });
 }
-
-// app.post('/api/reset', function(req, res){
-//   var response = {
-//     email: req.query.email
-//   };
-
-//   if (process.env.LOCAL_NODEJS_IP !== undefined) {
-//     var transporter = nodemailer.createTransport('smtps://todo.noreply%40poczta.onet.pl:Stasiek1@smtp.poczta.onet.pl') ;
-
-//     // setup e-mail data with unicode symbols
-//     var mailOptions = {
-//         from: 'todo.noreply@jamajka.com', // sender address
-//         to: req.query.email, // list of receivers
-//         subject: 'Hello !', // Subject line
-//         text: 'Hello world !', // plaintext body
-//         html: '<b>Hello world !</b>' // html body
-//     };
-
-//     // send mail with defined transport object
-//     transporter.sendMail(mailOptions, function(error, info){
-//         if(error){
-//             return console.log(error);
-//         }
-//         console.log('Message sent: ' + info.response);
-        
-//         response.info = info.response ;
-//         res.writeHead(200, {'Content-Type': 'application/json'});
-//         res.end(JSON.stringify(response));
-//     });
-//   }
-//   else {
-//     response.info = "unavailable" ;
-//     res.writeHead(200, {'Content-Type': 'application/json'});
-//     res.end(JSON.stringify(response));
-//   }
-// }) ;
-
-// app.get('*', function(req, res){
-//   res.redirect('/');
-// });
 
 app.listen(environment.config.port(), environment.config.ip(), function(){
   console.log('2do server started: %s:%s', environment.config.ip(), environment.config.port()) ;
