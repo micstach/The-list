@@ -631,7 +631,7 @@ app.post('/api/note/create', authorizeAPI, function(req, res){
         user_id: userid,
         tags: req.body.tags,
         timestamp: moment().valueOf(),
-        project_id: req.session.project_id
+        project_id: req.body.project_id
       } ;
 
       console.log(JSON.stringify(note)) ;

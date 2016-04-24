@@ -579,7 +579,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
     if (note._id === undefined) {
       $http
-        .post('/api/note/create', {text: note.text, tags: note.tags, pinned: note.pinned})
+        .post('/api/note/create', {project_id: $scope.selectedProjectId, text: note.text, tags: note.tags, pinned: note.pinned})
         .success(function(){
           $scope.getItems() ;
         });
