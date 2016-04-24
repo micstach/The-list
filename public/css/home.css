@@ -8,6 +8,8 @@ body {
 #content-filter-box
 {
 	margin-top: 5px;
+	width: calc(100% - 30px);
+	display: inline-block;
 }
 
 .selected-text

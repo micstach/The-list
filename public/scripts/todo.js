@@ -494,12 +494,12 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
   $scope.getProjectName = function(project) {
     if (project == null) {
-      return "Any" ;
+      return "All projects" ;
     }
     else {
       if (project.users !== undefined) {
         var ownerName = project.users.filter(function(user) { return user.role == "owner"})[0].name ;
-        return project.name + ": " + ownerName + " {" + project._id + "}" ;
+        return project.name + " by " + ownerName ;//+ " {" + project._id + "}" ;
       }
       else
         return null ;

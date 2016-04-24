@@ -32,19 +32,29 @@
     
     <div class="application-header">
       <div class="container">
-        <button type="button" ng-click="!adding && createNewNote()" class="btn glyphicon glyphicon-plus-sign button-note-add" ng-class="adding ? 'disabled':''"></button>
-        <span>
+        <span class="pull-left">
           <div class="btn-group">
-            <button type="button" class="btn btn-link btn-md dropdown-toggle" data-toggle="dropdown" style="text-decoration: none; padding-right: 0px; color:white;">{{getProjectName(selectedProject)}}&nbsp<span class="glyphicon glyphicon-menu-down"></span></button>
+            <button type="button" class="btn btn-link btn-md dropdown-toggle" data-toggle="dropdown" style="text-decoration: none; padding-left: 0px; padding-right: 0px; color:white;"><span class="glyphicon glyphicon-menu-down"></span>&nbspProject:</span></button>
             <ul class="dropdown-menu scrollable-menu">
               <li>
                 <a href="javascript:void(0)" ng-click="selectProject(null)">
-                  Any
+                  All projects
                 </a>
               </li>
+              <li role="separator" class="divider"></li>
               <li ng-repeat="project in fromServer.projects track by $index">
                 <a href="javascript:void(0)" ng-click="selectProject(project)">
                   {{getProjectName(project)}}
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div class="btn-group">
+            <button type="button" class="btn btn-link btn-md dropdown-toggle" data-toggle="dropdown" style="text-decoration: none; padding-left: 0px; padding-right: 0px; color:white;">{{getProjectName(selectedProject)}}&nbsp<span class="glyphicon glyphicon-cog"></span></button>
+            <ul class="dropdown-menu scrollable-menu">
+              <li>
+                <a href="javascript:void(0)" ng-click="selectProject(null)">
+                  Manage
                 </a>
               </li>
             </ul>
@@ -65,26 +75,31 @@
             </div>
           <% } %>
         </span>
-        <div id="content-filter-box" class="note-tags-filter">
-          <div class="btn-group tags-button">
-            <button type="button" class="btn dropdown-toggle glyph-menu-button glyphicon glyphicon-tag" data-toggle="dropdown" ng-class="adding ? 'disabled':''"></button>
-            <ul class="dropdown-menu scrollable-menu">
-              <li ng-show="selectedTags.length > 0" ng-click="selectTag(null)"><a href="#"><%= resources.resetFilter %></a></li>
-              <li ng-show="tags.length > 0 && selectedTags.length > 0" role="separator" class="divider"></li>
-              <li ng-show="tags.length > 1 || selectedTags.length > 0" ng-repeat="tag in tags track by $index">
-                <a href="#" ng-click="selectTag(tag)">
-                  <span class="note-tag-active label" ng-class="IsInternalTag(tag) ? 'label-warning':'label-primary'"><span ng-bind-html="transformTagForView(tag)">{{tag}}</span></span>
-                </a>
-              </li>
-            </ul>
+        <div style="display: block;clear: both;">
+          <div style="display: inline-block;">
+            <button type="button" ng-show="getProjectName(selectedProject) !== 'All projects'"ng-click="!adding && createNewNote()" class="btn glyphicon glyphicon-plus-sign button-note-add" ng-class="adding ? 'disabled':''"></button>
           </div>
-          <span ng-show="selectedTags.length > 0" class="tags-selected">
-            <span ng-repeat="tag in selectedTags track by $index" class="label note-tag-filter" ng-class="IsInternalTag(tag) ? 'label-warning':'label-primary'"><span ng-bind-html="transformTagForView(tag)">{{tag}}</span>&nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-remove-sign" ng-click="cancelFilter(tag)" style="font-size: 100%;"></span></span>
+          <div id="content-filter-box" class="note-tags-filter pull-right">
+            <div class="btn-group tags-button">
+              <button type="button" class="btn dropdown-toggle glyph-menu-button glyphicon glyphicon-tag" data-toggle="dropdown" ng-class="adding ? 'disabled':''"></button>
+              <ul class="dropdown-menu scrollable-menu">
+                <li ng-show="selectedTags.length > 0" ng-click="selectTag(null)"><a href="#"><%= resources.resetFilter %></a></li>
+                <li ng-show="tags.length > 0 && selectedTags.length > 0" role="separator" class="divider"></li>
+                <li ng-show="tags.length > 0 || selectedTags.length > 0" ng-repeat="tag in tags track by $index">
+                  <a href="#" ng-click="selectTag(tag)">
+                    <span class="note-tag-active label" ng-class="IsInternalTag(tag) ? 'label-warning':'label-primary'"><span ng-bind-html="transformTagForView(tag)">{{tag}}</span></span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <span ng-show="selectedTags.length > 0" class="tags-selected">
+              <span ng-repeat="tag in selectedTags track by $index" class="label note-tag-filter" ng-class="IsInternalTag(tag) ? 'label-warning':'label-primary'"><span ng-bind-html="transformTagForView(tag)">{{tag}}</span>&nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-remove-sign" ng-click="cancelFilter(tag)" style="font-size: 100%;"></span></span>
+              </span>
             </span>
-          </span>
-          <span class="search-box">
-            <input type="text" ng-model="searchText" ng-change="searchTextChanged(searchText)" placeholder="<%= resources.searchNotePlaceholder %>" class="input-box" focus-search="true">
-          </span>
+            <span class="search-box">
+              <input type="text" ng-model="searchText" ng-change="searchTextChanged(searchText)" placeholder="<%= resources.searchNotePlaceholder %>" class="input-box" focus-search="true">
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -99,6 +114,7 @@
               <span ng-show="note.editing" class="typing-helper">*<b><%= resources.boldText %></b>*, _<i><%= resources.italicText %></i>_, ```<div class="preformated-text-inline"><%= resources.preformatedText %></div>```</span>
             </span>
             <span class="message-header-right">
+              <!-- <button ng-show="!note.editing" class="note-header-icon glyphicon glyphicon glyphicon-move"></button> -->
               <button ng-show="!note.editing" ng-click="pinItem(note)" ng-class="note.pinned ? 'pinned' : 'unpinned'" class="note-header-icon glyphicon glyphicon-flag"></button>
               <button ng-show="!note.editing" ng-click="enterEditingMode(note)" class="note-header-icon glyphicon glyphicon-edit"></button>
               <button ng-show="!note.editing && note.owner" ng-click="deleteItem(note)" class="note-header-icon glyphicon glyphicon-trash"></button>
