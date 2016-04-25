@@ -3,7 +3,7 @@ exports.resources = {
 	notePlaceholder: "Zanotujmy coś...",
 	boldText: "pogrubienie",
 	italicText: "kursywa",
-	preformatedText: "formatowynie",	
+	preformatedText: "formatowanie",	
 	resetFilter: "Usuń filtrowanie",
 	removeAllNotes: "Usuń wszystkie notatki",
 	accountSettings: "Ustawienia konta",
