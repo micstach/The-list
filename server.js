@@ -642,7 +642,7 @@ app.post('/api/note/create', authorizeAPI, function(req, res){
   }
 }) ;
 
-app.post('/api/note/delete/:id', authorizeAPI, function(req, res){
+app.delete('/api/note/:id', authorizeAPI, function(req, res){
   console.log("api: delete note: " + req.params.id) ;
 
   var mongoUrl = environment.config.db() ;  
@@ -740,6 +740,7 @@ app.put('/api/user/config', authorizeAPI, function(req, res) {
       
       if (req.body.tags !== undefined)
         user.configuration.tags = req.body.tags;
+
       if (req.body.project_id !== undefined)
         user.configuration.project_id = req.body.project_id ;
 
@@ -810,21 +811,50 @@ app.delete('/api/project/:project/user/:user', authorizeAPI, function(req, res){
   }) ;
 }) ;
 
-app.post('/api/project/:name', authorizeAPI, function(req, res){
+app.post('/api/project', authorizeAPI, function(req, res){
+
+  console.log("Create project: " + JSON.stringify(req.body)) ;
+
+  if (req.body.projectName === undefined) {
+    res.sendStatus(400);
+  }
+  else {
+    MongoClient.connect(environment.config.db(), function(err, db){
+      var project = {
+        name: req.body.projectName,
+        users: [
+          { name: req.session.username, role: "owner"}
+        ]
+      }
+
+      db.collection('projects').insert(project, function(err, result) {
+        var project = result.ops[0] ;
+        res.writeHead(200, {'Content-Type': 'application/json'});
+        res.end(JSON.stringify(project));
+        db.close() 
+      })
+    })
+  }
+})
+
+app.delete('/api/project/:id', authorizeAPI, function(req, res){
 
   MongoClient.connect(environment.config.db(), function(err, db){
-    var project = {
-      name: req.params.name,
-      users: [
-        { name: req.session.username, role: "owner"}
-      ]
-    }
 
-    db.collection('projects').save(project) ;
-    db.close() ;
+    db.collection('projects').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, project){
+      var ownerName = project.users.filter(function(user) { return user.role === "owner"})[0].name ;
 
-    res.writeHead(200, {'Content-Type': 'application/json'});
-    res.end(JSON.stringify(project));
+      if (ownerName == req.session.username) {
+        db.collection('projects').remove({_id: mongodb.ObjectID(req.params.id)}) ;
+        db.close() ;
+        
+        res.sendStatus(200);
+      }
+      else {
+        db.close() ;
+        res.sendStatus(401);
+      }
+    })
   })
 })
 
