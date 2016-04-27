@@ -811,67 +811,12 @@ app.delete('/api/project/:project/user/:user', authorizeAPI, function(req, res){
   }) ;
 }) ;
 
-app.post('/api/project', authorizeAPI, function(req, res){
+var project = require('./api/project.js');
 
-  console.log("Create project: " + JSON.stringify(req.body)) ;
-
-  if (req.body.projectName === undefined) {
-    res.sendStatus(400);
-  }
-  else {
-    MongoClient.connect(environment.config.db(), function(err, db){
-      var project = {
-        name: req.body.projectName,
-        users: [
-          { name: req.session.username, role: "owner"}
-        ]
-      }
-
-      db.collection('projects').insert(project, function(err, result) {
-        var project = result.ops[0] ;
-        res.writeHead(200, {'Content-Type': 'application/json'});
-        res.end(JSON.stringify(project));
-        db.close() 
-      })
-    })
-  }
-})
-
-app.delete('/api/project/:id', authorizeAPI, function(req, res){
-
-  MongoClient.connect(environment.config.db(), function(err, db){
-
-    db.collection('projects').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, project){
-      var ownerName = project.users.filter(function(user) { return user.role === "owner"})[0].name ;
-
-      if (ownerName == req.session.username) {
-        db.collection('projects').remove({_id: mongodb.ObjectID(req.params.id)}) ;
-        db.close() ;
-        
-        res.sendStatus(200);
-      }
-      else {
-        db.close() ;
-        res.sendStatus(401);
-      }
-    })
-  })
-})
-
-app.get('/api/project/:project', authorizeAPI, function(req, res){
-
-  MongoClient.connect(environment.config.db(), function(err, db) {
-    db.collection('projects').findOne({_id: mongodb.ObjectID(req.params.project)}, function(err, project) {
-      
-      console.log("Saving user: " + JSON.stringify(project));
-
-      db.collection('projects').save(project) ;
-      db.close() ;
-      res.writeHead(200, {'Content-Type': 'application/json'});
-      res.end(JSON.stringify(project));
-    }) ;
-  }) ;
-}) ;
+app.use(authorizeAPI);
+app.post('/api/project', project.api.create)
+app.delete('/api/project/:id', project.api.delete)
+app.get('/api/project/:id', project.api.read) ;
 
 function getEmailSignature()
 {
