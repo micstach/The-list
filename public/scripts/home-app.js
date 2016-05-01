@@ -15,10 +15,12 @@ angular.module('Index').config(['$httpProvider', function($httpProvider) {
 
 angular.module('Index').controller('Notes', function($scope, $timeout, $http, $location, $uibModal, linkify, $sce) {
 
-  $scope.userid = "";
+  $scope.userId = undefined;
+  $scope.userName = undefined ;
   $scope.lastTag = undefined;
   $scope.tags = [] ;
-  $scope.selectedTags = [];
+  $scope.selectedTags = new Map([]);
+  $scope.selectedProjectId = null ;
   $scope.selectedProject = "";
   $scope.fromServer = []
   $scope.searchText = "" ;
@@ -35,6 +37,15 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     }
   } ;
 
+  $scope.getSelectedTags = function() {
+    if ($scope.selectedTags[$scope.selectedProjectId] !== undefined)
+      return $scope.selectedTags[$scope.selectedProjectId] ;
+    else {
+      $scope.selectedTags[$scope.selectedProjectId] = [] ;
+      return $scope.selectedTags[$scope.selectedProjectId] ;
+    }    
+  }
+
   $scope.IsInternalTag = function(tag) {
     if (tag === $scope.InternalTags.Flagged)
       return true ;
@@ -44,6 +55,17 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       return true ;
     else
       return false ;
+  }
+
+  $scope.getOwnerName = function(project) {
+    if (project.users !== undefined)
+      return project.users.filter(function(user) { return user.role == "owner"})[0].name    
+    else
+      return null ;
+  }
+
+  $scope.isOwner = function(project) {
+    return ($scope.getOwnerName(project) === $scope.userName)
   }
 
   $scope.isNullOrUndefined = function(obj){
@@ -125,17 +147,21 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   }
 
   $scope.sortSelectedTags = function(tags) {
-      tags.sort(function(a, b) {
-        if (a.indexOf("status:") === b.indexOf("status:"))
-          return a.toLowerCase().localeCompare(b.toLowerCase());
-        else if (a.indexOf("status:") !== -1)
-          return -1 ;
-        else if (b.indexOf("status:") !== -1)
-          return 1 ;
-        else
-          return 0 ;
-      }) ;  
+    if (tags === undefined) return ;
+    if (tags === null) return ;
+
+    tags.sort(function(a, b) {
+      if (a.indexOf("status:") === b.indexOf("status:"))
+        return a.toLowerCase().localeCompare(b.toLowerCase());
+      else if (a.indexOf("status:") !== -1)
+        return -1 ;
+      else if (b.indexOf("status:") !== -1)
+        return 1 ;
+      else
+        return 0 ;
+    }) ;  
   }
+
 
   $scope.deleteProject = function(project){
     $http.delete('/api/project/' + project._id).success(function() {
@@ -162,23 +188,23 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     var update = false ;
 
     if (tag === null) {
-      $scope.selectedTags = [] ;
+      $scope.selectedTags[$scope.selectedProjectId] = [] ;
       update = true ;
     }
     else if (Object.prototype.toString.call(tag) === '[object Array]')
     {
-      $scope.selectedTags = tag.slice() ;
+      $scope.selectedTags[$scope.selectedProjectId] = tag.slice() ;
       update = true ;
     }
     else if (Object.prototype.toString.call(tag) === '[object String]') {
-      if ($scope.selectedTags.indexOf(tag) === -1) {
-        $scope.selectedTags.push(tag);
+      if ($scope.selectedTags[$scope.selectedProjectId].indexOf(tag) === -1) {
+        $scope.selectedTags[$scope.selectedProjectId].push(tag);
         update = true ;
       }
     }
 
     if (update) {
-      $scope.sortSelectedTags($scope.selectedTags) ;
+      $scope.sortSelectedTags($scope.selectedTags[$scope.selectedProjectId]) ;
 
       $('.search-box').outerWidth(0) ;
   
@@ -198,7 +224,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   }
 
   $scope.cancelFilter = function(tag) {
-    $scope.selectedTags.splice($scope.selectedTags.indexOf(tag), 1);  
+    $scope.selectedTags[$scope.selectedProjectId].splice($scope.selectedTags[$scope.selectedProjectId].indexOf(tag), 1);  
 
     $scope.organizeNotes($scope.fromServer.notes, false) ;
 
@@ -251,7 +277,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     var tags = note.tags.slice() ;
 
     if (!note.editing) {
-      $scope.selectedTags.forEach(function(selectedTag) {
+      $scope.selectedTags[$scope.selectedProjectId].forEach(function(selectedTag) {
         removeElementFromArray(tags, selectedTag) ;
       }) ;
     }
@@ -290,9 +316,9 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
     $scope.tags = [] ;
     notes.forEach(function(note) {
-      if ($scope.selectedTags.length > 0) {
+      if ($scope.getSelectedTags().length > 0) {
 
-        var foundTagsCount = $scope.selectedTags.filter(function(tag) {
+        var foundTagsCount = $scope.selectedTags[$scope.selectedProjectId].filter(function(tag) {
           if (tag === $scope.InternalTags.Flagged)
             return note.pinned ;
           
@@ -311,7 +337,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
             return false ;
         }).length ;    
 
-        if (foundTagsCount == $scope.selectedTags.length) {
+        if (foundTagsCount == $scope.getSelectedTags().length) {
           if (note.tags !== undefined && note.tags !== null) {
               $scope.tags = $scope.mergeTags($scope.tags, note.tags) ;
           }
@@ -327,7 +353,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     $scope.tags = $scope.mergeTags($scope.internalTags, $scope.tags);
 
     // remove from tags, tags from filterTags
-    $scope.selectedTags.forEach(function(tag){
+    $scope.selectedTags[$scope.selectedProjectId].forEach(function(tag){
       $scope.tags.splice($scope.tags.indexOf(tag), 1) ;
     }) ;
   }
@@ -343,10 +369,10 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
     var taggedNotes = [] ;
 
-    if ($scope.selectedTags.length > 0) {       
+    if ($scope.getSelectedTags().length > 0) {       
       projectNotes.forEach(function(note) {
         
-        var foundTagsCount = $scope.selectedTags.filter(function(tag) {
+        var foundTagsCount = $scope.getSelectedTags().filter(function(tag) {
           if (tag === $scope.InternalTags.Flagged)
             return note.pinned ;
           
@@ -365,7 +391,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
             return false ;
         }).length ;    
 
-        if (foundTagsCount === $scope.selectedTags.length)
+        if (foundTagsCount === $scope.getSelectedTags().length)
           taggedNotes.push(note) ;
       }) ;
     }
@@ -437,7 +463,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
     if ($scope.data.notes.length === 0 && 
         $scope.searchText.length === 0 &&
-        $scope.selectedTags.length === 0 )
+        $scope.getSelectedTags().length === 0 )
     {
       $scope.createNewNote();
     }
@@ -446,27 +472,29 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   }
 
   $scope.initialize = function() {
-    $http.get('/api/user/config')
-      .success(function(data) { 
+    $http.get('/api/user')
+      .success(function(user) { 
         
-        if (data.configuration !== undefined) {
-          
-          if (data.configuration.tags !== undefined) {
-            $scope.selectedTags = data.configuration.tags;
-            $scope.sortSelectedTags($scope.selectedTags) ;
-          }
+        $scope.userName = user.name ;
 
-          if (data.configuration.project_id !== undefined) {
-            $scope.selectedProjectId = data.configuration.project_id;
-          }
-          else {
-            $scope.selectedProjectId = null ;
+        if (user.configuration.project_id !== undefined) {
+          $scope.selectedProjectId = user.configuration.project_id;
+        }
+        else {
+          $scope.selectedProjectId = null ;
+        }
+
+        if (user.configuration !== undefined) {
+          
+          if (user.configuration.tags !== undefined) {
+            $scope.selectedTags = user.configuration.tags;
+            $scope.sortSelectedTags($scope.getSelectedTags()) ;
           }
         }
 
         $scope.getItems() ;
       })
-      .error(function(data, status) {
+      .error(function(user, status) {
         window.location = '/login' ;
       }) ;
   }
@@ -504,8 +532,10 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     }
     else {
       if (project.users !== undefined) {
-        var ownerName = project.users.filter(function(user) { return user.role == "owner"})[0].name ;
-        return project.name + " by " + ownerName + " {" + project._id + "}" ;
+        if ($scope.isOwner(project))
+          return project.name + " {" + project._id + "}" ;
+        else
+          return project.name + " by " + $scope.getOwnerName(project) + " {" + project._id + "}" ;
       }
       else
         return null ;
@@ -516,7 +546,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     $scope.cancelTimer($scope.autoRefreshTimer) ;  
     $scope.cancelDeleyedRefresh();
 
-    var tags = $scope.selectedTags.slice() ;
+    var tags = $scope.selectedTags[$scope.selectedProjectId].slice() ;
 
     $scope.InternalTags.toArray().forEach(function(internalTag) {
       removeElementFromArray(tags, internalTag) ;
@@ -525,7 +555,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     var note = {
         text: '', 
         checked: false,
-        pinned: ($scope.selectedTags.indexOf($scope.InternalTags.Flagged) !== -1),
+        pinned: ($scope.selectedTags[$scope.selectedProjectId].indexOf($scope.InternalTags.Flagged) !== -1),
         tags: tags,
         timestamp: Date.now(),
         editing: true,
@@ -633,6 +663,32 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     note.modified = true ;
 
     // $scope.cancelFilter(tag) ;
+  }
+
+  $scope.projectName = "test" ;
+
+  $scope.createProject = function() {
+    var locale = getCookie('locale') ;
+
+    var createProjectModal = $uibModal.open({
+      animation: true,
+      templateUrl: 'views/dialog-create-project.' + locale + '.html',
+      controller: 'create-project-controller',
+      size: 'lg',
+      resolve: {
+        projectName: function() {
+          return $scope.projectName ;
+        }
+      }
+    });
+
+    createProjectModal.result.then(function (name) {
+       $http
+       .post('/api/project', {projectName: name})
+       .success(function() { 
+         $scope.getItems(); 
+       });
+    });
   }
 
   $scope.deleteItem = function(note) {
@@ -771,6 +827,19 @@ angular.module('Index').directive('focusSearch', function($timeout, $parse) {
       //    scope.$apply(model.assign(scope, false));
       // });
     }
+  };
+});
+
+angular.module('Index').controller('create-project-controller', function ($scope, $uibModalInstance, projectName)
+{
+  $scope.projectName = projectName ;
+
+  $scope.ok = function () {
+    $uibModalInstance.close($scope.projectName);
+  };
+
+  $scope.cancel = function () {
+    $uibModalInstance.dismiss('cancel');
   };
 });
 

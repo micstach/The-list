@@ -25,7 +25,7 @@
     <%include partials/utilities-scripts.ejs %>
 
     <script src="../scripts/utils.js"></script>
-    <script src="../scripts/todo.js"></script>
+    <script src="../scripts/home-app.js"></script>
     <script src="../scripts/google-analytics.js"></script>
   </head>
   <body ng-controller="Notes">
@@ -37,7 +37,7 @@
             <button type="button" class="btn btn-link btn-md dropdown-toggle" data-toggle="dropdown" style="text-decoration: none; padding-left: 0px; padding-right: 0px; color:white;"><span class="glyphicon glyphicon-menu-down"></span>&nbspProject:</span></button>
             <ul class="dropdown-menu scrollable-menu">
               <li>
-                <a href="javascript:void(0)" ng-click="selectProject(null)">
+                <a href="javascript:void(0)" ng-click="createProject()">
                   Create
                 </a>
               </li>
@@ -56,11 +56,16 @@
             </ul>
           </div>
           <div class="btn-group">
-            <button type="button" class="btn btn-link btn-md dropdown-toggle" data-toggle="dropdown" style="text-decoration: none; padding-left: 0px; padding-right: 0px; color:white;"><b>{{getProjectName(selectedProject)}}&nbsp</b><span class="glyphicon glyphicon-cog"></span></button>
+            <button type="button" class="btn btn-link btn-md dropdown-toggle" data-toggle="dropdown" style="text-decoration: none; padding-left: 0px; padding-right: 0px; color:white;"><b>{{getProjectName(selectedProject)}}&nbsp</b><span class="glyphicon glyphicon-menu-down"></span></button>
             <ul class="dropdown-menu scrollable-menu">
               <li>
-                <a href="javascript:void(0)" ng-click="deleteProject(selectedProject)">
+                <a ng-show="isOwner(selectedProject)" ng-click="deleteProject(selectedProject)" href="javascript:void(0)">
                   Delete project
+                </a>
+              </li>
+              <li>
+                <a ng-show="isOwner(selectedProject)" ng-click="" href="/project">
+                  Manage project
                 </a>
               </li>
             </ul>
@@ -89,17 +94,17 @@
             <div class="btn-group tags-button">
               <button type="button" class="btn dropdown-toggle glyph-menu-button glyphicon glyphicon-tag" data-toggle="dropdown" ng-class="adding ? 'disabled':''"></button>
               <ul class="dropdown-menu scrollable-menu">
-                <li ng-show="selectedTags.length > 0" ng-click="selectTag(null)"><a href="#"><%= resources.resetFilter %></a></li>
-                <li ng-show="tags.length > 0 && selectedTags.length > 0" role="separator" class="divider"></li>
-                <li ng-show="tags.length > 0 || selectedTags.length > 0" ng-repeat="tag in tags track by $index">
+                <li ng-show="getSelectedTags().length > 0" ng-click="selectTag(null)"><a href="#"><%= resources.resetFilter %></a></li>
+                <li ng-show="tags.length > 0 && getSelectedTags().length > 0" role="separator" class="divider"></li>
+                <li ng-show="tags.length > 0 || getSelectedTags().length > 0" ng-repeat="tag in tags track by $index">
                   <a href="#" ng-click="selectTag(tag)">
                     <span class="note-tag-active label" ng-class="IsInternalTag(tag) ? 'label-warning':'label-primary'"><span ng-bind-html="transformTagForView(tag)">{{tag}}</span></span>
                   </a>
                 </li>
               </ul>
             </div>
-            <span ng-show="selectedTags.length > 0" class="tags-selected">
-              <span ng-repeat="tag in selectedTags track by $index" class="label note-tag-filter" ng-class="IsInternalTag(tag) ? 'label-warning':'label-primary'"><span ng-bind-html="transformTagForView(tag)">{{tag}}</span>&nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-remove-sign" ng-click="cancelFilter(tag)" style="font-size: 100%;"></span></span>
+            <span ng-show="getSelectedTags().length > 0" class="tags-selected">
+              <span ng-repeat="tag in getSelectedTags() track by $index" class="label note-tag-filter" ng-class="IsInternalTag(tag) ? 'label-warning':'label-primary'"><span ng-bind-html="transformTagForView(tag)">{{tag}}</span>&nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-remove-sign" ng-click="cancelFilter(tag)" style="font-size: 100%;"></span></span>
               </span>
             </span>
             <span class="search-box">

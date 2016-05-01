@@ -719,14 +719,17 @@ app.put('/api/note/pin/:id/:state', authorizeAPI, function(req, res){
   }) ;
 });
 
-app.get('/api/user/config', authorizeAPI, function(req, res) {
+app.get('/api/user', authorizeAPI, function(req, res) {
   console.log("api: get user config");
 
   MongoClient.connect(environment.config.db(), function(err, db) {
      db.collection('users').findOne({_id: mongodb.ObjectID(req.session.userid)}, function(err, user) {
       console.log("User configuration: " + JSON.stringify(user.configuration)) ;
       res.writeHead(200, {'Content-Type': 'application/json'});
-      res.end(JSON.stringify({configuration:user.configuration}));
+      res.end(JSON.stringify({
+        name: req.session.username,
+        configuration:user.configuration
+      }));
       db.close() ;
     }) ;
   }) ;
