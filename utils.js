@@ -35,7 +35,7 @@ exports.helpers = {
     var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return re.test(email);
   },
-  getLocale: function(req){
+  getLocale: function(req, res){
     var locale = req.locale ;  
     if (req.cookies['locale'] === undefined) {
       res.cookie('locale', locale) ;

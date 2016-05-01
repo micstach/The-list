@@ -57,15 +57,15 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       return false ;
   }
 
-  $scope.getOwnerName = function(project) {
+  $scope.getOwnerNames = function(project) {
     if (project.users !== undefined)
-      return project.users.filter(function(user) { return user.role == "owner"})[0].name    
+      return project.users.filter(function(user) { return user.role == "owner"})    
     else
-      return null ;
+      return [] ;
   }
 
   $scope.isOwner = function(project) {
-    return ($scope.getOwnerName(project) === $scope.userName)
+    return ($scope.getOwnerNames(project).filter(function(user) { return user.name === $scope.userName}).length > 0);
   }
 
   $scope.isNullOrUndefined = function(obj){
@@ -171,7 +171,10 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       $scope.selectedProjectId = project._id ;
       $scope.selectedProject = $scope.fromServer.projects.filter(function(project) { return project._id == $scope.selectedProjectId })[0];
     }
+
+    $('.search-box').outerWidth(0) ;
     $scope.organizeNotes($scope.fromServer.notes, false) ;
+    $timeout(repositionSearchBar, 0) ;
     
     $http.put('/api/user/config', {project_id: $scope.selectedProjectId}).success(function() {});    
   }
@@ -531,7 +534,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
         if ($scope.isOwner(project))
           return project.name ;// + " {" + project._id + "}" ;
         else
-          return project.name + " by " + $scope.getOwnerName(project) ;//+ " {" + project._id + "}" ;
+          return project.name + " by " + $scope.getOwnerNames(project)[0].name ;//+ " {" + project._id + "}" ;
       }
       else
         return null ;

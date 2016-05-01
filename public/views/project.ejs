@@ -28,19 +28,49 @@
       <%- include partials/header.ejs %>
     </div>
     <div class="container">
-      <h>Project name: <%= project.name %><button ng-click="deleteProject('<%= project._id %>')">Delete</button></h>
-      <ul>
-        <% for (var i = 0; i < project.users.length; i++) { %>
-        <li>User name: <%= project.users[i].name %>, role: <%= project.users[i].role %>
-          <% if (project.users[i].role !== "owner") { %>
-            <button ng-click="removeUser('<%= project._id %>', '<%= project.users[i].name %>')">Remove</button>
-          <% } %>
+      <form class="form-inline">
+        <label>Project name</label>
+        <input class="form-control" ng-model="project.name" type="text" ng-change="projectChanged()" placeholder="Enter project name">
+        <button class="form-control" ng-click="deleteProject()">Delete</button>
+      </form>
+      <ul class="list-group">
+        <li class="list-group-item" ng-repeat="user in project.users">
+          <form class="form-inline">
+            <span>
+              {{user.name}}
+            </span>
+            <span>
+              <div class="dropdown" style="display: inline-block;">
+                <button type="button" class="btn btn-default btn-md dropdown-toggle" data-toggle="dropdown">{{user.role}}</button>
+                <ul class="dropdown-menu scrollable-menu">
+                  <li><a href="javascript:void(0)" ng-click="">owner</a></li>
+                  <li><a href="javascript:void(0)" ng-click="">read-write</a></li>
+                  <li><a href="javascript:void(0)" ng-click="">read-only</a></li>
+                </ul>
+              </div>
+            </span>
+            <span>
+              <button class="form-control" ng-model="user" ng-click="removeUser(user)">Remove</button>
+            </span>
+          </form>
         </li>
-        <% } %>
+        <li class="list-group-item">
+          <form class="form-inline">
+            <input class="form-control input-default" type="text" ng-model="user.name" placeholder="Enter user name">
+            <span >
+              <div class="dropdown" style="display: inline-block;">
+                <button type="button" class="btn btn-default btn-md dropdown-toggle" data-toggle="dropdown">{{user.role}}</button>
+                <ul class="dropdown-menu scrollable-menu">
+                  <li><a href="javascript:void(0)" ng-click="setUserRole('owner')">owner</a></li>
+                  <li><a href="javascript:void(0)" ng-click="setUserRole('read-write')">read-write</a></li>
+                  <li><a href="javascript:void(0)" ng-click="setUserRole('read-only')">read-only</a></li>
+                </ul>
+              </div>
+            </span>
+            <button class="form-control" ng-disabled="user.name.length == 0" ng-click="addUser()">Add</button>
+          </form>
+        </li>
       </ul>
-      <input type="text" ng-model="newUserName" placeholder="Enter user name">
-      <input type="text" ng-model="newUserRole" placeholder="Enter user role">
-      <button data-project-id="<%= project._id %>" ng-click="addUser($event)">Add</button>
     </div>
   </body>
 </html>

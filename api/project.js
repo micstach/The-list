@@ -46,6 +46,31 @@ exports.api = {
 	    })
 	  })
 	},
+	update: function(req, res) {
+    var project = req.body ;
+    
+    console.log(project) ;
+
+	  mongoClient.connect(environment.config.db(), function(err, db){
+      var ownerName = project.users.filter(function(user) { return user.role === "owner"})[0].name ;
+	    
+      console.log("Owner name: " + ownerName) ;
+
+      if (ownerName === req.session.username) {
+        project._id = mongodb.ObjectID(project._id) ;
+        
+        console.log("Updating project")
+        db.collection('projects').save(project);
+	      db.close() ;
+	      res.sendStatus(200);
+	    }
+	    else {
+        console.log("Updating project")
+	      db.close() ;
+	      res.sendStatus(401);
+	    }
+	  })
+	},
 	read: function(req, res) {
 	  mongoClient.connect(environment.config.db(), function(err, db) {
 	    db.collection('projects').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, project) {

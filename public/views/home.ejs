@@ -33,22 +33,6 @@
     <div class="application-header">
       <div class="container">
         <span class="pull-left">
-<!--           <div class="btn-group">
-            <button type="button" class="btn btn-link btn-md dropdown-toggle" data-toggle="dropdown" style="text-decoration: none; padding-left: 0px; padding-right: 0px; color:white;"><span class="glyphicon glyphicon-menu-down"></span>&nbspProject:</span></button>
-            <ul class="dropdown-menu scrollable-menu">
-              <li>
-                <a href="javascript:void(0)" ng-click="createProject()">
-                  Create a new project
-                </a>
-              </li>
-              <li role="separator" class="divider"></li>
-              <li>
-                <a ng-show="isOwner(selectedProject)" ng-click="" href="/project">
-                  Manage project {{selectedProject.name}}
-                </a>
-              </li>
-            </ul>
-          </div> -->
           <div class="dropdown">
             <button type="button" class="btn btn-link btn-md dropdown-toggle" data-toggle="dropdown" style="text-decoration: none; padding-left: 0px; padding-right: 0px; color:white;"><span class="glyphicon glyphicon-menu-down"></span>&nbsp{{getProjectName(selectedProject)}}</button>
             <ul class="dropdown-menu scrollable-menu">
@@ -134,7 +118,7 @@
               <!-- <button ng-show="!note.editing" class="note-header-icon glyphicon glyphicon glyphicon-move"></button> -->
               <button ng-show="!note.editing" ng-click="pinItem(note)" ng-class="note.pinned ? 'pinned' : 'unpinned'" class="note-header-icon glyphicon glyphicon-flag"></button>
               <button ng-show="!note.editing" ng-click="enterEditingMode(note)" class="note-header-icon glyphicon glyphicon-pencil"></button>
-              <button ng-show="!note.editing && note.owner" ng-click="deleteItem(note)" class="note-header-icon glyphicon glyphicon-trash"></button>
+              <button ng-show="!note.editing && (isOwner(selectedProject))" ng-click="deleteItem(note)" class="note-header-icon glyphicon glyphicon-trash"></button>
               <button ng-show="note.editing" ng-click="acceptChanges(note)"  ng-disabled="!note.modified || note.changeAccepted" ng-class="note.modified ? 'note-edit-accept' : 'note-edit-accept-disabled'" class="note-header-icon glyphicon glyphicon-plus-sign"></button> 
               <button ng-show="note.editing && (note.text.length > 0 || data.notes.length > 1)" ng-click="cancelChanges(null, note)" ng-disable="note.changeAccepted" class="note-header-icon note-edit-cancel glyphicon glyphicon-remove-sign"></button> 
             </span>  

@@ -89,7 +89,7 @@ app.use(http2https);
 
 app.get('/', function(req, res) { 
     
-  var locale = utils.helpers.getLocale(req) ;
+  var locale = utils.helpers.getLocale(req, res) ;
 
   if (req.session.userid === undefined) {
 
@@ -127,7 +127,7 @@ app.post('/locale/:locale', function(req, res){
 
 app.get('/home', authorize, function(req, res) {
 
-  var locale = utils.helpers.getLocale(req) ;
+  var locale = utils.helpers.getLocale(req, res) ;
 
   var desktopClient = (req.headers['user-agent'] === 'desktop client') ;
 
@@ -157,7 +157,7 @@ app.get('/home', authorize, function(req, res) {
 
 app.get('/login', function(req, res, next) {
  
-  var locale = utils.helpers.getLocale(req) ;
+  var locale = utils.helpers.getLocale(req, res) ;
 
   if (req.session.userid !== undefined) {
     if (req.query.user !== undefined) {
@@ -196,7 +196,7 @@ app.post('/login', function(req, res) {
   
   var resources = require('./private/login.' + req.locale + '.js').resources ;
   
-  var locale = utils.helpers.getLocale(req) ;
+  var locale = utils.helpers.getLocale(req, res) ;
 
   var errorParameters = {
     error: resources.errorInvalidUserOrPassword,
@@ -226,7 +226,7 @@ app.post('/login', function(req, res) {
 
 app.get('/register', function(req, res) {
 
-  var locale = utils.helpers.getLocale(req) ;
+  var locale = utils.helpers.getLocale(req, res) ;
 
   console.log("Locale: " + locale) ;
 
@@ -278,7 +278,7 @@ app.get('/register', function(req, res) {
 app.post('/register', function(req, res) {
   console.log('Register api'); 
   
-  var locale = utils.helpers.getLocale(req) ;
+  var locale = utils.helpers.getLocale(req, res) ;
 
   var resources = require('./private/register.' + locale + '.js').resources ;
 
@@ -442,7 +442,7 @@ app.get('/logoff', function(req, res){
 
 app.get('/account', authorize, function(req, res) {
  
-  var locale = utils.helpers.getLocale(req) ;
+  var locale = utils.helpers.getLocale(req, res) ;
 
   MongoClient.connect(environment.config.db(), function(err, db) {
     var users = db.collection('users') ;
@@ -503,7 +503,7 @@ app.post('/account', authorize, function(req, res) {
 
 app.get('/project/:id', authorize, function(req, res){
 
-  var locale = utils.helpers.getLocale(req) ;
+  var locale = utils.helpers.getLocale(req, res) ;
 
   MongoClient.connect(environment.config.db(), 
     function(err, db) {
@@ -794,6 +794,7 @@ var project = require('./api/project.js');
 
 app.use(authorizeAPI);
 app.post('/api/project', project.api.create)
+app.put('/api/project', project.api.update) ;
 app.delete('/api/project/:id', project.api.delete)
 app.get('/api/project/:id', project.api.read) ;
 
