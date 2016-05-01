@@ -75,7 +75,7 @@ var authorize = function(req, res, next) {
   console.log('params:' + JSON.stringify(req.params));
 
   if (req.session.userid !== undefined)
-    return next() ;//res.redirect(req.params.path);
+    return next() ;
   else
   {
     console.log('Unauthorized access: ' + req.url + ', please login!') ;
@@ -89,13 +89,7 @@ app.use(http2https);
 
 app.get('/', function(req, res) { 
     
-  var locale = req.locale ;  
-  if (req.cookies['locale'] === undefined) {
-    res.cookie('locale', locale) ;
-  }
-  else {
-    locale = req.cookies['locale'] ;
-  }
+  var locale = utils.helpers.getLocale(req) ;
 
   if (req.session.userid === undefined) {
 
@@ -133,13 +127,7 @@ app.post('/locale/:locale', function(req, res){
 
 app.get('/home', authorize, function(req, res) {
 
-  var locale = req.locale ;  
-  if (req.cookies['locale'] === undefined) {
-    res.cookie('locale', locale) ;
-  }
-  else {
-    locale = req.cookies['locale'] ;
-  }
+  var locale = utils.helpers.getLocale(req) ;
 
   var desktopClient = (req.headers['user-agent'] === 'desktop client') ;
 
@@ -169,13 +157,7 @@ app.get('/home', authorize, function(req, res) {
 
 app.get('/login', function(req, res, next) {
  
-  var locale = req.locale ;  
-  if (req.cookies['locale'] === undefined) {
-    res.cookie('locale', locale) ;
-  }
-  else {
-    locale = req.cookies['locale'] ;
-  }
+  var locale = utils.helpers.getLocale(req) ;
 
   if (req.session.userid !== undefined) {
     if (req.query.user !== undefined) {
@@ -214,13 +196,7 @@ app.post('/login', function(req, res) {
   
   var resources = require('./private/login.' + req.locale + '.js').resources ;
   
-  var locale = req.locale ;  
-  if (req.cookies['locale'] === undefined) {
-    res.cookie('locale', locale) ;
-  }
-  else {
-    locale = req.cookies['locale'] ;
-  }
+  var locale = utils.helpers.getLocale(req) ;
 
   var errorParameters = {
     error: resources.errorInvalidUserOrPassword,
@@ -250,13 +226,7 @@ app.post('/login', function(req, res) {
 
 app.get('/register', function(req, res) {
 
-  var locale = req.locale ;  
-  if (req.cookies['locale'] === undefined) {
-    res.cookie('locale', locale) ;
-  }
-  else {
-    locale = req.cookies['locale'] ;
-  }
+  var locale = utils.helpers.getLocale(req) ;
 
   console.log("Locale: " + locale) ;
 
@@ -308,13 +278,7 @@ app.get('/register', function(req, res) {
 app.post('/register', function(req, res) {
   console.log('Register api'); 
   
-  var locale = req.locale ;  
-  if (req.cookies['locale'] === undefined) {
-    res.cookie('locale', locale) ;
-  }
-  else {
-    locale = req.cookies['locale'] ;
-  }
+  var locale = utils.helpers.getLocale(req) ;
 
   var resources = require('./private/register.' + locale + '.js').resources ;
 
@@ -478,13 +442,7 @@ app.get('/logoff', function(req, res){
 
 app.get('/account', authorize, function(req, res) {
  
-  var locale = req.locale ;  
-  if (req.cookies['locale'] === undefined) {
-    res.cookie('locale', locale) ;
-  }
-  else {
-    locale = req.cookies['locale'] ;
-  }
+  var locale = utils.helpers.getLocale(req) ;
 
   MongoClient.connect(environment.config.db(), function(err, db) {
     var users = db.collection('users') ;
@@ -542,6 +500,24 @@ app.post('/account', authorize, function(req, res) {
     });
   });
 }) ;
+
+app.get('/project/:id', authorize, function(req, res){
+
+  var locale = utils.helpers.getLocale(req) ;
+
+  MongoClient.connect(environment.config.db(), 
+    function(err, db) {
+      db.collection('projects').findOne({_id: mongodb.ObjectID(req.params.id)}, 
+        function(err, project) {
+          var parameters = {
+            language: languages[locale],
+            project: project
+          } ;
+
+          res.render('project', parameters)
+        })
+    })
+})
 
 app.get('/api/notes', authorizeAPI, function(req, res) {
   var userid = req.session.userid;
@@ -756,10 +732,10 @@ app.put('/api/user/config', authorizeAPI, function(req, res) {
   }) ;
 }) ;
 
-app.put('/api/project/:project/user/:user', authorizeAPI, function(req, res){
+app.put('/api/project/:id/user/:user', authorizeAPI, function(req, res){
 
   MongoClient.connect(environment.config.db(), function(err, db) {
-    db.collection('projects').findOne({_id: mongodb.ObjectID(req.params.project)}, function(err, project) {
+    db.collection('projects').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, project) {
       
       var ownerName = project.users.filter(function(user) { return user.role === "owner"})[0].name ;
       console.log("Project owner: " + ownerName) ;
@@ -786,10 +762,10 @@ app.put('/api/project/:project/user/:user', authorizeAPI, function(req, res){
   }) ;
 }) ;
 
-app.delete('/api/project/:project/user/:user', authorizeAPI, function(req, res){
+app.delete('/api/project/:id/user/:user', authorizeAPI, function(req, res){
 
   MongoClient.connect(environment.config.db(), function(err, db) {
-    db.collection('projects').findOne({_id: mongodb.ObjectID(req.params.project)}, function(err, project) {
+    db.collection('projects').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, project) {
       
       var ownerName = project.users.filter(function(user) { return user.role === "owner"})[0].name ;
       console.log("Project owner: " + ownerName) ;

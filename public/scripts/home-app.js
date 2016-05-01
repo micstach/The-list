@@ -499,7 +499,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       }) ;
   }
 
-  $scope.getItems = function(fromServer) {
+  $scope.getItems = function(fromServer, onSuccess) {
 
     if (fromServer === undefined)
       fromServer = true ;
@@ -516,6 +516,9 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
           $scope.selectedProject = $scope.fromServer.projects.filter(function(project) { return project._id == $scope.selectedProjectId; })[0];
           $scope.organizeNotes(data.notes, fromServer) ;
+
+          if (onSuccess !== undefined)
+            onSuccess();
         })
         .error(function(data, status) {
           window.location = '/login' ;
@@ -533,9 +536,9 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     else {
       if (project.users !== undefined) {
         if ($scope.isOwner(project))
-          return project.name + " {" + project._id + "}" ;
+          return project.name ;// + " {" + project._id + "}" ;
         else
-          return project.name + " by " + $scope.getOwnerName(project) + " {" + project._id + "}" ;
+          return project.name + " by " + $scope.getOwnerName(project) ;//+ " {" + project._id + "}" ;
       }
       else
         return null ;
@@ -665,7 +668,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     // $scope.cancelFilter(tag) ;
   }
 
-  $scope.projectName = "test" ;
+  $scope.projectName = "" ;
 
   $scope.createProject = function() {
     var locale = getCookie('locale') ;
@@ -686,7 +689,10 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
        $http
        .post('/api/project', {projectName: name})
        .success(function() { 
-         $scope.getItems(); 
+         $scope.getItems(true, function(){
+          var project = $scope.fromServer.projects.filter(function(project) { return project.name == name })[0] ;
+          $scope.selectProject(project) ;
+         }); 
        });
     });
   }
