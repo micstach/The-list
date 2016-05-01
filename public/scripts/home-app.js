@@ -162,13 +162,6 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     }) ;  
   }
 
-
-  $scope.deleteProject = function(project){
-    $http.delete('/api/project/' + project._id).success(function() {
-      $scope.getItems();
-    });      
-  }
-
   $scope.selectProject = function(project) {
     if (project == null) {
       $scope.selectedProjectId = null ;

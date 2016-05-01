@@ -23,6 +23,11 @@ angular.module('Index').controller('Project', function($window, $scope, $timeout
 		alert("hello") ;
 	}
 
+	$scope.deleteProject = function(projectId)
+	{
+	    $http.delete('/api/project/' + projectId).success(function() {$window.location.href = "/home" });
+	}
+
 	$scope.addUser = function(event)
 	{
 		var projectId = event.currentTarget.getAttribute('data-project-id') ; 
