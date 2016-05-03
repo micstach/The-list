@@ -275,7 +275,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
   $scope.getAuthorName = function(note) {
     if ($scope.selectedProject !== null) {
-      if ($scope.selectedProject.users.length > 1) {
+      if ($scope.selectedProject.users.filter(function(user){return user.role === "owner" || user.role === "read-write"}).length > 1) {
         if (note.user !== undefined) {
           return note.user.name + ", " ;
         }
@@ -557,7 +557,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
         if ($scope.isOwner(project))
           return project.name ;// + " {" + project._id + "}" ;
         else
-          return project.name + " by " + $scope.getOwnerNames(project)[0].name ;//+ " {" + project._id + "}" ;
+          return project.name + ", " + $scope.getOwnerNames(project)[0].name ;//+ " {" + project._id + "}" ;
       }
       else
         return null ;
