@@ -32,6 +32,10 @@ angular.module('Index').controller('Project', function($window, $scope, $timeout
 		return $scope.project.users.filter(function(user){return user.name === $scope.userName && user.role === "owner"}).length > 0 ;
 	}
 
+	$scope.isOwner = function(user) {
+		return $scope.project.users.filter(function(u){return u.name === user.name && user.role === "owner"}).length == 1 ;
+	}
+
 	$scope.isOnlyOneOwner = function() {
 		return $scope.project.users.filter(function(user){return user.role === "owner"}).length == 1 ;
 	}

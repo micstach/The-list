@@ -120,24 +120,23 @@ exports.api = {
     mongoClient.connect(environment.config.db(), function(err, db) {
       db.collection('projects').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, project) {
         
-        var ownerName = project.users.filter(function(user) { return user.role === "owner"})[0].name ;
-        console.log("Project owner: " + ownerName) ;
-
-        if (req.session.username == ownerName ||
-            req.session.username.toLowerCase() == req.params.userName.toLowerCase())
+        if (isUserAProjectOwner(project, req.session.username))
         {
-          project.users = project.users.filter(function(user) { return user.name.toLowerCase() !== req.params.userName.toLowerCase()});
+          // modify user
+          project.users.forEach(function(user){
+            if (user.name.toLowerCase() == req.body.name.toLowerCase()) {
+              user.role = req.body.role.toLowerCase() ;
+            }
+          })
 
           db.collection('projects').save(project) ;
           db.close() ;
           res.writeHead(200, {'Content-Type': 'application/json'});
           res.end(JSON.stringify(project));
-          return ;
         }
         else
         {
           res.sendStatus(401);
-          return ;
         }
       }) ;
     }) ;

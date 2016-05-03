@@ -6,6 +6,11 @@
 	font-size: 100%;
 }
 
+.glyph-button:disabled
+{
+	background-color: transparent;
+}
+
 .link-button 
 {
 	text-decoration: none;
