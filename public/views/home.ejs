@@ -42,7 +42,7 @@
                 </a>
               </li>
               <li>
-                <a ng-show="isOwner(selectedProject)" ng-click="" href="/project/{{selectedProject._id}}">
+                <a ng-click="" href="/project/{{selectedProject._id}}">
                   Manage project {{selectedProject.name}}
                 </a>
               </li>
@@ -52,12 +52,12 @@
                   {{getProjectName(project)}}
                 </a>
               </li>
-              <li role="separator" class="divider"></li>
+<!--               <li role="separator" class="divider"></li>
               <li>
                 <a href="javascript:void(0)" ng-click="selectProject(null)">
                   Display notes from any project
                 </a>
-              </li>
+              </li> -->
             </ul>
           </div>
         </span>
@@ -68,8 +68,8 @@
             <div class="btn-group">
               <button type="button" data-toggle="dropdown" class="btn btn-link btn-md dropdown-toggle" style="text-decoration: none; padding-right: 0px; color:white;"><span class="glyphicon glyphicon-user" style="font-size: small;"></span>&nbsp<%= username %>&nbsp<span class="glyphicon glyphicon-menu-down"></span></button>
               <ul class="dropdown-menu-right dropdown-menu scrollable-menu">
-                <li><a ng-click="deleteAllItems()" href="#"><%= resources.removeAllNotes %></a></li>
-                <li role="separator" class="divider"></li>
+                <!-- <li><a ng-click="deleteAllItems()" href="#"><%= resources.removeAllNotes %></a></li> -->
+                <!-- <li role="separator" class="divider"></li> -->
                 <li><a href="/account"><%= resources.accountSettings %></a></li>
                 <li><a href="/logoff"><%= resources.logOut %></a></li>
               </ul>
@@ -78,7 +78,7 @@
         </span>
         <div style="display: block;clear: both;">
           <div style="display: inline-block;">
-            <button type="button" ng-show="getProjectName(selectedProject) !== 'All projects'"ng-click="!adding && createNewNote()" class="btn glyphicon glyphicon-plus-sign button-note-add" ng-class="adding ? 'disabled':''"></button>
+            <button type="button" ng-show="getProjectName(selectedProject) !== 'All projects'"ng-click="!adding && createNewNote()" class="btn glyphicon glyphicon-plus-sign button-note-add" ng-class="(adding || !hasWriteAccess(selectedProject))  ? 'disabled':''"></button>
           </div>
           <div id="content-filter-box" class="note-tags-filter pull-right">
             <div class="btn-group tags-button">
@@ -110,15 +110,15 @@
         <li ng-repeat="note in data.notes track by $index" ng-class="note.pinned ? 'message-pinned' : (note.checked ? 'message-checked' : '')" id="{{note._id}}" class="list-group-item">
           <div class="message-header">
             <span class="message-header-left">
-              <button ng-show="!note.editing" ng-click="toggleItem(note)" ng-class="note.checked ? 'glyphicon-check' : 'glyphicon-unchecked'" class="note-header-icon-nospace glyphicon"></button>
-              <span ng-show="!note.editing" class="note-time">{{note.timeVerbose}}</span>
+              <button ng-show="!note.editing && hasWriteAccess(selectedProject)" ng-click="toggleItem(note)" ng-class="note.checked ? 'glyphicon-check' : 'glyphicon-unchecked'" class="note-header-icon-nospace glyphicon"></button>
+              <span ng-show="!note.editing" class="note-time"><span>{{getAuthorName(note)}}</span>{{note.timeVerbose}}</span>
               <span ng-show="note.editing" class="typing-helper">*<b><%= resources.boldText %></b>*, _<i><%= resources.italicText %></i>_, ```<div class="preformated-text-inline"><%= resources.preformatedText %></div>```</span>
             </span>
             <span class="message-header-right">
               <!-- <button ng-show="!note.editing" class="note-header-icon glyphicon glyphicon glyphicon-move"></button> -->
-              <button ng-show="!note.editing" ng-click="pinItem(note)" ng-class="note.pinned ? 'pinned' : 'unpinned'" class="note-header-icon glyphicon glyphicon-flag"></button>
-              <button ng-show="!note.editing" ng-click="enterEditingMode(note)" class="note-header-icon glyphicon glyphicon-pencil"></button>
-              <button ng-show="!note.editing && (isOwner(selectedProject))" ng-click="deleteItem(note)" class="note-header-icon glyphicon glyphicon-trash"></button>
+              <button ng-show="!note.editing && hasWriteAccess(selectedProject)" ng-click="pinItem(note)" ng-class="note.pinned ? 'pinned' : 'unpinned'" class="note-header-icon glyphicon glyphicon-flag"></button>
+              <button ng-show="!note.editing && hasWriteAccess(selectedProject)"  ng-click="enterEditingMode(note)" class="note-header-icon glyphicon glyphicon-pencil"></button>
+              <button ng-show="!note.editing && hasWriteAccess(selectedProject) && isOwner(selectedProject)" ng-click="deleteItem(note)" class="note-header-icon glyphicon glyphicon-trash"></button>
               <button ng-show="note.editing" ng-click="acceptChanges(note)"  ng-disabled="!note.modified || note.changeAccepted" ng-class="note.modified ? 'note-edit-accept' : 'note-edit-accept-disabled'" class="note-header-icon glyphicon glyphicon-plus-sign"></button> 
               <button ng-show="note.editing && (note.text.length > 0 || data.notes.length > 1)" ng-click="cancelChanges(null, note)" ng-disable="note.changeAccepted" class="note-header-icon note-edit-cancel glyphicon glyphicon-remove-sign"></button> 
             </span>  

@@ -33,7 +33,7 @@
           <div class="input-group">    
             <input ng-disabled="!isOwnerView()" class="form-control" ng-model="project.name" type="text" ng-change="" placeholder="Enter project name">
             <span class="input-group-btn">
-              <button ng-disabled="!isOwnerView() || project.name.length == 0" class="btn btn-default" ng-click="projectChanged()"><span class="glyphicon glyphicon-ok"></button>
+              <button ng-disabled="!isOwnerView() || project.name.length == 0 || project.name == project.currentName" class="btn btn-default" ng-click="projectChanged()"><span class="glyphicon glyphicon-ok"></button>
             </span>
           </div>
         </div>
@@ -53,14 +53,12 @@
         </div>
       </div>
       <ul class="list-group">
-        <li class="list-group-item" ng-repeat="user in project.users">
+        <li class="list-group-item" ng-repeat="user in project.users" ng-class="user.name == userName ? 'list-group-item-warning':''">
           <form class="form-inline">
             <span ng-show="isOwnerView()">
-              <button ng-disabled="isOnlyOneOwner()" class="btn btn-default button glyph-button" ng-model="user" ng-click="userRemove(user)"><span class="glyphicon glyphicon-minus-sign"></button>
+              <button ng-disabled="isOnlyOneOwner() && isOwner(user)" class="btn btn-default button glyph-button" ng-model="user" ng-click="userRemove(user)"><span class="glyphicon glyphicon-minus-sign"></button>
             </span>
-            <span>
-              {{user.name}}
-            </span>
+            <span>{{user.name}}<span ng-show="user.name == userName" class="text-muted">&nbsp(It's you)</span></span>
             <span class="pull-right">
               <div ng-show="isOwnerView()" class="dropdown" style="display: inline-block;">
                 <button ng-disabled="isOnlyOneOwner() && isOwner(user)" type="button" class="btn btn-link btn-md dropdown-toggle" data-toggle="dropdown" style="text-decoration: none;">{{user.role}} <span class="glyphicon glyphicon-triangle-bottom"></span></button>
@@ -82,6 +80,9 @@
           <button ng-show="isOwnerView()" class="form-control btn btn-danger" ng-click="deleteProject()">Delete project</strong></button>
         </div>
       </form>
+      <div class="text-center">
+        <a href="/home">Go back</a>
+      </div>      
     </div>
   </body>
 </html>

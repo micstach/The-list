@@ -574,8 +574,8 @@ app.get('/api/notes', authorizeAPI, function(req, res) {
         res.writeHead(200, {'Content-Type': 'application/json'});
         
         res.end(JSON.stringify({
-          userid:userid, 
-          notes:notes,
+          userid: userid, 
+          notes: notes,
           projects: projects
         }));
 
@@ -602,7 +602,7 @@ app.post('/api/note/create', authorizeAPI, function(req, res){
         text: req.body.text, 
         checked: false,
         pinned: req.body.pinned,
-        user_id: userid,
+        user: {id: userid, name: req.session.username},
         tags: req.body.tags,
         timestamp: moment().valueOf(),
         project_id: req.body.project_id

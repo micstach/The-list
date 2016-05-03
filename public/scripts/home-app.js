@@ -21,7 +21,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   $scope.tags = [] ;
   $scope.selectedTags = new Map([]);
   $scope.selectedProjectId = null ;
-  $scope.selectedProject = "";
+  $scope.selectedProject = null;
   $scope.fromServer = []
   $scope.searchText = "" ;
   $scope.searchTextBoxVisible = true ;
@@ -62,6 +62,11 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       return project.users.filter(function(user) { return user.role == "owner"})    
     else
       return [] ;
+  }
+
+  $scope.hasWriteAccess = function(project) {
+    var user = project.users.filter(function(user) { return user.name === $scope.userName})[0];
+    return (user.role === "read-write" || user.role === "owner")
   }
 
   $scope.isOwner = function(project) {
@@ -245,7 +250,6 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     note.modified = false ;
     note.removedTags = [] ;
     note.newTags = [] ;
-    note.owner = (note.user_id == $scope.fromServer.userid) ; 
 
     note.outputText = escapeHtmlEntities(note.text);
     note.outputText = note.outputText.replace(/\r\n/g, '\n');
@@ -266,6 +270,25 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       note.tags.sort(function(a, b) {
         return a.toLowerCase().localeCompare(b.toLowerCase());
       });      
+    }
+  }
+
+  $scope.getAuthorName = function(note) {
+    if ($scope.selectedProject !== null) {
+      if ($scope.selectedProject.users.length > 1) {
+        if (note.user !== undefined) {
+          return note.user.name + ", " ;
+        }
+        else {
+          return "";
+        }
+      }
+      else {
+        return "";
+      }
+    }
+    else {
+      return "" ;
     }
   }
 

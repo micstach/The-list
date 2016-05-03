@@ -23,7 +23,7 @@
       <%- include partials/header.ejs %>
     </div>
     <div class="credentials-container container centered">
-      <form action="/account" method="post" class="message-form">
+      <form action="/account" method="post" class="form message-form">
         <div class="form-group">
           <label for="user"><%= resources.userName %></label>
           <input name="user" class="form-control input-default"readonly="readonly" value="<%= user.name %>">
@@ -39,10 +39,10 @@
           <div class="alert alert-danger" role="alert"><%= email_error%></div>
         <% } %>        
         <button type="submit" class="form-control btn btn-primary"><strong><%= resources.acceptButtonText %></strong></button>
-        <div style="padding-top: 10px;">
-          <a class="pull-right" href="/home"><%= resources.cancelLinkText %></a>
-        </div>
       </form>
+      <div class="text-center" style="padding-top: 10px;">
+        <a href="/home"><%= resources.cancelLinkText %></a>
+      </div>         
     </div>  
   </body>
 </html>

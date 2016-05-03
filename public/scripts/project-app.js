@@ -66,7 +66,7 @@ angular.module('Index').controller('Project', function($window, $scope, $timeout
 	$scope.projectChanged = function()
 	{
 		$http.put('/api/project/' + $scope.project._id, {projectName: $scope.project.name}).success(function() {
-	    	//$scope.refresh(); 
+	    	$scope.project.currentName = $scope.project.name 
 		});   
 	}
 
@@ -99,6 +99,9 @@ angular.module('Index').controller('Project', function($window, $scope, $timeout
 			var projectId = url.pathname.split('/').pop() ;
 			$http.get('/api/project/' + projectId).success(function(data) { 
 				$scope.project = data
+				
+				// add view fields				
+				$scope.project.currentName = $scope.project.name
 			})
 
 	      })
