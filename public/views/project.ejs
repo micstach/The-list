@@ -33,7 +33,7 @@
           <div class="input-group">    
             <input ng-disabled="!isOwnerView()" class="form-control" ng-model="project.name" type="text" ng-change="" placeholder="Enter project name">
             <span class="input-group-btn">
-              <button ng-disabled="!isOwnerView() || project.name.length == 0" class="btn btn-default" ng-click="projectChanged()">Update</button>
+              <button ng-disabled="!isOwnerView() || project.name.length == 0" class="btn btn-default" ng-click="projectChanged()"><span class="glyphicon glyphicon-ok"></button>
             </span>
           </div>
         </div>
@@ -48,7 +48,7 @@
               <li><a href="#" ng-model="user" ng-click="setUserRole(user, 'read-write')">read-write</a></li>
               <li><a href="#" ng-model="user" ng-click="setUserRole(user, 'read-only')">read-only</a></li>
             </ul>
-            <button type="button" ng-model="user" class="btn btn-default" ng-disabled="user.name.length == 0" ng-click="userAdd(user)">Add</button>
+            <button type="button" ng-model="user" class="btn btn-default" ng-disabled="user.name.length == 0" ng-click="userAdd(user)"><span class="glyphicon glyphicon-plus-sign"></button>
           </div>
         </div>
       </div>

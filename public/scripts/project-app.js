@@ -65,7 +65,7 @@ angular.module('Index').controller('Project', function($window, $scope, $timeout
 
 	$scope.projectChanged = function()
 	{
-		$http.put('/api/project' + $scope.project._id, {projectName: $scope.project.name}).success(function() {
+		$http.put('/api/project/' + $scope.project._id, {projectName: $scope.project.name}).success(function() {
 	    	//$scope.refresh(); 
 		});   
 	}
