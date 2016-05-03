@@ -5,7 +5,7 @@ angular.module('Index').config(['$httpProvider', function($httpProvider) {
     if (!$httpProvider.defaults.headers.get) {
         $httpProvider.defaults.headers.get = {};    
     }    
-
+ 	
     //disable IE ajax request caching
     $httpProvider.defaults.headers.get['If-Modified-Since'] = 'Mon, 26 Jul 1997 05:00:00 GMT';
     // extra
@@ -15,6 +15,8 @@ angular.module('Index').config(['$httpProvider', function($httpProvider) {
 
 angular.module('Index').controller('Project', function($window, $scope, $timeout, $http, $location, $uibModal, $sce) {
 
+	$scope.userName = ""
+
 	$scope.user = {
 		name: "",
 		role: "read-only"
@@ -22,12 +24,25 @@ angular.module('Index').controller('Project', function($window, $scope, $timeout
 
 	$scope.project = {
 		name: "",
-		_id: ""
+		_id: "",
+		users: []
 	};
 
-	$scope.setUserRole = function(role)
+	$scope.isOwnerView = function() {
+		return $scope.project.users.filter(function(user){return user.name === $scope.userName && user.role === "owner"}).length > 0 ;
+	}
+
+	$scope.isOnlyOneOwner = function() {
+		return $scope.project.users.filter(function(user){return user.role === "owner"}).length == 1 ;
+	}
+
+	$scope.setUserRole = function(user, role)
 	{
-		$scope.user.role = role ;
+		user.role = role ;
+
+		if (user !== $scope.user) {
+		 	$http.put('/api/project/' + $scope.project._id + '/user', user).success(function() {});   
+		}
 	}
 
 	$scope.refresh = function()
@@ -46,34 +61,46 @@ angular.module('Index').controller('Project', function($window, $scope, $timeout
 
 	$scope.projectChanged = function()
 	{
-		$http.put('/api/project', $scope.project).success(function() {
+		$http.put('/api/project' + $scope.project._id, {projectName: $scope.project.name}).success(function() {
 	    	//$scope.refresh(); 
 		});   
 	}
 
-	$scope.addUser = function()
+	$scope.userAdd = function(user)
 	{
-		$scope.project.users.push($scope.user);
+		var projectId = $scope.project._id ;
 
-		$http.put('/api/project', $scope.project).success(function() {
+		$http.post('/api/project/' + projectId + '/user', user).success(function() {
 	    	$scope.refresh(); 
 		});   
 	}
 
-	$scope.removeUser = function(user)
+	$scope.userRemove = function(user)
 	{
-		$http.delete('/api/project/' + $scope.project._id + '/user/' + user.name).success(function() {
+		var projectId = $scope.project._id ;
+
+		$http.delete('/api/project/' + projectId + '/user/' + user.name).success(function() {
 	    	$scope.refresh(); 
 		});   
 	}
 
 	$scope.initalize = function()
 	{
-		var url = new URL($location.absUrl()) ;
-		var projectId = url.pathname.split('/').pop() ;
-		$http.get('/api/project/' + projectId).success(function(data) { 
-			$scope.project = data
-		})
+	    $http.get('/api/user')
+	      .success(function(user) { 
+	        
+	        $scope.userName = user.name ;
+	
+			var url = new URL($location.absUrl()) ;
+			var projectId = url.pathname.split('/').pop() ;
+			$http.get('/api/project/' + projectId).success(function(data) { 
+				$scope.project = data
+			})
+
+	      })
+	      .error(function(user, status) {
+	        window.location = '/login' ;
+	      }) ;
 	}
 
 	$scope.initalize() ;

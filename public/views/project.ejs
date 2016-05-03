@@ -7,7 +7,7 @@
     
     <link href="../css/bootstrap.min.css" rel="stylesheet" type="text/css">
     <link href="../css/main.css" rel="stylesheet" type="text/css">
-    <link href="../css/credentials.css" rel="stylesheet" type="text/css">
+    <link href="../css/project.css" rel="stylesheet" type="text/css">
     
     <link rel="icon" type="image/png" sizes="16x16" href="/res/todo_16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/res/todo_32.png">
@@ -28,46 +28,57 @@
       <%- include partials/header.ejs %>
     </div>
     <div class="container">
-      <form class="form-inline">
-        <label>Project name</label>
-        <input class="form-control" ng-model="project.name" type="text" ng-change="projectChanged()" placeholder="Enter project name">
-        <button class="form-control" ng-click="deleteProject()">Delete</button>
+      <form class="form">
+        <div class="form-group" style="padding-top: 20px;">
+          <div class="input-group">    
+            <input ng-disabled="!isOwnerView()" class="form-control" ng-model="project.name" type="text" ng-change="" placeholder="Enter project name">
+            <span class="input-group-btn">
+              <button ng-disabled="!isOwnerView()" class="btn btn-default" ng-click="projectChanged()">Update</button>
+            </span>
+          </div>
+        </div>
+        <div class="form-group">
+          <button ng-show="isOwnerView()" class="btn btn-danger" ng-click="deleteProject()">Delete project</button>
+        </div>
       </form>
       <ul class="list-group">
+        <li ng-show="isOwnerView()" class="list-group-item">
+          <form class="form-inline">
+            <input class="form-control input-default" type="text" ng-model="user.name" placeholder="Enter user name">
+            <span class="">
+              <div class="dropdown" style="display: inline-block;">
+                <button ng-disabled="user.name.length == 0" type="button" class="btn btn-default btn-md dropdown-toggle" data-toggle="dropdown">{{user.role}} <span class="glyphicon glyphicon-triangle-bottom"></span></button>
+                <ul class="dropdown-menu scrollable-menu">
+                  <li><a href="#" ng-model="user" ng-click="setUserRole(user, 'owner')">owner</a></li>
+                  <li><a href="#" ng-model="user" ng-click="setUserRole(user, 'read-write')">read-write</a></li>
+                  <li><a href="#" ng-model="user" ng-click="setUserRole(user, 'read-only')">read-only</a></li>
+                </ul>
+              </div>
+            </span>
+            <button ng-model="user" class="form-control btn glyph-button" ng-disabled="user.name.length == 0" ng-click="userAdd(user)"><span class="glyphicon glyphicon-plus-sign"></span></button>
+          </form>
+        </li>
         <li class="list-group-item" ng-repeat="user in project.users">
           <form class="form-inline">
+            <span ng-show="isOwnerView()">
+              <button ng-disabled="isOnlyOneOwner()" class="form-control btn btn-default button glyph-button" ng-model="user" ng-click="userRemove(user)"><span class="glyphicon glyphicon-minus-sign"></button>
+            </span>
             <span>
               {{user.name}}
             </span>
-            <span>
-              <div class="dropdown" style="display: inline-block;">
-                <button type="button" class="btn btn-default btn-md dropdown-toggle" data-toggle="dropdown">{{user.role}}</button>
+            <span class="pull-right">
+              <div ng-show="isOwnerView()" class="dropdown" style="display: inline-block;">
+                <button ng-disabled="isOnlyOneOwner()" type="button" class="btn btn-link btn-md dropdown-toggle" data-toggle="dropdown" style="text-decoration: none;">{{user.role}} <span class="glyphicon glyphicon-triangle-bottom"></span></button>
                 <ul class="dropdown-menu scrollable-menu">
-                  <li><a href="javascript:void(0)" ng-click="">owner</a></li>
-                  <li><a href="javascript:void(0)" ng-click="">read-write</a></li>
-                  <li><a href="javascript:void(0)" ng-click="">read-only</a></li>
+                  <li><a href="#" ng-click="setUserRole(user, 'owner')">owner</a></li>
+                  <li><a href="#" ng-click="setUserRole(user, 'read-write')">read-write</a></li>
+                  <li><a href="#" ng-click="setUserRole(user, 'read-only')">read-only</a></li>
                 </ul>
               </div>
+              <div ng-show="!isOwnerView()">
+                {{user.role}}
+              <div>
             </span>
-            <span>
-              <button class="form-control" ng-model="user" ng-click="removeUser(user)">Remove</button>
-            </span>
-          </form>
-        </li>
-        <li class="list-group-item">
-          <form class="form-inline">
-            <input class="form-control input-default" type="text" ng-model="user.name" placeholder="Enter user name">
-            <span >
-              <div class="dropdown" style="display: inline-block;">
-                <button type="button" class="btn btn-default btn-md dropdown-toggle" data-toggle="dropdown">{{user.role}}</button>
-                <ul class="dropdown-menu scrollable-menu">
-                  <li><a href="javascript:void(0)" ng-click="setUserRole('owner')">owner</a></li>
-                  <li><a href="javascript:void(0)" ng-click="setUserRole('read-write')">read-write</a></li>
-                  <li><a href="javascript:void(0)" ng-click="setUserRole('read-only')">read-only</a></li>
-                </ul>
-              </div>
-            </span>
-            <button class="form-control" ng-disabled="user.name.length == 0" ng-click="addUser()">Add</button>
           </form>
         </li>
       </ul>

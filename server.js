@@ -732,71 +732,17 @@ app.put('/api/user/config', authorizeAPI, function(req, res) {
   }) ;
 }) ;
 
-app.put('/api/project/:id/user/:user', authorizeAPI, function(req, res){
-
-  MongoClient.connect(environment.config.db(), function(err, db) {
-    db.collection('projects').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, project) {
-      
-      var ownerName = project.users.filter(function(user) { return user.role === "owner"})[0].name ;
-      console.log("Project owner: " + ownerName) ;
-
-      if (req.session.username == ownerName) {
-        var userPresent = project.users.filter(function(user) { return user.name.toLowerCase() === req.params.user.toLowerCase()}).length > 0;
-
-        if (!userPresent) {
-          project.users.push({name: req.params.user, role: "read-only"}) ;
-        }
-  
-        db.collection('projects').save(project) ;
-        db.close() ;
-        res.writeHead(200, {'Content-Type': 'application/json'});
-        res.end(JSON.stringify(project));
-        return ;
-      }
-      else
-      {
-        res.sendStatus(401);
-        return ;
-      }
-    }) ;
-  }) ;
-}) ;
-
-app.delete('/api/project/:id/user/:user', authorizeAPI, function(req, res){
-
-  MongoClient.connect(environment.config.db(), function(err, db) {
-    db.collection('projects').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, project) {
-      
-      var ownerName = project.users.filter(function(user) { return user.role === "owner"})[0].name ;
-      console.log("Project owner: " + ownerName) ;
-
-      if (req.session.username == ownerName ||
-          req.session.username.toLowerCase() == req.params.user.toLowerCase())
-      {
-        project.users = project.users.filter(function(user) { return user.name.toLowerCase() !== req.params.user.toLowerCase()});
-
-        db.collection('projects').save(project) ;
-        db.close() ;
-        res.writeHead(200, {'Content-Type': 'application/json'});
-        res.end(JSON.stringify(project));
-        return ;
-      }
-      else
-      {
-        res.sendStatus(401);
-        return ;
-      }
-    }) ;
-  }) ;
-}) ;
-
 var project = require('./api/project.js');
 
 app.use(authorizeAPI);
 app.post('/api/project', project.api.create)
-app.put('/api/project', project.api.update) ;
+app.put('/api/project/:id', project.api.update) ;
 app.delete('/api/project/:id', project.api.delete)
 app.get('/api/project/:id', project.api.read) ;
+app.post('/api/project/:id/user', project.api.userAdd) ;
+app.put('/api/project/:id/user', project.api.userUpdate) ;
+app.delete('/api/project/:id/user/:userName', project.api.userDelete) ;
+
 
 function getEmailSignature()
 {
