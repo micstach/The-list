@@ -539,15 +539,10 @@ app.get('/api/notes', authorizeAPI, function(req, res) {
         var notes = [] ;
 
         results.forEach(function(note){
+          var projectsCount = projects.filter(function(project) { return project._id == note.project_id }).length ;
 
-          var projectsCount = projects.filter(function(project) {
-            return project._id == note.project_id ; 
-          }).length ;
-
-          if (projectsCount == 1) {
+          if (projectsCount == 1) 
             notes.push(note) ;
-          }
-
         }) ;
 
         // backward compatibility fix
