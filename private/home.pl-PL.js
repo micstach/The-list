@@ -18,5 +18,7 @@ exports.resources = {
 	minutesAgo2: "minuty temu",
 	justNow: "przed chwilą",
 	halfAMinuteAgo: "pół minuty temu",
-	almostAMinuteAgo: "prawie minutę temu"
+	almostAMinuteAgo: "prawie minutę temu",
+	createNewProject: "Stwórz nowy projekt",
+	projectSettings: "ustawienia"
 }

@@ -548,16 +548,16 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       }
   };
 
-  $scope.getProjectName = function(project) {
+  $scope.getOwnerName = function(project) {
     if (project == null) {
       return "All projects" ;
     }
     else {
       if (project.users !== undefined) {
         if ($scope.isOwner(project))
-          return project.name ;// + " {" + project._id + "}" ;
+          return "" ;
         else
-          return project.name + ", " + $scope.getOwnerNames(project)[0].name ;//+ " {" + project._id + "}" ;
+          return $scope.getOwnerNames(project)[0].name ;
       }
       else
         return null ;

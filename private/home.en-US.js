@@ -18,5 +18,7 @@ exports.resources = {
 	minutesAgo2: "minutes ago",
 	justNow: "just now",
 	halfAMinuteAgo: "half a minute ago",
-	almostAMinuteAgo: "almost a minute ago"	
+	almostAMinuteAgo: "almost a minute ago",
+	createNewProject: "Create new project",
+	projectSettings: "settings"
 }

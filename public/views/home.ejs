@@ -33,33 +33,23 @@
     <div class="application-header">
       <div class="container">
         <span class="pull-left">
-          <div class="dropdown">
-            <button type="button" class="btn btn-link btn-md dropdown-toggle" data-toggle="dropdown" style="text-decoration: none; padding-left: 0px; padding-right: 0px; color:white;"><span class="glyphicon glyphicon-menu-down"></span>&nbsp{{getProjectName(selectedProject)}}</button>
+          <div class="dropdown" style="display: inline-block;">
+            <button type="button" class="btn btn-link btn-md dropdown-toggle" data-toggle="dropdown" style="text-decoration: none; padding-left: 0px; padding-right: 0px; color:white;">
+              <span class="glyphicon glyphicon-menu-down"></span>&nbsp<strong>{{selectedProject.name}}</strong>
+            </button>
             <ul class="dropdown-menu scrollable-menu">
-              <li>
-                <a href="javascript:void(0)" ng-click="createProject()">
-                  Create a new project
-                </a>
-              </li>
-              <li>
-                <a ng-click="" href="/project/{{selectedProject._id}}">
-                  Manage project {{selectedProject.name}}
-                </a>
-              </li>
-              <li role="separator" class="divider"></li>
               <li ng-repeat="project in fromServer.projects track by $index">
                 <a ng-show="project != selectedProject" href="#" ng-click="selectProject(project)">
-                  {{getProjectName(project)}}
+                  {{project.name}}
                 </a>
               </li>
-<!--               <li role="separator" class="divider"></li>
-              <li>
-                <a href="javascript:void(0)" ng-click="selectProject(null)">
-                  Display notes from any project
-                </a>
-              </li> -->
             </ul>
           </div>
+          <span>
+            <a ng-click="" href="/project/{{selectedProject._id}}">
+              <span class="glyphicon glyphicon-info-sign" style="text-decoration: none; padding-left: 0px; padding-right: 0px; color:white; font-size: small;"></span>
+            </a>
+          </span>
         </span>
         <span class="pull-right">
           <% if (locals.desktopClient && desktopClient) { %>
@@ -69,7 +59,8 @@
               <button type="button" data-toggle="dropdown" class="btn btn-link btn-md dropdown-toggle" style="text-decoration: none; padding-right: 0px; color:white;"><span class="glyphicon glyphicon-user" style="font-size: small;"></span>&nbsp<%= username %>&nbsp<span class="glyphicon glyphicon-menu-down"></span></button>
               <ul class="dropdown-menu-right dropdown-menu scrollable-menu">
                 <!-- <li><a ng-click="deleteAllItems()" href="#"><%= resources.removeAllNotes %></a></li> -->
-                <!-- <li role="separator" class="divider"></li> -->
+                <li><a href="#" ng-click="createProject()"><%= resources.createNewProject %></a></li>
+                <li role="separator" class="divider"></li>
                 <li><a href="/account"><%= resources.accountSettings %></a></li>
                 <li><a href="/logoff"><%= resources.logOut %></a></li>
               </ul>
