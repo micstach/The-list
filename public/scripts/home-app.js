@@ -64,9 +64,19 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       return [] ;
   }
 
+  $scope.getUserRole = function(project) {
+    if (project.users !== undefined) {
+      var user = project.users.filter(function(user) { return user.name === $scope.userName})[0];
+      return user.role ;
+    }
+    else {
+      return ""
+    }
+  }
+
   $scope.hasWriteAccess = function(project) {
-    var user = project.users.filter(function(user) { return user.name === $scope.userName})[0];
-    return (user.role === "read-write" || user.role === "owner")
+    var role = $scope.getUserRole(project)
+    return (role === "read-write" || role === "owner")
   }
 
   $scope.isOwner = function(project) {
@@ -526,14 +536,21 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     if (fromServer) {
       $http.get('/api/notes')
         .success(function(data) { 
-          // save server data for future filtering
+
+          var filteredProjects = [] ;
+
+          data.projects.filter(function(project) { return $scope.getUserRole(project) === "owner" }).forEach(function(project) { filteredProjects.push(project) })
+          data.projects.filter(function(project) { return $scope.getUserRole(project) === "read-write" }).forEach(function(project) { filteredProjects.push(project) })
+          data.projects.filter(function(project) { return $scope.getUserRole(project) === "read-only" }).forEach(function(project) { filteredProjects.push(project) })
+
           $scope.fromServer = {
             userid: data.userid,
             notes: data.notes, 
-            projects: data.projects
+            projects: filteredProjects
           } ;
 
           $scope.selectedProject = $scope.fromServer.projects.filter(function(project) { return project._id == $scope.selectedProjectId; })[0];
+          
           $scope.organizeNotes(data.notes, fromServer) ;
 
           if (onSuccess !== undefined)
@@ -586,7 +603,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
         removedTags: []
       } ;
 
-      note.timeVerbose = "nowa" ;
+      note.timeVerbose = "" ;
 
       // insert note stub
       $scope.data.notes.splice(0, 0, note);

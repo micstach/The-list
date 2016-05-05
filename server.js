@@ -528,8 +528,6 @@ app.get('/api/notes', authorizeAPI, function(req, res) {
 
       db.collection('projects').find().toArray(function(err, results) {
         
-        console.log("Projects: " + JSON.stringify(results)) ;
-
         var projects = [] 
         results.forEach(function(project) {
           if (project.users.filter(function(user) { return user.name == user_name ; }).length == 1) {
@@ -537,29 +535,20 @@ app.get('/api/notes', authorizeAPI, function(req, res) {
           }
         }) ;
 
-        console.log("Transformed projects: " + JSON.stringify(projects)) ;
-
         db.collection('notes').find().toArray(function(err, results) {
-        console.log("Results: " + JSON.stringify(results));
-        
         var notes = [] ;
 
         results.forEach(function(note){
 
           var projectsCount = projects.filter(function(project) {
-            console.log("Compare: " + project._id + " with: " + note.project_id);
             return project._id == note.project_id ; 
           }).length ;
-
-          console.log("Note.project_id: " + note.project_id + ", count: " + projectsCount);
 
           if (projectsCount == 1) {
             notes.push(note) ;
           }
 
         }) ;
-
-        console.log("Notes: " + JSON.stringify(notes));
 
         // backward compatibility fix
         notes.forEach(function(note){

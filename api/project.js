@@ -148,24 +148,65 @@ exports.api = {
       db.collection('projects').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, project) {
         
         if (isUserAProjectOwner(project, req.session.username)) {
-          var userPresent = project.users.filter(function(user) { return user.name.toLowerCase() === req.body.name.toLowerCase()}).length > 0;
 
-          if (!userPresent) {
-            project.users.push(req.body) ;
-            db.collection('projects').save(project) ;
-          }
-          else {
-            console.log('User ' + req.body.name + ' already added')
-          }
-    
-          db.close() ;
-          res.writeHead(200, {'Content-Type': 'application/json'});
-          res.end(JSON.stringify(project));
-        }
+          var nameFound = false ;
+          db.collection('users').findOne({name: req.body.name}, function(err, user) {
+  
+            if (user !== null) {  
+              var userPresent = project.users.filter(function(user) { return user.name.toLowerCase() === req.body.name.toLowerCase()}).length > 0;
+
+              if (!userPresent) {
+                project.users.push(req.body) ;
+                db.collection('projects').save(project) ;
+              }
+              else {
+                console.log('User ' + req.body.name + ' already added')
+              }
+        
+              db.close() ;
+              res.writeHead(200, {'Content-Type': 'application/json'});
+              res.end(JSON.stringify(project));
+
+              nameFound = true
+            }
+          }) ;
+
+          var emailFound = false ;
+
+          db.collection('users').find({email: req.body.name}).toArray(function(err, results) {
+
+            results.forEach(function(user) {
+              if (user !== null) {  
+                var userPresent = project.users.filter(function(pj) { return pj.name.toLowerCase() === user.name.toLowerCase()}).length > 0;
+
+                if (!userPresent) {
+                  project.users.push({name: user.name, role: req.body.role}) ;
+                  db.collection('projects').save(project) ;
+                }
+                else {
+                  console.log('User ' + req.body.name + ' already added')
+                }
+              }
+            })
+          
+            if (results.length > 0) {
+              res.writeHead(200, {'Content-Type': 'application/json'});
+              res.end(JSON.stringify(project));
+              emailFound = true
+            }
+            db.close() ;
+  
+            if (emailFound === false && nameFound === false) {
+              console.log("User " + req.body.name + " found !")
+              res.sendStatus(404);
+            }            
+          })
+        }  
         else
         {
           console.log('User ' + req.session.username + ' is not an owner of the project') ;
           res.sendStatus(401);
+          db.close();
         }
       }) ;
     }) ;

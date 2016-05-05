@@ -39,8 +39,11 @@
             </button>
             <ul class="dropdown-menu scrollable-menu">
               <li ng-repeat="project in fromServer.projects track by $index">
-                <a ng-show="project != selectedProject" href="#" ng-click="selectProject(project)">
-                  {{project.name}}
+                <a href="#" ng-click="selectProject(project)">
+                  <span ng-show="getUserRole(project) == 'read-write'" class="vertical-center label label-info" style="opacity: 0.85;"><%= resources.accessReadWrite %></span>
+                  <span ng-show="getUserRole(project) == 'read-only'" class="vertical-center label label-danger" style="opacity: 0.85;"><%= resources.accessReadOnly %></span>
+                  <span ng-show="getUserRole(project) == 'owner'" class="vertical-center label label-success" style="opacity: 0.85;"><%= resources.accessOwner %></span>
+                  &nbsp{{project.name}}
                 </a>
               </li>
             </ul>
@@ -107,6 +110,7 @@
             </span>
             <span class="message-header-right">
               <!-- <button ng-show="!note.editing" class="note-header-icon glyphicon glyphicon glyphicon-move"></button> -->
+              <button ng-show="!note.editing && hasWriteAccess(selectedProject)" ng-click="" class="note-header-icon glyphicon glyphicon-transfer"></button>
               <button ng-show="!note.editing && hasWriteAccess(selectedProject)" ng-click="pinItem(note)" ng-class="note.pinned ? 'pinned' : 'unpinned'" class="note-header-icon glyphicon glyphicon-flag"></button>
               <button ng-show="!note.editing && hasWriteAccess(selectedProject)"  ng-click="enterEditingMode(note)" class="note-header-icon glyphicon glyphicon-pencil"></button>
               <button ng-show="!note.editing && hasWriteAccess(selectedProject) && isOwner(selectedProject)" ng-click="deleteItem(note)" class="note-header-icon glyphicon glyphicon-trash"></button>

@@ -20,5 +20,8 @@ exports.resources = {
 	halfAMinuteAgo: "half a minute ago",
 	almostAMinuteAgo: "almost a minute ago",
 	createNewProject: "Create new project",
-	projectSettings: "settings"
+	projectSettings: "settings",
+	accessReadWrite: "contributor",
+	accessReadOnly: "observer",
+	accessOwner: "owner"	
 }

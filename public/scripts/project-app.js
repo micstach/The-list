@@ -76,6 +76,7 @@ angular.module('Index').controller('Project', function($window, $scope, $timeout
 
 		$http.post('/api/project/' + projectId + '/user', user).success(function() {
 	    	$scope.refresh(); 
+	    	$scope.user.name = ""
 		});   
 	}
 
