@@ -220,15 +220,3 @@ function getCookie(cname) {
     }
     return "";
 }
-
-$(document).ready(function() {
-    $('[data-toggle="tooltip"]').tooltip() ;
-    
-    $('#message-create-text').attr('autocomplete','off');
-
-}) ;
-
-$(window).resize(function() {
-    repositionSearchBar(0) ;
-    repositionSearchBar() ;
-}) ;

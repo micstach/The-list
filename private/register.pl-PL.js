@@ -21,5 +21,6 @@ exports.resources = {
 	errorPasswordsDoesNotMatch: "Hasła nie pasują",
 	errorUserNameExists: "Użytkownik o tej nazwie już istnieje",
 	errorInvalidUserOrPassword: "Niepoprawna nazwa użytkownika lub hasło",
-	errorPasswordNotSet: "Hasło nie ustawione"
+	errorPasswordNotSet: "Hasło nie ustawione",
+	defaultProjectName: "Twój pierwszy projekt"
 }

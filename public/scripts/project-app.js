@@ -29,7 +29,10 @@ angular.module('Index').controller('Project', function($window, $scope, $timeout
 	};
 
 	$scope.isOwnerView = function() {
-		return $scope.project.users.filter(function(user){return user.name === $scope.userName && user.role === "owner"}).length > 0 ;
+		if ($scope.project.users.length == 0)
+			return true ;
+		else
+			return $scope.project.users.filter(function(user){return user.name === $scope.userName && user.role === "owner"}).length > 0 ;
 	}
 
 	$scope.isOwner = function(user) {
@@ -58,9 +61,24 @@ angular.module('Index').controller('Project', function($window, $scope, $timeout
 
 	$scope.deleteProject = function()
 	{
-	    $http.delete('/api/project/' + $scope.project._id).success(function() {
-	    	window.location = '/home' ;
-	    });
+		var locale = getCookie('locale') ;
+		var modalInstance = $uibModal.open({
+			animation: true,
+			templateUrl: '../views/dialog-delete-project.' + locale + '.html',
+			controller: 'delete-project-controller',
+			size: 'lg',
+			resolve: {
+				project: function () {
+				return $scope.project;
+				}
+			}
+		})
+
+		modalInstance.result.then(function () {
+			$http.delete('/api/project/' + $scope.project._id).success(function() {
+				window.location = '/home' ;
+			})
+		})
 	}
 
 	$scope.projectChanged = function()
@@ -112,4 +130,17 @@ angular.module('Index').controller('Project', function($window, $scope, $timeout
 	}
 
 	$scope.initalize() ;
+});
+
+angular.module('Index').controller('delete-project-controller', function ($scope, $uibModalInstance, project)
+{
+  $scope.project = project;
+
+  $scope.ok = function () {
+    $uibModalInstance.close();
+  };
+
+  $scope.cancel = function () {
+    $uibModalInstance.dismiss('cancel');
+  };
 });

@@ -58,20 +58,21 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   }
 
   $scope.getOwnerNames = function(project) {
-    if (project.users !== undefined)
-      return project.users.filter(function(user) { return user.role == "owner"})    
-    else
-      return [] ;
+    if (project !== null)
+      if (project.users !== undefined)
+        return project.users.filter(function(user) { return user.role == "owner"})    
+
+    return []
   }
 
   $scope.getUserRole = function(project) {
-    if (project.users !== undefined) {
-      var user = project.users.filter(function(user) { return user.name === $scope.userName})[0];
-      return user.role ;
-    }
-    else {
-      return ""
-    }
+    if (project !== null) 
+      if (project.users !== undefined) {
+        var user = project.users.filter(function(user) { return user.name === $scope.userName})[0];
+        return user.role ;
+      }
+    
+    return ""
   }
 
   $scope.hasWriteAccess = function(project) {

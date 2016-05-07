@@ -19,6 +19,8 @@
     <script src="../libs/angular-animate.js"></script>
     <script src="../libs/ui-bootstrap-tpls-1.2.1.min.js"></script>  
     
+    <script src="../scripts/utils.js"></script>
+    <script src="../scripts/project.js"></script> 
     <script src="../scripts/project-app.js"></script>
     <script src="../scripts/google-analytics.js"></script>
 
@@ -30,23 +32,30 @@
     <div class="container">
       <form class="form">
         <div class="form-group" style="padding-top: 20px;">
+          <label><%= resources.projectName %></label>
           <div class="input-group">    
-            <input ng-disabled="!isOwnerView()" class="form-control" ng-model="project.name" type="text" ng-change="" placeholder="Enter project name">
+            <input ng-disabled="!isOwnerView()" class="form-control" ng-model="project.name" type="text" ng-change="" placeholder="<%= resources.projectNamePlaceholder %>">
             <span class="input-group-btn">
               <button ng-disabled="!isOwnerView() || project.name.length == 0 || project.name == project.currentName" class="btn btn-default" ng-click="projectChanged()"><span class="glyphicon glyphicon-ok"></button>
             </span>
           </div>
         </div>
       </form>
-      <div ng-show="isOwnerView()" style="padding-bottom: 20px;">
+      <label><%= resources.projectUsers %></label>
+      <div ng-show="isOwnerView()" style="padding-bottom: 10px;padding-top:10px;">
         <div class="input-group">
-          <input class="form-control input-default" type="text" ng-model="user.name" placeholder="Enter user name or email address">
+          <input class="form-control input-default" type="text" ng-model="user.name" placeholder="<%= resources.userNamePlaceholder %>">
           <div class="input-group-btn">
-            <button type="button" ng-disabled="user.name.length == 0" class="btn btn-default dropdown-toggle" data-toggle="dropdown">{{user.role}} <span class="glyphicon glyphicon-triangle-bottom"></span></button>
+            <button type="button" ng-disabled="user.name.length == 0" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+              <span ng-show="user.role == 'read-write'"><%= resources.accessReadWrite %></span>
+              <span ng-show="user.role == 'read-only'"><%= resources.accessReadOnly %></span>
+              <span ng-show="user.role == 'owner'"><%= resources.accessOwner %></span>
+              <span class="glyphicon glyphicon-triangle-bottom"></span>
+            </button>
             <ul class="dropdown-menu">
-              <li><a href="#" ng-model="user" ng-click="setUserRole(user, 'owner')">owner</a></li>
-              <li><a href="#" ng-model="user" ng-click="setUserRole(user, 'read-write')">read-write</a></li>
-              <li><a href="#" ng-model="user" ng-click="setUserRole(user, 'read-only')">read-only</a></li>
+              <li><a href="#" ng-model="user" ng-click="setUserRole(user, 'owner')"><%= resources.accessOwner %></a></li>
+              <li><a href="#" ng-model="user" ng-click="setUserRole(user, 'read-write')"><%= resources.accessReadWrite %></a></li>
+              <li><a href="#" ng-model="user" ng-click="setUserRole(user, 'read-only')"><%= resources.accessReadOnly %></a></li>
             </ul>
             <button type="button" ng-model="user" class="btn btn-default" ng-disabled="user.name.length == 0" ng-click="userAdd(user)"><span class="glyphicon glyphicon-plus-sign"></button>
           </div>
@@ -58,14 +67,19 @@
             <span ng-show="isOwnerView()">
               <button ng-disabled="isOnlyOneOwner() && isOwner(user)" class="btn btn-default button glyph-button" ng-model="user" ng-click="userRemove(user)"><span class="glyphicon glyphicon-minus-sign"></button>
             </span>
-            <span>{{user.name}}<span ng-show="user.name == userName" class="text-muted">&nbsp(It's you)</span></span>
+            <span>{{user.name}}<span ng-show="user.name == userName" class="text-muted">&nbsp(<%= resources.itIsYou %>)</span></span>
             <span class="pull-right">
               <div ng-show="isOwnerView()" class="dropdown" style="display: inline-block;">
-                <button ng-disabled="isOnlyOneOwner() && isOwner(user)" type="button" class="btn btn-link btn-md dropdown-toggle" data-toggle="dropdown" style="text-decoration: none;">{{user.role}} <span class="glyphicon glyphicon-triangle-bottom"></span></button>
+                <button ng-disabled="isOnlyOneOwner() && isOwner(user)" type="button" class="btn btn-link btn-md dropdown-toggle" data-toggle="dropdown" style="text-decoration: none;">
+                  <span ng-show="user.role == 'read-write'"><%= resources.accessReadWrite %></span>
+                  <span ng-show="user.role == 'read-only'"><%= resources.accessReadOnly %></span>
+                  <span ng-show="user.role == 'owner'"><%= resources.accessOwner %></span>
+                  <span class="glyphicon glyphicon-triangle-bottom"></span>
+                </button>
                 <ul class="dropdown-menu scrollable-menu">
-                  <li><a href="#" ng-click="setUserRole(user, 'owner')">owner</a></li>
-                  <li><a href="#" ng-click="setUserRole(user, 'read-write')">read-write</a></li>
-                  <li><a href="#" ng-click="setUserRole(user, 'read-only')">read-only</a></li>
+                  <li><a href="#" ng-click="setUserRole(user, 'owner')"><%= resources.accessOwner %></a></li>
+                  <li><a href="#" ng-click="setUserRole(user, 'read-write')"><%= resources.accessReadWrite %></a></li>
+                  <li><a href="#" ng-click="setUserRole(user, 'read-only')"><%= resources.accessReadOnly %></a></li>
                 </ul>
               </div>
               <div ng-show="!isOwnerView()">
@@ -75,13 +89,13 @@
           </form>
         </li>
       </ul>
-      <form class="form">
+      <form ng-show="isOwnerView()" class="form" style="padding-top:10px;">
         <div class="form-group">
-          <button ng-show="isOwnerView()" class="form-control btn btn-danger" ng-click="deleteProject()">Delete project</strong></button>
+          <button class="form-control btn btn-danger" ng-click="deleteProject()"><%= resources.deleteProject %></strong></button>
         </div>
       </form>
       <div class="text-center">
-        <a href="/home">Go back</a>
+        <a href="/home"><%= resources.goBack %></a>
       </div>      
     </div>
   </body>

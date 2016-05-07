@@ -378,9 +378,9 @@ app.post('/register', function(req, res) {
 
           users.findOne({name: req.body.user, email: req.body.email}, function(err, user) {
             if (user === null) {
-              
+            
               var defaultProject = {
-                name: "default",
+                name: resources.defaultProjectName,
                 users: [
                   { name: req.body.user, role: "owner"}
                 ]
@@ -395,9 +395,9 @@ app.post('/register', function(req, res) {
                   email: req.body.email, 
                   name: req.body.user, 
                   password: pwd,
-                  "configuration": {
-                    "project_id": project._id,
-                    "tags":[]
+                  configuration: {
+                    project_id: project._id,
+                    tags:[]
                   }
                 } ;
 
@@ -411,7 +411,7 @@ app.post('/register', function(req, res) {
                   sendEmail(user, getRegisterEmailContent(user), null, null);
 
                   db.collection('registerationRequest').remove({_id: mongodb.ObjectID(req.query.id)}) ;
-                  db.close();
+                  //db.close();
                 }) ;
 
               }) ;
@@ -509,7 +509,8 @@ app.get('/project/:id', authorize, function(req, res){
         function(err, project) {
           var parameters = {
             language: languages[locale],
-            project: project
+            project: project,
+            resources: require('./private/project.' + locale + '.js').resources
           } ;
 
           res.render('project', parameters)
@@ -708,7 +709,7 @@ app.put('/api/user/config', authorizeAPI, function(req, res) {
       console.log("Saving user: " + JSON.stringify(user));
 
       db.collection('users').save(user) ;
-      db.close() ;
+      //db.close() ;
       res.sendStatus(200); 
     }) ;
   }) ;

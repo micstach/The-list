@@ -69,7 +69,7 @@ exports.api = {
         if (sessionUserIsOwner) {
           project.name = req.body.projectName ;
           db.collection('projects').save(project);
-  	      db.close() ;
+  	      //db.close() ;
   	      res.sendStatus(200);
   	    }
         else {
@@ -169,38 +169,39 @@ exports.api = {
 
               nameFound = true
             }
-          }) ;
+            else {
+              var emailFound = false ;
 
-          var emailFound = false ;
+              db.collection('users').find({email: req.body.name}).toArray(function(err, results) {
 
-          db.collection('users').find({email: req.body.name}).toArray(function(err, results) {
+                results.forEach(function(user) {
+                  if (user !== null) {  
+                    var userPresent = project.users.filter(function(pj) { return pj.name.toLowerCase() === user.name.toLowerCase()}).length > 0;
 
-            results.forEach(function(user) {
-              if (user !== null) {  
-                var userPresent = project.users.filter(function(pj) { return pj.name.toLowerCase() === user.name.toLowerCase()}).length > 0;
-
-                if (!userPresent) {
-                  project.users.push({name: user.name, role: req.body.role}) ;
-                  db.collection('projects').save(project) ;
+                    if (!userPresent) {
+                      project.users.push({name: user.name, role: req.body.role}) ;
+                      db.collection('projects').save(project) ;
+                    }
+                    else {
+                      console.log('User ' + req.body.name + ' already added')
+                    }
+                  }
+                })
+              
+                if (results.length > 0) {
+                  res.writeHead(200, {'Content-Type': 'application/json'});
+                  res.end(JSON.stringify(project));
+                  emailFound = true
                 }
-                else {
-                  console.log('User ' + req.body.name + ' already added')
-                }
-              }
-            })
-          
-            if (results.length > 0) {
-              res.writeHead(200, {'Content-Type': 'application/json'});
-              res.end(JSON.stringify(project));
-              emailFound = true
+                db.close() ;
+      
+                if (emailFound === false && nameFound === false) {
+                  console.log("User " + req.body.name + " found !")
+                  res.sendStatus(404);
+                }            
+              })
             }
-            db.close() ;
-  
-            if (emailFound === false && nameFound === false) {
-              console.log("User " + req.body.name + " found !")
-              res.sendStatus(404);
-            }            
-          })
+          }) ;
         }  
         else
         {
