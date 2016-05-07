@@ -139,7 +139,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     else
       return "note-id-undefined" ;
   }
-
+  
   $scope.noteTextChanged = function(note) {
     note.modified = true ;
     note.newTags = $scope.extractHashTags(note.text) ;
@@ -627,6 +627,14 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     });
   }
 
+  $scope.transferNote = function(note, project) {
+    $http
+      .put('/api/note/' + note._id + '/transfer/' + project._id)
+      .success(function() {
+        $scope.getItems() ;
+      });
+  }
+
   $scope.acceptChanges = function(note) {
     note.changeAccepted = true ;
 
@@ -662,7 +670,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     }
     else {      
       $http
-        .put('/api/note/update/' + note._id, {text: note.text, tags: note.tags})
+        .put('/api/note/' + note._id + '/update', {text: note.text, tags: note.tags})
         .success(function() {
         });
     }
@@ -781,7 +789,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     $scope.deleyedRefresh() ;
 
     $http
-      .put('/api/note/check/' + note._id + '/' + note.checked)
+      .put('/api/note/' + note._id + '/check/' + note.checked)
       .success(function(){
       });
   }
@@ -795,7 +803,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       note.pinned = (note.pinned !== undefined) ? !note.pinned : true;
  
       $http
-        .put('/api/note/pin/' + note._id + '/' + note.pinned)
+        .put('/api/note/' + note._id + '/pin/' + note.pinned)
         .success(function(){
         });
     }

@@ -48,7 +48,6 @@ exports.api = {
 	      if (ownerName === req.session.username) {
 	        db.collection('projects').remove({_id: mongodb.ObjectID(req.params.id)}) ;
 	        db.collection('notes').remove({project_id:mongodb.ObjectID(req.params.id)}) ;
-	        db.close() ;
 	        res.sendStatus(200);
 	      }
 	      else {

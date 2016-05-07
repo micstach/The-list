@@ -594,7 +594,7 @@ app.post('/api/note/create', authorizeAPI, function(req, res){
       console.log(JSON.stringify(note)) ;
 
       db.collection('notes').save(note) ;
-      db.close() ;
+      //db.close() ;
       res.writeHead(200);
       res.end();
     }) ;
@@ -616,18 +616,33 @@ app.delete('/api/note/:id', authorizeAPI, function(req, res){
   }) ;
 }) ;
 
-app.put('/api/note/update/:id', authorizeAPI, function(req, res){
+app.put('/api/note/:id/update', authorizeAPI, function(req, res){
   console.log("api: update note: " + req.params.id) ;
 
   var mongoUrl = environment.config.db() ;  
   var userid = req.session.userid ;
 
   MongoClient.connect(environment.config.db(), function(err, db) {
-    db.collection('notes').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, item){
-      item.text = req.body.text ;
-      item.tags = req.body.tags ;
-      db.collection('notes').save(item) ;
-      db.close() ;
+    db.collection('notes').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, note){
+      note.text = req.body.text ;
+      note.tags = req.body.tags ;
+      db.collection('notes').save(note) ;
+      res.sendStatus(200); 
+    }) ;
+  }) ;
+
+}) ;
+
+app.put('/api/note/:id/transfer/:project_id', authorizeAPI, function(req, res){
+  console.log("api: update note: " + req.params.id) ;
+
+  var mongoUrl = environment.config.db() ;  
+  var userid = req.session.userid ;
+
+  MongoClient.connect(environment.config.db(), function(err, db) {
+    db.collection('notes').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, note){
+      note.project_id = req.params.project_id ;
+      db.collection('notes').save(note) ;
       res.sendStatus(200); 
     }) ;
   }) ;
@@ -649,22 +664,20 @@ app.delete('/api/notes', authorizeAPI, function(req, res){
   }) ;
 }) ;
 
-app.put('/api/note/check/:id/:state', authorizeAPI, function(req, res){
+app.put('/api/note/:id/check/:state', authorizeAPI, function(req, res){
   console.log("api: note check: " + JSON.stringify(req.params));
   var userid = req.session.userid ;
 
   MongoClient.connect(environment.config.db(), function(err, db) {
     db.collection('notes').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, item){
       item.checked = (req.params.state === "true") ;
-      //item.timestamp = moment().valueOf() ;
       db.collection('notes').save(item) ;
-      db.close() ;
       res.sendStatus(200); 
     }) ;
   }) ;
 });
 
-app.put('/api/note/pin/:id/:state', authorizeAPI, function(req, res){
+app.put('/api/note/:id/pin/:state', authorizeAPI, function(req, res){
   console.log("api: note pin: " + JSON.stringify(req.params));
   var userid = req.session.userid ;
 
@@ -672,7 +685,6 @@ app.put('/api/note/pin/:id/:state', authorizeAPI, function(req, res){
     db.collection('notes').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, item){
       item.pinned = (req.params.state === "true") ;
       db.collection('notes').save(item) ;
-      db.close() ;
       res.sendStatus(200); 
     }) ;
   }) ;
