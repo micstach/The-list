@@ -17,8 +17,6 @@ var environment = require('./environment.js') ;
 var utils = require('./utils.js');
 var MongoClient = mongodb.MongoClient ;
 
-
-
 var app = express() ;
 
 app.set('views', __dirname + '/public/views');  
