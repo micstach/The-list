@@ -163,7 +163,7 @@ exports.api = {
                 console.log('User ' + req.body.name + ' already added')
               }
         
-              db.close() ;
+              //db.close() ;
               res.writeHead(200, {'Content-Type': 'application/json'});
               res.end(JSON.stringify(project));
 

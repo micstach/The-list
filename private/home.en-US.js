@@ -23,5 +23,5 @@ exports.resources = {
 	projectSettings: "settings",
 	accessReadWrite: "contributor",
 	accessReadOnly: "observer",
-	accessOwner: "owner"	
+	accessOwner: "owner"
 }

@@ -41,17 +41,17 @@
             <ul class="dropdown-menu scrollable-menu">
               <li ng-repeat="project in fromServer.projects track by $index">
                 <a href="#" ng-click="selectProject(project)">
-                  <span ng-show="getUserRole(project) == 'read-write'" class="vertical-center label label-info" style="opacity: 0.85;"><%= resources.accessReadWrite %></span>
-                  <span ng-show="getUserRole(project) == 'read-only'" class="vertical-center label label-danger" style="opacity: 0.85;"><%= resources.accessReadOnly %></span>
-                  <span ng-show="getUserRole(project) == 'owner'" class="vertical-center label label-success" style="opacity: 0.85;"><%= resources.accessOwner %></span>
+                  <span ng-show="getUserRole(project) == 'read-write'" class="vertical-center label label-info" style="opacity: 0.65; font-weight:normal;"><%= resources.accessReadWrite %></span>
+                  <span ng-show="getUserRole(project) == 'read-only'" class="vertical-center label label-danger" style="opacity: 0.65; font-weight:normal;"><%= resources.accessReadOnly %></span>
+                  <span ng-show="getUserRole(project) == 'owner'" class="vertical-center label label-success" style="opacity: 0.65; font-weight:normal;"><%= resources.accessOwner %></span>
                   &nbsp{{project.name}}
                 </a>
               </li>
             </ul>
           </div>
           <span>
-            <a ng-click="" href="/project/{{selectedProject._id}}">
-              <span class="glyphicon glyphicon-info-sign" style="text-decoration: none; padding-left: 0px; padding-right: 0px; color:white; font-size: small;"></span>
+            <a ng-click="" href="/project/{{selectedProject._id}}" style="text-decoration: none;">
+              <span class="label label-primary" style="opacity: 1.0;background-color: white;color: rgb(0, 148, 255); font-size:x-small; font-weight:normal;"><%= resources.projectSettings %></span>
             </a>
           </span>
         </span>
