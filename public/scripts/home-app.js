@@ -559,7 +559,11 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
             projects: filteredProjects
           } ;
 
-          $scope.selectedProject = $scope.fromServer.projects.filter(function(project) { return project._id == $scope.selectedProjectId; })[0];
+          var findSelectedProject = $scope.fromServer.projects.filter(function(project) { return project._id === $scope.selectedProjectId });
+          if (findSelectedProject.length > 0)
+            $scope.selectedProject = findSelectedProject[0]
+          else 
+            $scope.selectProject($scope.fromServer.projects[0])
           
           $scope.organizeNotes(data.notes, fromServer) ;
 
@@ -608,8 +612,9 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
         tags: tags,
         timestamp: Date.now(),
         editing: true,
-        owner: $scope.fromServer.userid,
-        users: [],
+        user: {
+          name: $scope.userName
+        },
         removedTags: []
       } ;
 
@@ -639,9 +644,28 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   $scope.transferNote = function(note, project) {
     $http
       .put('/api/note/' + note._id + '/transfer/' + project._id)
-      .success(function() {
-        $scope.getItems() ;
-      });
+      .then(function() {
+          $scope.getItems() ;
+        }, 
+        function(){
+          var locale = getCookie('locale') ;
+      
+          var modalInstance = $uibModal.open({
+            animation: true,
+            templateUrl: 'views/dialog-transfer-note.' + locale + '.html',
+            controller: 'note-transfer-controller',
+            size: 'lg',
+            resolve: {
+              transferState : function() {
+                return { authorName: note.user.name, projectName: project.name }
+              }
+            }
+          });
+
+          modalInstance.result.then(function () {
+          });
+        }
+      )
   }
 
   $scope.acceptChanges = function(note) {
@@ -889,6 +913,17 @@ angular.module('Index').directive('focusSearch', function($timeout, $parse) {
     }
   };
 });
+
+
+angular.module('Index').controller('note-transfer-controller', function ($scope, $uibModalInstance, transferState)
+{
+  $scope.authorName = transferState.authorName 
+  $scope.projectName = transferState.projectName
+  
+  $scope.ok = function () {
+    $uibModalInstance.close();
+  };
+})
 
 angular.module('Index').controller('create-project-controller', function ($scope, $uibModalInstance, projectName)
 {

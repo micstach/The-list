@@ -111,7 +111,6 @@
               <button ng-show="!note.editing && hasWriteAccess(selectedProject)" ng-click="pinItem(note)" ng-class="note.pinned ? 'pinned' : 'unpinned'" class="note-header-icon glyphicon glyphicon-flag"></button>
             </span>
             <span class="message-header-right">
-              <!-- <button ng-show="!note.editing" class="note-header-icon glyphicon glyphicon glyphicon-move"></button> -->
               <div ng-show="fromServer.projects.length > 1" class="btn-group">
                 <button ng-show="!note.editing && hasWriteAccess(selectedProject)" data-toggle="dropdown" class="note-header-icon glyphicon glyphicon-transfer"></button>
                 <ul class="dropdown-menu-right dropdown-menu scrollable-menu">

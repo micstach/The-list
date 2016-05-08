@@ -129,7 +129,6 @@ exports.api = {
           })
 
           db.collection('projects').save(project) ;
-          db.close() ;
           res.writeHead(200, {'Content-Type': 'application/json'});
           res.end(JSON.stringify(project));
         }

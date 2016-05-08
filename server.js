@@ -597,7 +597,6 @@ app.post('/api/note/create', authorizeAPI, function(req, res){
       console.log(JSON.stringify(note)) ;
 
       db.collection('notes').save(note) ;
-      //db.close() ;
       res.writeHead(200);
       res.end();
     }) ;
@@ -643,14 +642,25 @@ app.put('/api/note/:id/transfer/:project_id', authorizeAPI, function(req, res){
   var userid = req.session.userid ;
 
   MongoClient.connect(environment.config.db(), function(err, db) {
-    db.collection('notes').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, note){
-      note.project_id = req.params.project_id ;
-      db.collection('notes').save(note) ;
-      res.sendStatus(200); 
-    }) ;
-  }) ;
-
-}) ;
+    db.collection("projects").findOne({_id: mongodb.ObjectID(req.params.project_id)}, function(err, project) {
+      db.collection('notes').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, note){
+        
+        var users = project.users.filter(function(user){return user.name === note.user.name}) ;
+        
+        var role = (users.length > 0) ? users[0].role : ""
+                
+        if (role === "owner") {
+          note.project_id = req.params.project_id
+          db.collection('notes').save(note)
+          res.sendStatus(200)
+        }
+        else {
+          res.sendStatus(403)
+        }
+      })       
+    })
+  })
+}) 
 
 app.delete('/api/notes', authorizeAPI, function(req, res){
   console.log("DELETE /api/notes") ;
@@ -757,7 +767,7 @@ function getPreRegisterEmailContent(request)
   if (process.env.LOCAL_NODEJS_IP !== undefined)
     hostName = "http://" + environment.config.ip() ;
 
-  var subject = '2do service - invitation!';
+  var subject = '2do service - registeration';
 
   var body = "" ;
 
@@ -769,10 +779,10 @@ function getPreRegisterEmailContent(request)
   body += "Hi !"
   body += "<br/>";
   body += "<br/>";
-  body += "This is 2do's service invitation email.";
+  body += "This is 2do's service registeration message.";
   body += "<br/>";
   body += "<br/>";
-  body += "Please click this private link to continue registeration <a href='"+ hostName + "/register?id=" + request._id + "'>"+ hostName + "/register?id=" + request._id + "</a>" ;
+  body += "Please click this link to continue registeration <a href='"+ hostName + "/register?id=" + request._id + "'>"+ hostName + "/register?id=" + request._id + "</a>" ;
   body += "<br/>";
   body += "<br/>";
   body += getEmailSignature() ;
@@ -787,7 +797,7 @@ function getRegisterEmailContent(user)
   if (process.env.LOCAL_NODEJS_IP !== undefined)
     hostName = "http://" + environment.config.ip() ;
 
-  var subject = '2do service - welcome!';
+  var subject = '2do service - welcome';
 
   var body = "" ;
 
