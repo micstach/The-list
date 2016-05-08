@@ -286,21 +286,30 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
   $scope.getAuthorName = function(note) {
     if ($scope.selectedProject !== null) {
-      if ($scope.selectedProject.users.filter(function(user){return user.role === "owner" || user.role === "read-write"}).length > 1) {
-        if (note.user !== undefined) {
-          return note.user.name + ", " ;
-        }
-        else {
-          return "";
-        }
+      if (note.user.name !== $scope.userName) {
+        return note.user.name + ", " ;
       }
       else {
-        return "";
+        var projectNotes = $scope.fromServer.notes.filter(function(note) { 
+          if ($scope.selectedProjectId == null)
+            return true ;
+          else
+            return note.project_id == $scope.selectedProjectId ;
+          }) 
+
+        var noteAuthors = [] ;
+        projectNotes.forEach(function(n) {
+          if (noteAuthors.indexOf(n.user.name) == -1)
+            noteAuthors.push(n.user.name)
+        })
+
+        if (noteAuthors.length > 1) {
+          return note.user.name + ", " ;
+        }
       }
     }
-    else {
-      return "" ;
-    }
+
+    return ""
   }
 
   $scope.countUnselectedNoteTags = function(note) {
@@ -337,11 +346,11 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
           addFlaggedTag = true ;
     }) ;
 
-    if (addCheckedTag)
+    if (addCheckedTag && notes.filter(function(n){return n.checked}).length < notes.length)
       $scope.internalTags.push($scope.InternalTags.Checked);
-    if (addUncheckedTag)
+    if (addUncheckedTag && notes.filter(function(n){return !n.checked}).length < notes.length)
       $scope.internalTags.push($scope.InternalTags.Unchecked);
-    if (addFlaggedTag)
+    if (addFlaggedTag && notes.filter(function(n){return n.pinned}).length < notes.length)
       $scope.internalTags.push($scope.InternalTags.Flagged);
 
     $scope.tags = [] ;

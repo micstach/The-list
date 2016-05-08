@@ -585,7 +585,10 @@ app.post('/api/note/create', authorizeAPI, function(req, res){
         text: req.body.text, 
         checked: false,
         pinned: req.body.pinned,
-        user: {id: userid, name: req.session.username},
+        user: {
+          id: userid, 
+          name: req.session.username
+        },
         tags: req.body.tags,
         timestamp: moment().valueOf(),
         project_id: req.body.project_id
