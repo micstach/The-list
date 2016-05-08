@@ -7,10 +7,12 @@ var moment = require('moment');
 var nodemailer = require('nodemailer') ;
 var locale = require("locale") ;
 var supportedLanguages = ["en-US", "pl-PL"] ;
+
 var languages = {
   "en-US": "English (United States)",
   "pl-PL": "Polski"
 } ;
+
 var environment = require('./environment.js') ;
 var utils = require('./utils.js');
 var MongoClient = mongodb.MongoClient ;
@@ -36,7 +38,7 @@ app.use(session({
   HttpOnly: true
 }));
 
-var redirectSec = function(req, res, next) {
+var http2https = function(req, res, next) {
   if (process.env.OPENSHIFT_NODEJS_IP !== undefined) {
     if (req.headers['x-forwarded-proto'] == 'http') {
       var safeUrl = 'https://' + req.headers.host + req.path ;
@@ -71,7 +73,7 @@ var authorize = function(req, res, next) {
   console.log('params:' + JSON.stringify(req.params));
 
   if (req.session.userid !== undefined)
-    return next() ;//res.redirect(req.params.path);
+    return next() ;
   else
   {
     console.log('Unauthorized access: ' + req.url + ', please login!') ;
@@ -81,17 +83,11 @@ var authorize = function(req, res, next) {
 };
 
 app.use(locale(supportedLanguages)) ;
-app.use(redirectSec);
+app.use(http2https);
 
 app.get('/', function(req, res) { 
     
-  var locale = req.locale ;  
-  if (req.cookies['locale'] === undefined) {
-    res.cookie('locale', locale) ;
-  }
-  else {
-    locale = req.cookies['locale'] ;
-  }
+  var locale = utils.helpers.getLocale(req, res) ;
 
   if (req.session.userid === undefined) {
 
@@ -129,13 +125,7 @@ app.post('/locale/:locale', function(req, res){
 
 app.get('/home', authorize, function(req, res) {
 
-  var locale = req.locale ;  
-  if (req.cookies['locale'] === undefined) {
-    res.cookie('locale', locale) ;
-  }
-  else {
-    locale = req.cookies['locale'] ;
-  }
+  var locale = utils.helpers.getLocale(req, res) ;
 
   var desktopClient = (req.headers['user-agent'] === 'desktop client') ;
 
@@ -165,13 +155,7 @@ app.get('/home', authorize, function(req, res) {
 
 app.get('/login', function(req, res, next) {
  
-  var locale = req.locale ;  
-  if (req.cookies['locale'] === undefined) {
-    res.cookie('locale', locale) ;
-  }
-  else {
-    locale = req.cookies['locale'] ;
-  }
+  var locale = utils.helpers.getLocale(req, res) ;
 
   if (req.session.userid !== undefined) {
     if (req.query.user !== undefined) {
@@ -210,13 +194,7 @@ app.post('/login', function(req, res) {
   
   var resources = require('./private/login.' + req.locale + '.js').resources ;
   
-  var locale = req.locale ;  
-  if (req.cookies['locale'] === undefined) {
-    res.cookie('locale', locale) ;
-  }
-  else {
-    locale = req.cookies['locale'] ;
-  }
+  var locale = utils.helpers.getLocale(req, res) ;
 
   var errorParameters = {
     error: resources.errorInvalidUserOrPassword,
@@ -246,13 +224,7 @@ app.post('/login', function(req, res) {
 
 app.get('/register', function(req, res) {
 
-  var locale = req.locale ;  
-  if (req.cookies['locale'] === undefined) {
-    res.cookie('locale', locale) ;
-  }
-  else {
-    locale = req.cookies['locale'] ;
-  }
+  var locale = utils.helpers.getLocale(req, res) ;
 
   console.log("Locale: " + locale) ;
 
@@ -266,13 +238,13 @@ app.get('/register', function(req, res) {
   if (req.query.id !== undefined) {
     var mongoUrl = environment.config.db() ;  
     MongoClient.connect(mongoUrl, function(err, db) {
-      var registerRequest = db.collection('registerRequest') ;
+      var registerationRequest = db.collection('registerationRequest') ;
 
       try
       {
         var id = mongodb.ObjectID(req.query.id);
         
-        registerRequest.findOne({_id: id}, function(err, request) {
+        registerationRequest.findOne({_id: id}, function(err, request) {
           console.log("Registration request: " + JSON.stringify(request)) ;
           if (request !== null) {
             db.close();
@@ -304,13 +276,7 @@ app.get('/register', function(req, res) {
 app.post('/register', function(req, res) {
   console.log('Register api'); 
   
-  var locale = req.locale ;  
-  if (req.cookies['locale'] === undefined) {
-    res.cookie('locale', locale) ;
-  }
-  else {
-    locale = req.cookies['locale'] ;
-  }
+  var locale = utils.helpers.getLocale(req, res) ;
 
   var resources = require('./private/register.' + locale + '.js').resources ;
 
@@ -325,14 +291,14 @@ app.post('/register', function(req, res) {
     {
       var mongoUrl = environment.config.db() ;  
       MongoClient.connect(mongoUrl, function(err, db) {
-        var registerRequest = db.collection('registerRequest') ;
+        var registerationRequest = db.collection('registerationRequest') ;
 
-        registerRequest.findOne({email: req.body.email}, function(err, request) {
+        registerationRequest.findOne({email: req.body.email}, function(err, request) {
           if (request === null) {
             var newRequest = {email: req.body.email} ;
             
-            registerRequest.save(newRequest, null, function(err, result) {           
-              registerRequest.findOne(newRequest, function(err, request) {
+            registerationRequest.save(newRequest, null, function(err, result) {           
+              registerationRequest.findOne(newRequest, function(err, request) {
                 db.close();
 
                 sendEmail(request, getPreRegisterEmailContent(request), null, null);
@@ -408,27 +374,51 @@ app.post('/register', function(req, res) {
         MongoClient.connect(mongoUrl, function(err, db) {
 
           var users = db.collection('users') ;
+          var projects = db.collection('projects') ;
 
           users.findOne({name: req.body.user, email: req.body.email}, function(err, user) {
             if (user === null) {
-              db.collection('registerRequest').remove({_id: mongodb.ObjectID(req.query.id)}) ;
-              var usr = {
-                email: req.body.email, 
-                name: req.body.user, 
-                password: pwd
-              } ;
-              
-              users.save(usr, null, function(err, result) {           
-                users.findOne(usr, function(err, user) {
-                  utils.helpers.storeUserInSessionAndRedirect(req, res, user, resources) ;
-                  db.close();
+            
+              var defaultProject = {
+                name: resources.defaultProjectName,
+                users: [
+                  { name: req.body.user, role: "owner"}
+                ]
+              }
 
+              projects.insert(defaultProject, function(err, result) {
+                var project = result.ops[0] ;
+
+                console.log('Project created: ' + JSON.stringify(project)) ;
+
+                var newUser = {
+                  email: req.body.email, 
+                  name: req.body.user, 
+                  password: pwd,
+                  configuration: {
+                    project_id: project._id,
+                    tags:[]
+                  }
+                } ;
+
+                users.insert(newUser, function(err, result) {           
+                  var user = result.ops[0];
+
+                  console.log('User created: ' + JSON.stringify(user)) 
+
+                  utils.helpers.storeUserInSessionAndRedirect(req, res, user, resources) ;
+                  
                   sendEmail(user, getRegisterEmailContent(user), null, null);
+
+                  db.collection('registerationRequest').remove({_id: mongodb.ObjectID(req.query.id)}) ;
+                  //db.close();
                 }) ;
+
               }) ;
             }
             else {
               db.close() ;
+
               parameters.id = req.query.id;
               parameters.email = req.body.email;
               parameters.user = req.body.user;
@@ -450,13 +440,7 @@ app.get('/logoff', function(req, res){
 
 app.get('/account', authorize, function(req, res) {
  
-  var locale = req.locale ;  
-  if (req.cookies['locale'] === undefined) {
-    res.cookie('locale', locale) ;
-  }
-  else {
-    locale = req.cookies['locale'] ;
-  }
+  var locale = utils.helpers.getLocale(req, res) ;
 
   MongoClient.connect(environment.config.db(), function(err, db) {
     var users = db.collection('users') ;
@@ -515,29 +499,73 @@ app.post('/account', authorize, function(req, res) {
   });
 }) ;
 
-app.get('/api/notes', authorizeAPI, function(req, res) {
-  console.log('GET: /notes') ;
+app.get('/project/:id', authorize, function(req, res){
 
+  var locale = utils.helpers.getLocale(req, res) ;
+
+  MongoClient.connect(environment.config.db(), 
+    function(err, db) {
+      db.collection('projects').findOne({_id: mongodb.ObjectID(req.params.id)}, 
+        function(err, project) {
+          var parameters = {
+            language: languages[locale],
+            project: project,
+            resources: require('./private/project.' + locale + '.js').resources
+          } ;
+
+          res.render('project', parameters)
+        })
+    })
+})
+
+app.get('/api/notes', authorizeAPI, function(req, res) {
   var userid = req.session.userid;
+  var user_name = req.session.username;
+  var project_id = req.session.project_id ;
 
   MongoClient.connect(environment.config.db(), function(err, db) {
-      var query = {owner: userid} ;//{users: {$elemMatch: {$eq:userid}}} ;
 
-      db.collection('notes').find(query).toArray(function(err, result) {
-    
-      result.forEach(function(note){
-        if (note.pinned === undefined) {
-          note.pinned = false ;
-        }
-        if (note.checked === undefined) {
-          note.checked = false ;
-        }
+      db.collection('projects').find().toArray(function(err, results) {
+        
+        var projects = [] 
+        results.forEach(function(project) {
+          if (project.users.filter(function(user) { return user.name == user_name ; }).length == 1) {
+            projects.push(project) ;
+          }
+        }) ;
+
+        db.collection('notes').find().toArray(function(err, results) {
+        var notes = [] ;
+
+        results.forEach(function(note){
+          var projectsCount = projects.filter(function(project) { return project._id == note.project_id }).length ;
+
+          if (projectsCount == 1) 
+            notes.push(note) ;
+        }) ;
+
+        // backward compatibility fix
+        notes.forEach(function(note){
+          if (note.pinned === undefined) {
+            note.pinned = false ;
+          }
+          if (note.checked === undefined) {
+            note.checked = false ;
+          }
+        }) ;
+
+        res.writeHead(200, {'Content-Type': 'application/json'});
+        
+        res.end(JSON.stringify({
+          userid: userid, 
+          notes: notes,
+          projects: projects
+        }));
+
+        db.close();
+
       }) ;
 
-      res.writeHead(200, {'Content-Type': 'application/json'});
-      res.end(JSON.stringify({userid:userid, notes:result}));
-
-      db.close();
     });
   }) ;
 }) ;
@@ -552,23 +580,30 @@ app.post('/api/note/create', authorizeAPI, function(req, res){
   }
   else {
     MongoClient.connect(environment.config.db(), function(err, db) {
-      db.collection('notes').save({
+      
+      var note = {
         text: req.body.text, 
         checked: false,
         pinned: req.body.pinned,
-        owner: userid,
-        users: [userid],
+        user: {
+          id: userid, 
+          name: req.session.username
+        },
         tags: req.body.tags,
-        timestamp: moment().valueOf() 
-      }) ;
-      db.close() ;
+        timestamp: moment().valueOf(),
+        project_id: req.body.project_id
+      } ;
+
+      console.log(JSON.stringify(note)) ;
+
+      db.collection('notes').save(note) ;
       res.writeHead(200);
       res.end();
     }) ;
   }
 }) ;
 
-app.post('/api/note/delete/:id', authorizeAPI, function(req, res){
+app.delete('/api/note/:id', authorizeAPI, function(req, res){
   console.log("api: delete note: " + req.params.id) ;
 
   var mongoUrl = environment.config.db() ;  
@@ -583,24 +618,49 @@ app.post('/api/note/delete/:id', authorizeAPI, function(req, res){
   }) ;
 }) ;
 
-app.put('/api/note/update/:id', authorizeAPI, function(req, res){
+app.put('/api/note/:id/update', authorizeAPI, function(req, res){
   console.log("api: update note: " + req.params.id) ;
 
   var mongoUrl = environment.config.db() ;  
   var userid = req.session.userid ;
 
   MongoClient.connect(environment.config.db(), function(err, db) {
-    db.collection('notes').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, item){
-      item.text = req.body.text ;
-      item.tags = req.body.tags ;
-      // item.timestamp = moment().valueOf() ;
-      db.collection('notes').save(item) ;
-      db.close() ;
+    db.collection('notes').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, note){
+      note.text = req.body.text ;
+      note.tags = req.body.tags ;
+      db.collection('notes').save(note) ;
       res.sendStatus(200); 
     }) ;
   }) ;
 
 }) ;
+
+app.put('/api/note/:id/transfer/:project_id', authorizeAPI, function(req, res){
+  console.log("api: update note: " + req.params.id) ;
+
+  var mongoUrl = environment.config.db() ;  
+  var userid = req.session.userid ;
+
+  MongoClient.connect(environment.config.db(), function(err, db) {
+    db.collection("projects").findOne({_id: mongodb.ObjectID(req.params.project_id)}, function(err, project) {
+      db.collection('notes').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, note){
+        
+        var users = project.users.filter(function(user){return user.name === note.user.name}) ;
+        
+        var role = (users.length > 0) ? users[0].role : ""
+                
+        if (role === "owner") {
+          note.project_id = req.params.project_id
+          db.collection('notes').save(note)
+          res.sendStatus(200)
+        }
+        else {
+          res.sendStatus(403)
+        }
+      })       
+    })
+  })
+}) 
 
 app.delete('/api/notes', authorizeAPI, function(req, res){
   console.log("DELETE /api/notes") ;
@@ -617,22 +677,20 @@ app.delete('/api/notes', authorizeAPI, function(req, res){
   }) ;
 }) ;
 
-app.put('/api/note/check/:id/:state', authorizeAPI, function(req, res){
+app.put('/api/note/:id/check/:state', authorizeAPI, function(req, res){
   console.log("api: note check: " + JSON.stringify(req.params));
   var userid = req.session.userid ;
 
   MongoClient.connect(environment.config.db(), function(err, db) {
     db.collection('notes').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, item){
       item.checked = (req.params.state === "true") ;
-      //item.timestamp = moment().valueOf() ;
       db.collection('notes').save(item) ;
-      db.close() ;
       res.sendStatus(200); 
     }) ;
   }) ;
 });
 
-app.put('/api/note/pin/:id/:state', authorizeAPI, function(req, res){
+app.put('/api/note/:id/pin/:state', authorizeAPI, function(req, res){
   console.log("api: note pin: " + JSON.stringify(req.params));
   var userid = req.session.userid ;
 
@@ -640,20 +698,22 @@ app.put('/api/note/pin/:id/:state', authorizeAPI, function(req, res){
     db.collection('notes').findOne({_id: mongodb.ObjectID(req.params.id)}, function(err, item){
       item.pinned = (req.params.state === "true") ;
       db.collection('notes').save(item) ;
-      db.close() ;
       res.sendStatus(200); 
     }) ;
   }) ;
 });
 
-app.get('/api/user/config', authorizeAPI, function(req, res) {
+app.get('/api/user', authorizeAPI, function(req, res) {
   console.log("api: get user config");
 
   MongoClient.connect(environment.config.db(), function(err, db) {
      db.collection('users').findOne({_id: mongodb.ObjectID(req.session.userid)}, function(err, user) {
-      console.log("User config: " + JSON.stringify(user.config)) ;
+      console.log("User configuration: " + JSON.stringify(user.configuration)) ;
       res.writeHead(200, {'Content-Type': 'application/json'});
-      res.end(JSON.stringify({config:user.config}));
+      res.end(JSON.stringify({
+        name: req.session.username,
+        configuration:user.configuration
+      }));
       db.close() ;
     }) ;
   }) ;
@@ -665,18 +725,32 @@ app.put('/api/user/config', authorizeAPI, function(req, res) {
   MongoClient.connect(environment.config.db(), function(err, db) {
     db.collection('users').findOne({_id: mongodb.ObjectID(req.session.userid)}, function(err, user) {
       
-      user.config = {
-        tags: req.body.tags
-      } ;
+      if (req.body.tags !== undefined)
+        user.configuration.tags = req.body.tags;
+
+      if (req.body.project_id !== undefined)
+        user.configuration.project_id = req.body.project_id ;
 
       console.log("Saving user: " + JSON.stringify(user));
 
       db.collection('users').save(user) ;
-      db.close() ;
+      //db.close() ;
       res.sendStatus(200); 
     }) ;
   }) ;
 }) ;
+
+var project = require('./api/project.js');
+
+app.use(authorizeAPI);
+app.post('/api/project', project.api.create)
+app.put('/api/project/:id', project.api.update) ;
+app.delete('/api/project/:id', project.api.delete)
+app.get('/api/project/:id', project.api.read) ;
+app.post('/api/project/:id/user', project.api.userAdd) ;
+app.put('/api/project/:id/user', project.api.userUpdate) ;
+app.delete('/api/project/:id/user/:userName', project.api.userDelete) ;
+
 
 function getEmailSignature()
 {
@@ -693,7 +767,7 @@ function getPreRegisterEmailContent(request)
   if (process.env.LOCAL_NODEJS_IP !== undefined)
     hostName = "http://" + environment.config.ip() ;
 
-  var subject = '2do service - invitation!';
+  var subject = '2do service - registeration';
 
   var body = "" ;
 
@@ -705,10 +779,10 @@ function getPreRegisterEmailContent(request)
   body += "Hi !"
   body += "<br/>";
   body += "<br/>";
-  body += "This is 2do's service invitation email.";
+  body += "This is 2do's service registeration message.";
   body += "<br/>";
   body += "<br/>";
-  body += "Please click this private link to continue registeration <a href='"+ hostName + "/register?id=" + request._id + "'>"+ hostName + "/register?id=" + request._id + "</a>" ;
+  body += "Please click this link to continue registeration <a href='"+ hostName + "/register?id=" + request._id + "'>"+ hostName + "/register?id=" + request._id + "</a>" ;
   body += "<br/>";
   body += "<br/>";
   body += getEmailSignature() ;
@@ -723,7 +797,7 @@ function getRegisterEmailContent(user)
   if (process.env.LOCAL_NODEJS_IP !== undefined)
     hostName = "http://" + environment.config.ip() ;
 
-  var subject = '2do service - welcome!';
+  var subject = '2do service - welcome';
 
   var body = "" ;
 
@@ -806,46 +880,6 @@ function sendEmail(user, emailContent, onOk, onError) {
       }
   });
 }
-
-// app.post('/api/reset', function(req, res){
-//   var response = {
-//     email: req.query.email
-//   };
-
-//   if (process.env.LOCAL_NODEJS_IP !== undefined) {
-//     var transporter = nodemailer.createTransport('smtps://todo.noreply%40poczta.onet.pl:Stasiek1@smtp.poczta.onet.pl') ;
-
-//     // setup e-mail data with unicode symbols
-//     var mailOptions = {
-//         from: 'todo.noreply@jamajka.com', // sender address
-//         to: req.query.email, // list of receivers
-//         subject: 'Hello !', // Subject line
-//         text: 'Hello world !', // plaintext body
-//         html: '<b>Hello world !</b>' // html body
-//     };
-
-//     // send mail with defined transport object
-//     transporter.sendMail(mailOptions, function(error, info){
-//         if(error){
-//             return console.log(error);
-//         }
-//         console.log('Message sent: ' + info.response);
-        
-//         response.info = info.response ;
-//         res.writeHead(200, {'Content-Type': 'application/json'});
-//         res.end(JSON.stringify(response));
-//     });
-//   }
-//   else {
-//     response.info = "unavailable" ;
-//     res.writeHead(200, {'Content-Type': 'application/json'});
-//     res.end(JSON.stringify(response));
-//   }
-// }) ;
-
-// app.get('*', function(req, res){
-//   res.redirect('/');
-// });
 
 app.listen(environment.config.port(), environment.config.ip(), function(){
   console.log('2do server started: %s:%s', environment.config.ip(), environment.config.port()) ;

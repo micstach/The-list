@@ -1,0 +1,32 @@
+.glyph-button
+{
+	box-shadow: none;
+	background-color: transparent;
+	border-style: none;
+	font-size: 100%;
+}
+
+.glyph-button:disabled
+{
+	background-color: transparent;
+}
+
+.link-button 
+{
+	text-decoration: none;
+}
+
+.link-button:hover
+{
+	text-decoration: none;
+}
+
+.link-button:visited
+{
+	text-decoration: none;
+}
+
+label
+{
+	color: gray;
+}

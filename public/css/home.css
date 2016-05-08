@@ -8,6 +8,8 @@ body {
 #content-filter-box
 {
 	margin-top: 5px;
+	width: calc(100% - 30px);
+	display: inline-block;
 }
 
 .selected-text
@@ -22,6 +24,7 @@ body {
 	color: white;
 	padding: 0px;
 }
+
 .user
 {
 	color: white;

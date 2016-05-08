@@ -15,11 +15,14 @@ angular.module('Index').config(['$httpProvider', function($httpProvider) {
 
 angular.module('Index').controller('Notes', function($scope, $timeout, $http, $location, $uibModal, linkify, $sce) {
 
-  $scope.userid = "";
+  $scope.userId = undefined;
+  $scope.userName = undefined ;
   $scope.lastTag = undefined;
   $scope.tags = [] ;
-  $scope.selectedTags = [];
-  $scope.server = []
+  $scope.selectedTags = new Map([]);
+  $scope.selectedProjectId = null ;
+  $scope.selectedProject = null;
+  $scope.fromServer = []
   $scope.searchText = "" ;
   $scope.searchTextBoxVisible = true ;
   $scope.autoRefreshTimer = null;
@@ -34,6 +37,15 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     }
   } ;
 
+  $scope.getSelectedTags = function() {
+    if ($scope.selectedTags[$scope.selectedProjectId] !== undefined)
+      return $scope.selectedTags[$scope.selectedProjectId] ;
+    else {
+      $scope.selectedTags[$scope.selectedProjectId] = [] ;
+      return $scope.selectedTags[$scope.selectedProjectId] ;
+    }    
+  }
+
   $scope.IsInternalTag = function(tag) {
     if (tag === $scope.InternalTags.Flagged)
       return true ;
@@ -43,6 +55,33 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       return true ;
     else
       return false ;
+  }
+
+  $scope.getOwnerNames = function(project) {
+    if (project !== null)
+      if (project.users !== undefined)
+        return project.users.filter(function(user) { return user.role == "owner"})    
+
+    return []
+  }
+
+  $scope.getUserRole = function(project) {
+    if (project !== null) 
+      if (project.users !== undefined) {
+        var user = project.users.filter(function(user) { return user.name === $scope.userName})[0];
+        return user.role ;
+      }
+    
+    return ""
+  }
+
+  $scope.hasWriteAccess = function(project) {
+    var role = $scope.getUserRole(project)
+    return (role === "read-write" || role === "owner")
+  }
+
+  $scope.isOwner = function(project) {
+    return ($scope.getOwnerNames(project).filter(function(user) { return user.name === $scope.userName}).length > 0);
   }
 
   $scope.isNullOrUndefined = function(obj){
@@ -100,7 +139,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     else
       return "note-id-undefined" ;
   }
-
+  
   $scope.noteTextChanged = function(note) {
     note.modified = true ;
     note.newTags = $scope.extractHashTags(note.text) ;
@@ -116,24 +155,44 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
   $scope.searchButtonClicked = function() {
     $scope.searchTextBoxVisible = !$scope.searchTextBoxVisible ;
-    $scope.organizeNotes($scope.server.notes, false) ;
+    $scope.organizeNotes($scope.fromServer.notes, false) ;
   }
   
   $scope.searchTextChanged = function(searchText) {
-    $scope.organizeNotes($scope.server.notes, false) ;
+    $scope.organizeNotes($scope.fromServer.notes, false) ;
   }
 
   $scope.sortSelectedTags = function(tags) {
-      tags.sort(function(a, b) {
-        if (a.indexOf("status:") === b.indexOf("status:"))
-          return a.toLowerCase().localeCompare(b.toLowerCase());
-        else if (a.indexOf("status:") !== -1)
-          return -1 ;
-        else if (b.indexOf("status:") !== -1)
-          return 1 ;
-        else
-          return 0 ;
-      }) ;  
+    if (tags === undefined) return ;
+    if (tags === null) return ;
+
+    tags.sort(function(a, b) {
+      if (a.indexOf("status:") === b.indexOf("status:"))
+        return a.toLowerCase().localeCompare(b.toLowerCase());
+      else if (a.indexOf("status:") !== -1)
+        return -1 ;
+      else if (b.indexOf("status:") !== -1)
+        return 1 ;
+      else
+        return 0 ;
+    }) ;  
+  }
+
+  $scope.selectProject = function(project) {
+    if (project == null) {
+      $scope.selectedProjectId = null ;
+      $scope.selectedProject = null ;
+    }
+    else {
+      $scope.selectedProjectId = project._id ;
+      $scope.selectedProject = $scope.fromServer.projects.filter(function(project) { return project._id == $scope.selectedProjectId })[0];
+    }
+
+    $('.search-box').outerWidth(0) ;
+    $scope.organizeNotes($scope.fromServer.notes, false) ;
+    $timeout(repositionSearchBar, 0) ;
+    
+    $http.put('/api/user/config', {project_id: $scope.selectedProjectId}).success(function() {});    
   }
 
   $scope.selectTag = function(tag) {
@@ -141,34 +200,31 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     var update = false ;
 
     if (tag === null) {
-      $scope.selectedTags = [] ;
+      $scope.selectedTags[$scope.selectedProjectId] = [] ;
       update = true ;
     }
     else if (Object.prototype.toString.call(tag) === '[object Array]')
     {
-      $scope.selectedTags = tag.slice() ;
+      $scope.selectedTags[$scope.selectedProjectId] = tag.slice() ;
       update = true ;
     }
     else if (Object.prototype.toString.call(tag) === '[object String]') {
-      if ($scope.selectedTags.indexOf(tag) === -1) {
-        $scope.selectedTags.push(tag);
+      if ($scope.selectedTags[$scope.selectedProjectId].indexOf(tag) === -1) {
+        $scope.selectedTags[$scope.selectedProjectId].push(tag);
         update = true ;
       }
     }
 
     if (update) {
-      $scope.sortSelectedTags($scope.selectedTags) ;
+      $scope.sortSelectedTags($scope.selectedTags[$scope.selectedProjectId]) ;
 
       $('.search-box').outerWidth(0) ;
   
-      $scope.organizeNotes($scope.server.notes, false) ;
+      $scope.organizeNotes($scope.fromServer.notes, false) ;
       
       $timeout(repositionSearchBar, 0) ;
   
-      $http
-        .put('/api/user/config', {tags: $scope.selectedTags})
-        .success(function() {
-        });
+      $http.put('/api/user/config', {tags: $scope.selectedTags}).success(function() {});
     }
   }
 
@@ -180,16 +236,13 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   }
 
   $scope.cancelFilter = function(tag) {
-    $scope.selectedTags.splice($scope.selectedTags.indexOf(tag), 1);  
+    $scope.selectedTags[$scope.selectedProjectId].splice($scope.selectedTags[$scope.selectedProjectId].indexOf(tag), 1);  
 
-    $scope.organizeNotes($scope.server.notes, false) ;
+    $scope.organizeNotes($scope.fromServer.notes, false) ;
 
     $timeout(repositionSearchBar, 1000);
   
-    $http
-      .put('/api/user/config', {tags: $scope.selectedTags})
-      .success(function() {
-      });
+    $http.put('/api/user/config', {tags: $scope.selectedTags}).success(function() {});
   }
 
   $scope.transformTagForView = function(tag) {
@@ -231,11 +284,39 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     }
   }
 
+  $scope.getAuthorName = function(note) {
+    if ($scope.selectedProject !== null) {
+      if (note.user.name !== $scope.userName) {
+        return note.user.name + ", " ;
+      }
+      else {
+        var projectNotes = $scope.fromServer.notes.filter(function(note) { 
+          if ($scope.selectedProjectId == null)
+            return true ;
+          else
+            return note.project_id == $scope.selectedProjectId ;
+          }) 
+
+        var noteAuthors = [] ;
+        projectNotes.forEach(function(n) {
+          if (noteAuthors.indexOf(n.user.name) == -1)
+            noteAuthors.push(n.user.name)
+        })
+
+        if (noteAuthors.length > 1) {
+          return note.user.name + ", " ;
+        }
+      }
+    }
+
+    return ""
+  }
+
   $scope.countUnselectedNoteTags = function(note) {
     var tags = note.tags.slice() ;
 
     if (!note.editing) {
-      $scope.selectedTags.forEach(function(selectedTag) {
+      $scope.selectedTags[$scope.selectedProjectId].forEach(function(selectedTag) {
         removeElementFromArray(tags, selectedTag) ;
       }) ;
     }
@@ -265,18 +346,18 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
           addFlaggedTag = true ;
     }) ;
 
-    if (addCheckedTag)
+    if (addCheckedTag && notes.filter(function(n){return n.checked}).length < notes.length)
       $scope.internalTags.push($scope.InternalTags.Checked);
-    if (addUncheckedTag)
+    if (addUncheckedTag && notes.filter(function(n){return !n.checked}).length < notes.length)
       $scope.internalTags.push($scope.InternalTags.Unchecked);
-    if (addFlaggedTag)
+    if (addFlaggedTag && notes.filter(function(n){return n.pinned}).length < notes.length)
       $scope.internalTags.push($scope.InternalTags.Flagged);
 
     $scope.tags = [] ;
     notes.forEach(function(note) {
-      if ($scope.selectedTags.length > 0) {
+      if ($scope.getSelectedTags().length > 0) {
 
-        var foundTagsCount = $scope.selectedTags.filter(function(tag) {
+        var foundTagsCount = $scope.selectedTags[$scope.selectedProjectId].filter(function(tag) {
           if (tag === $scope.InternalTags.Flagged)
             return note.pinned ;
           
@@ -295,7 +376,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
             return false ;
         }).length ;    
 
-        if (foundTagsCount == $scope.selectedTags.length) {
+        if (foundTagsCount == $scope.getSelectedTags().length) {
           if (note.tags !== undefined && note.tags !== null) {
               $scope.tags = $scope.mergeTags($scope.tags, note.tags) ;
           }
@@ -311,19 +392,26 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     $scope.tags = $scope.mergeTags($scope.internalTags, $scope.tags);
 
     // remove from tags, tags from filterTags
-    $scope.selectedTags.forEach(function(tag){
+    $scope.selectedTags[$scope.selectedProjectId].forEach(function(tag){
       $scope.tags.splice($scope.tags.indexOf(tag), 1) ;
     }) ;
   }
 
   $scope.filterNotes = function(notes, fromServer) {
     
+    var projectNotes = notes.filter(function(note) { 
+      if ($scope.selectedProjectId == null)
+        return true ;
+      else
+        return note.project_id == $scope.selectedProjectId ;
+    }) ;
+
     var taggedNotes = [] ;
 
-    if ($scope.selectedTags.length > 0) {       
-      notes.forEach(function(note) {
+    if ($scope.getSelectedTags().length > 0) {       
+      projectNotes.forEach(function(note) {
         
-        var foundTagsCount = $scope.selectedTags.filter(function(tag) {
+        var foundTagsCount = $scope.getSelectedTags().filter(function(tag) {
           if (tag === $scope.InternalTags.Flagged)
             return note.pinned ;
           
@@ -342,13 +430,13 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
             return false ;
         }).length ;    
 
-        if (foundTagsCount === $scope.selectedTags.length)
+        if (foundTagsCount === $scope.getSelectedTags().length)
           taggedNotes.push(note) ;
       }) ;
     }
     else
     {
-      notes.forEach(function(note) { taggedNotes.push(note) ;}) ;
+      projectNotes.forEach(function(note) { taggedNotes.push(note) ;}) ;
     }
 
     var filteredNotes = [] ;  
@@ -414,7 +502,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
     if ($scope.data.notes.length === 0 && 
         $scope.searchText.length === 0 &&
-        $scope.selectedTags.length === 0 )
+        $scope.getSelectedTags().length === 0 )
     {
       $scope.createNewNote();
     }
@@ -423,24 +511,34 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   }
 
   $scope.initialize = function() {
-    $http.get('/api/user/config')
-      .success(function(data) { 
+    $http.get('/api/user')
+      .success(function(user) { 
         
-        if (data.config !== undefined)
-          if (data.config.tags !== undefined) {
-              $scope.selectedTags = data.config.tags;
-              $scope.sortSelectedTags($scope.selectedTags) ;
-              // $scope.selectedTags.sort(function(a, b) {return a.toLowerCase().localeCompare(b.toLowerCase());})  
-            }
+        $scope.userName = user.name ;
+
+        if (user.configuration.project_id !== undefined) {
+          $scope.selectedProjectId = user.configuration.project_id;
+        }
+        else {
+          $scope.selectedProjectId = null ;
+        }
+
+        if (user.configuration !== undefined) {
+          
+          if (user.configuration.tags !== undefined) {
+            $scope.selectedTags = user.configuration.tags;
+            $scope.sortSelectedTags($scope.getSelectedTags()) ;
+          }
+        }
 
         $scope.getItems() ;
       })
-      .error(function(data, status) {
+      .error(function(user, status) {
         window.location = '/login' ;
       }) ;
   }
 
-  $scope.getItems = function(fromServer) {
+  $scope.getItems = function(fromServer, onSuccess) {
 
     if (fromServer === undefined)
       fromServer = true ;
@@ -448,11 +546,29 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     if (fromServer) {
       $http.get('/api/notes')
         .success(function(data) { 
-          // save server data for future filtering
-          $scope.server = {notes: data.notes} ;
 
+          var filteredProjects = [] ;
+
+          data.projects.filter(function(project) { return $scope.getUserRole(project) === "owner" }).forEach(function(project) { filteredProjects.push(project) })
+          data.projects.filter(function(project) { return $scope.getUserRole(project) === "read-write" }).forEach(function(project) { filteredProjects.push(project) })
+          data.projects.filter(function(project) { return $scope.getUserRole(project) === "read-only" }).forEach(function(project) { filteredProjects.push(project) })
+
+          $scope.fromServer = {
+            userid: data.userid,
+            notes: data.notes, 
+            projects: filteredProjects
+          } ;
+
+          var findSelectedProject = $scope.fromServer.projects.filter(function(project) { return project._id === $scope.selectedProjectId });
+          if (findSelectedProject.length > 0)
+            $scope.selectedProject = findSelectedProject[0]
+          else 
+            $scope.selectProject($scope.fromServer.projects[0])
+          
           $scope.organizeNotes(data.notes, fromServer) ;
-          $scope.userid = data.userid; 
+
+          if (onSuccess !== undefined)
+            onSuccess();
         })
         .error(function(data, status) {
           window.location = '/login' ;
@@ -463,11 +579,27 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       }
   };
 
+  $scope.getOwnerName = function(project) {
+    if (project == null) {
+      return "All projects" ;
+    }
+    else {
+      if (project.users !== undefined) {
+        if ($scope.isOwner(project))
+          return "" ;
+        else
+          return $scope.getOwnerNames(project)[0].name ;
+      }
+      else
+        return null ;
+    }  
+  }
+
   $scope.createNewNote = function() {
     $scope.cancelTimer($scope.autoRefreshTimer) ;  
     $scope.cancelDeleyedRefresh();
 
-    var tags = $scope.selectedTags.slice() ;
+    var tags = $scope.selectedTags[$scope.selectedProjectId].slice() ;
 
     $scope.InternalTags.toArray().forEach(function(internalTag) {
       removeElementFromArray(tags, internalTag) ;
@@ -476,16 +608,17 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     var note = {
         text: '', 
         checked: false,
-        pinned: ($scope.selectedTags.indexOf($scope.InternalTags.Flagged) !== -1),
+        pinned: ($scope.selectedTags[$scope.selectedProjectId].indexOf($scope.InternalTags.Flagged) !== -1),
         tags: tags,
         timestamp: Date.now(),
         editing: true,
-        owner: $scope.userid,
-        users: [],
+        user: {
+          name: $scope.userName
+        },
         removedTags: []
       } ;
 
-      note.timeVerbose = "nowa" ;
+      note.timeVerbose = "" ;
 
       // insert note stub
       $scope.data.notes.splice(0, 0, note);
@@ -506,6 +639,33 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       if (note._id != item._id)
           item.editing = false ;
     });
+  }
+
+  $scope.transferNote = function(note, project) {
+    $http
+      .put('/api/note/' + note._id + '/transfer/' + project._id)
+      .then(function() {
+          $scope.getItems() ;
+        }, 
+        function(){
+          var locale = getCookie('locale') ;
+      
+          var modalInstance = $uibModal.open({
+            animation: true,
+            templateUrl: 'views/dialog-transfer-note.' + locale + '.html',
+            controller: 'note-transfer-controller',
+            size: 'lg',
+            resolve: {
+              transferState : function() {
+                return { authorName: note.user.name, projectName: project.name }
+              }
+            }
+          });
+
+          modalInstance.result.then(function () {
+          });
+        }
+      )
   }
 
   $scope.acceptChanges = function(note) {
@@ -536,14 +696,14 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
     if (note._id === undefined) {
       $http
-        .post('/api/note/create', {text: note.text, tags: note.tags, pinned: note.pinned})
+        .post('/api/note/create', {project_id: $scope.selectedProjectId, text: note.text, tags: note.tags, pinned: note.pinned})
         .success(function(){
           $scope.getItems() ;
         });
     }
     else {      
       $http
-        .put('/api/note/update/' + note._id, {text: note.text, tags: note.tags})
+        .put('/api/note/' + note._id + '/update', {text: note.text, tags: note.tags})
         .success(function() {
         });
     }
@@ -584,6 +744,35 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     note.modified = true ;
 
     // $scope.cancelFilter(tag) ;
+  }
+
+  $scope.projectName = "" ;
+
+  $scope.createProject = function() {
+    var locale = getCookie('locale') ;
+
+    var createProjectModal = $uibModal.open({
+      animation: true,
+      templateUrl: 'views/dialog-create-project.' + locale + '.html',
+      controller: 'create-project-controller',
+      size: 'lg',
+      resolve: {
+        projectName: function() {
+          return $scope.projectName ;
+        }
+      }
+    });
+
+    createProjectModal.result.then(function (name) {
+       $http
+       .post('/api/project', {projectName: name})
+       .success(function() { 
+         $scope.getItems(true, function(){
+          var project = $scope.fromServer.projects.filter(function(project) { return project.name == name })[0] ;
+          $scope.selectProject(project) ;
+         }); 
+       });
+    });
   }
 
   $scope.deleteItem = function(note) {
@@ -633,7 +822,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
     $scope.deleyedRefresh() ;
 
     $http
-      .put('/api/note/check/' + note._id + '/' + note.checked)
+      .put('/api/note/' + note._id + '/check/' + note.checked)
       .success(function(){
       });
   }
@@ -647,7 +836,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       note.pinned = (note.pinned !== undefined) ? !note.pinned : true;
  
       $http
-        .put('/api/note/pin/' + note._id + '/' + note.pinned)
+        .put('/api/note/' + note._id + '/pin/' + note.pinned)
         .success(function(){
         });
     }
@@ -722,6 +911,30 @@ angular.module('Index').directive('focusSearch', function($timeout, $parse) {
       //    scope.$apply(model.assign(scope, false));
       // });
     }
+  };
+});
+
+
+angular.module('Index').controller('note-transfer-controller', function ($scope, $uibModalInstance, transferState)
+{
+  $scope.authorName = transferState.authorName 
+  $scope.projectName = transferState.projectName
+  
+  $scope.ok = function () {
+    $uibModalInstance.close();
+  };
+})
+
+angular.module('Index').controller('create-project-controller', function ($scope, $uibModalInstance, projectName)
+{
+  $scope.projectName = projectName ;
+
+  $scope.ok = function () {
+    $uibModalInstance.close($scope.projectName);
+  };
+
+  $scope.cancel = function () {
+    $uibModalInstance.dismiss('cancel');
   };
 });
 
