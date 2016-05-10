@@ -142,8 +142,13 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
   
   $scope.keyUp = function(note, event) {
 
+    // CTRL+ENTER
     if (event.keyCode === 13 && event.ctrlKey) {
       $scope.acceptChanges(note);
+    }
+    // ESC
+    else if (event.keyCode === 27 ) {
+      $scope.cancelChanges(null, note)
     }
   }
 
