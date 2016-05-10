@@ -2,7 +2,7 @@ exports.resources = {
     deleteProject: "Delete project",
     goBack: "Go back",
     accessReadWrite: "contributor",
-	accessReadOnly: "observer",
+	accessReadOnly: "viewer",
 	accessOwner: "owner",
     itIsYou: "it's You",
     userNamePlaceholder: "Enter user name or email address",
