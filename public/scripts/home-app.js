@@ -140,6 +140,13 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       return "note-id-undefined" ;
   }
   
+  $scope.keyUp = function(note, event) {
+
+    if (event.keyCode === 13 && event.ctrlKey) {
+      $scope.acceptChanges(note);
+    }
+  }
+
   $scope.noteTextChanged = function(note) {
     note.modified = true ;
     note.newTags = $scope.extractHashTags(note.text) ;
