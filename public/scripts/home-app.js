@@ -791,7 +791,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
     modalInstance.result.then(function () {
       $http
-      .post('/api/note/delete/' + note._id)
+      .delete('/api/note/' + note._id)
       .success(function() { 
         $scope.getItems(); 
       });
