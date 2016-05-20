@@ -540,7 +540,12 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
         if (user.configuration !== undefined) {
           
           if (user.configuration.tags !== undefined) {
-            $scope.selectedTags = JSON.parse(user.configuration.tags);
+            try {
+              $scope.selectedTags = JSON.parse(user.configuration.tags);
+            }
+            catch (err) {
+              $scope.selectedTags = new Map([])
+            }
             $scope.sortSelectedTags($scope.getSelectedTags()) ;
           }
         }
