@@ -236,7 +236,9 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       
       $timeout(repositionSearchBar, 0) ;
   
-      $http.put('/api/user/config', {tags: $scope.selectedTags}).success(function() {});
+
+
+      $http.put('/api/user/config', {tags: JSON.stringify($scope.selectedTags)}).success(function() {});
     }
   }
 
@@ -254,7 +256,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
     $timeout(repositionSearchBar, 1000);
   
-    $http.put('/api/user/config', {tags: $scope.selectedTags}).success(function() {});
+    $http.put('/api/user/config', {tags: {x: $scope.selectedTags}}).success(function() {});
   }
 
   $scope.transformTagForView = function(tag) {
@@ -538,7 +540,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
         if (user.configuration !== undefined) {
           
           if (user.configuration.tags !== undefined) {
-            $scope.selectedTags = user.configuration.tags;
+            $scope.selectedTags = JSON.parse(user.configuration.tags);
             $scope.sortSelectedTags($scope.getSelectedTags()) ;
           }
         }
