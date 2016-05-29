@@ -22,6 +22,6 @@ exports.resources = {
 	createNewProject: "Create new project",
 	projectSettings: "settings",
 	accessReadWrite: "contributor",
-	accessReadOnly: "observer",
+	accessReadOnly: "viewer",
 	accessOwner: "owner"
 }

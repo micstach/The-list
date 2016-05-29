@@ -140,6 +140,18 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       return "note-id-undefined" ;
   }
   
+  $scope.keyUp = function(note, event) {
+
+    // CTRL+ENTER
+    if (event.keyCode === 13 && event.ctrlKey) {
+      $scope.acceptChanges(note);
+    }
+    // ESC
+    else if (event.keyCode === 27 ) {
+      $scope.cancelChanges(null, note)
+    }
+  }
+
   $scope.noteTextChanged = function(note) {
     note.modified = true ;
     note.newTags = $scope.extractHashTags(note.text) ;
@@ -224,7 +236,9 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
       
       $timeout(repositionSearchBar, 0) ;
   
-      $http.put('/api/user/config', {tags: $scope.selectedTags}).success(function() {});
+
+
+      $http.put('/api/user/config', {tags: JSON.stringify($scope.selectedTags)}).success(function() {});
     }
   }
 
@@ -242,7 +256,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
     $timeout(repositionSearchBar, 1000);
   
-    $http.put('/api/user/config', {tags: $scope.selectedTags}).success(function() {});
+    $http.put('/api/user/config', {tags: {x: $scope.selectedTags}}).success(function() {});
   }
 
   $scope.transformTagForView = function(tag) {
@@ -526,7 +540,12 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
         if (user.configuration !== undefined) {
           
           if (user.configuration.tags !== undefined) {
-            $scope.selectedTags = user.configuration.tags;
+            try {
+              $scope.selectedTags = JSON.parse(user.configuration.tags);
+            }
+            catch (err) {
+              $scope.selectedTags = new Map([])
+            }
             $scope.sortSelectedTags($scope.getSelectedTags()) ;
           }
         }
@@ -791,7 +810,7 @@ angular.module('Index').controller('Notes', function($scope, $timeout, $http, $l
 
     modalInstance.result.then(function () {
       $http
-      .post('/api/note/delete/' + note._id)
+      .delete('/api/note/' + note._id)
       .success(function() { 
         $scope.getItems(); 
       });
