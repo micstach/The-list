@@ -164,7 +164,9 @@ app.get('/home', authorize, function(req, res) {
 app.get('/login/github', function(req, res){
   var url = 'https://github.com/login/oauth/authorize';
   url += '?client_id=17da81822abb58babb72';
-  var redirect_uri = 'http://' + environment.config.ip() + '/auth/github/callback';
+  var host = 'todo-micstach.rhcloud.com' ;
+  //var host = environment.config.ip();
+  var redirect_uri = 'https://' + host + '/auth/github/callback';
   url += '&redirect_uri=' + encodeURIComponent(redirect_uri);
   res.redirect(url);
 });
@@ -201,17 +203,70 @@ app.get('/auth/github/callback', function(req, res) {
           },
           function(error, response, body) {
             console.log(body);
-            var resp = JSON.parse(body);
+            var githubUser = JSON.parse(body);
 	          
-            req.session.userid = resp.id ;
-            req.session.project_id = null ;
-            req.session.username = resp.name ;
+            var mongoUrl = environment.config.db() ;  
+            var locale = utils.helpers.getLocale(req, res) ;
+            var resources = require('./private/register.' + locale + '.js').resources ;
 
-            //res.writeHead(200, {'Content-Type': 'application/json'});
+            // register if not exists
+            MongoClient.connect(mongoUrl, function(err, db) {
+
+              var users = db.collection('users') ;
+              var projects = db.collection('projects') ;
+
+              users.findOne({name: githubUser.name, email: githubUser.email}, function(err, user) {
+                if (user === null) {
+                
+                  var defaultProject = {
+                    name: resources.defaultProjectName,
+                    users: [
+                      { name: githubUser.name, role: "owner"}
+                    ]
+                  }
+
+                  projects.insert(defaultProject, function(err, result) {
+                    var project = result.ops[0] ;
+
+                    console.log('Project created: ' + JSON.stringify(project)) ;
+
+                    var newUser = {
+                      email: githubUser.email, 
+                      name: githubUser.name, 
+                      password: '',
+                      configuration: {
+                        project_id: project._id,
+                        tags:[]
+                      }
+                    } ;
+
+                    users.insert(newUser, function(err, result) {           
+                      var user = result.ops[0];
+
+                      console.log('User created: ' + JSON.stringify(user)) 
+
+                      utils.helpers.storeUserInSessionAndRedirect(req, res, user, resources) ;
+                      
+                      // sendEmail(user, getRegisterEmailContent(user), null, null);
+                    }) ;
+                  }) ;
+                } else {
+                  req.session.userid = user._id ;
+                  req.session.project_id = user.configuration.project_id ;
+                  req.session.username = user.name ;
+
+                  res.redirect('/home');
+                }
+              });
+            });
+
+            //re            //req.session.userid = resp.id ;
+            //req.session.project_id = null ;
+            //req.session.username = resp.name ;
+            //s.writeHead(200, {'Content-Type': 'application/json'});
             //res.end(JSON.stringify({body: body}));
             //res.send();
-
-            res.redirect('/home');
+            //res.redirect('/home');
           }
         );
 
