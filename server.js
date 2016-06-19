@@ -6,6 +6,8 @@ var bodyParser = require('body-parser') ;
 var moment = require('moment');
 var nodemailer = require('nodemailer') ;
 var locale = require("locale") ;
+var request = require("request") ;
+
 var supportedLanguages = ["en-US", "pl-PL"] ;
 
 var languages = {
@@ -47,6 +49,12 @@ var http2https = function(req, res, next) {
         safeUrl += '?' + req.query ;
 
       res.redirect(safeUrl);
+
+      // upgrade protocol function
+      environment.config.protocol = function() { 
+        return 'https';
+      };
+
     } else {
         return next();
     }
@@ -152,6 +160,85 @@ app.get('/home', authorize, function(req, res) {
     }) ;
   });
 });
+
+app.get('/login/github', function(req, res){
+  var url = 'https://github.com/login/oauth/authorize';
+  url += '?client_id=17da81822abb58babb72';
+  var redirect_uri = 'http://' + environment.config.ip() + '/auth/github/callback';
+  url += '&redirect_uri=' + encodeURIComponent(redirect_uri);
+  res.redirect(url);
+});
+
+app.get('/auth/github/callback', function(req, res) {
+  console.log('get: callback');
+
+  request.post(
+    'https://github.com/login/oauth/access_token',
+    { 
+      form: { 
+        client_id: '17da81822abb58babb72',
+        client_secret: '1fd316d8dfa147d6a487e3ac30157ca594b12a96',
+        code: req.query.code
+      } 
+    },
+    function (error, response, body) {
+      if (!error && response.statusCode == 200) {
+          
+        var parameters = body.split('&');
+        var values = {} ;
+        for (var i=0; i<parameters.length; i++) {
+          var keyValues = parameters[i].split('=');
+          values[keyValues[0]]=keyValues[1];
+        }
+
+        var access_token = values['access_token'];
+
+        request.get({
+          url: 'https://api.github.com/user?access_token=' + access_token,
+          headers: {
+            'User-Agent': '2do-server'
+            }
+          },
+          function(error, response, body) {
+            console.log(body);
+            var resp = JSON.parse(body);
+	          
+            req.session.userid = resp.id ;
+            req.session.project_id = null ;
+            req.session.username = resp.name ;
+
+            //res.writeHead(200, {'Content-Type': 'application/json'});
+            //res.end(JSON.stringify({body: body}));
+            //res.send();
+
+            res.redirect('/home');
+          }
+        );
+
+
+        //req.session.userid = user._id ;
+        //req.session.project_id = user.configuration.project_id ;
+        //req.session.username = user.name ;
+
+        //res.redirect('/home');
+
+      } else {
+        res.writeHead(200, {'Content-Type': 'application/json'});
+        res.end(JSON.stringify({queryCode: req.query.code, error: error}));
+        res.send();
+        
+        //res.redirect('/home');
+      }
+    }
+  );  
+ 
+  //res.writeHead(200, {'Content-Type': 'application/json'});
+  //res.end(JSON.stringify({queryCode: req.query.code, header: req.headers}));
+  //res.send();
+});
+
+// app.post('/auth/github/callback', function(req, res) {
+// });
 
 app.get('/login', function(req, res, next) {
  

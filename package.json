@@ -27,6 +27,7 @@
     "locale": "0.0.21",
     "moment": "^2.11.2",
     "mongodb": "^2.1.7",
-    "nodemailer": "^2.3.0"
+    "nodemailer": "^2.3.0",
+    "request": "^2.72.0"
   }
 }
