@@ -259,41 +259,137 @@ app.get('/auth/github/callback', function(req, res) {
                 }
               });
             });
-
-            //re            //req.session.userid = resp.id ;
-            //req.session.project_id = null ;
-            //req.session.username = resp.name ;
-            //s.writeHead(200, {'Content-Type': 'application/json'});
-            //res.end(JSON.stringify({body: body}));
-            //res.send();
-            //res.redirect('/home');
           }
         );
-
-
-        //req.session.userid = user._id ;
-        //req.session.project_id = user.configuration.project_id ;
-        //req.session.username = user.name ;
-
-        //res.redirect('/home');
-
       } else {
         res.writeHead(200, {'Content-Type': 'application/json'});
         res.end(JSON.stringify({queryCode: req.query.code, error: error}));
         res.send();
-        
-        //res.redirect('/home');
       }
     }
   );  
- 
-  //res.writeHead(200, {'Content-Type': 'application/json'});
-  //res.end(JSON.stringify({queryCode: req.query.code, header: req.headers}));
-  //res.send();
 });
 
-// app.post('/auth/github/callback', function(req, res) {
-// });
+app.get('/login/facebook', function(req, res){
+  var url = 'https://www.facebook.com/dialog/oauth';
+  url += '?client_id=1689283628023344';
+  //var host = 'todo-micstach.rhcloud.com' ;
+  var host = environment.config.ip();
+  var redirect_uri = 'http://' + host + '/auth/facebook/callback';
+  url += '&redirect_uri=' + encodeURIComponent(redirect_uri);
+  res.redirect(url);
+});
+
+app.get('/auth/facebook/callback', function(req, res) {
+  console.log('get: callback');
+
+  var host = environment.config.ip();
+  var redirect_uri = 'http://' + host + '/auth/facebook/callback';
+  //url += '&redirect_uri=' + encodeURIComponent(redirect_uri);
+  console.log('redirect_uri: ' + redirect_uri);
+
+  var url = 'https://graph.facebook.com/v2.3/oauth/access_token' ;
+  url += '?client_id=1689283628023344';
+  url += '&client_secret=0fa323261a660265fa447f3cd67d90fe';
+  url += '&code=' + req.query.code;
+  url += '&redirect_uri=' + encodeURIComponent(redirect_uri);
+
+  request.get(url, function (error, response, body) {
+      console.log('token request:' + body);
+
+      if (!error && response.statusCode == 200) {
+          
+        var parameters = body.split('&');
+        var values = {} ;
+        for (var i=0; i<parameters.length; i++) {
+          var keyValues = parameters[i].split('=');
+          values[keyValues[0]]=keyValues[1];
+        }
+
+        var access_token = values['access_token'];
+
+        request.get({
+          url: 'https://graph.facebook.com/v2.5/me/permissions?access_token=' + access_token,
+          headers: {
+            'User-Agent': '2do-server'
+            }
+          },
+          function(error, response, body) {
+            console.log('facebook user api:' + body);
+
+            if (!error && response.statusCode == 200) {
+              console.log(body);
+              var githubUser = JSON.parse(body);
+              
+              var mongoUrl = environment.config.db() ;  
+              var locale = utils.helpers.getLocale(req, res) ;
+              var resources = require('./private/register.' + locale + '.js').resources ;
+
+              // register if not exists
+              MongoClient.connect(mongoUrl, function(err, db) {
+
+                var users = db.collection('users') ;
+                var projects = db.collection('projects') ;
+
+                users.findOne({name: githubUser.name, email: githubUser.email}, function(err, user) {
+                  if (user === null) {
+                  
+                    var defaultProject = {
+                      name: resources.defaultProjectName,
+                      users: [
+                        { name: githubUser.name, role: "owner"}
+                      ]
+                    }
+
+                    projects.insert(defaultProject, function(err, result) {
+                      var project = result.ops[0] ;
+
+                      console.log('Project created: ' + JSON.stringify(project)) ;
+
+                      var newUser = {
+                        email: githubUser.email, 
+                        name: githubUser.name, 
+                        password: '',
+                        configuration: {
+                          project_id: project._id,
+                          tags:[]
+                        }
+                      } ;
+
+                      users.insert(newUser, function(err, result) {           
+                        var user = result.ops[0];
+
+                        console.log('User created: ' + JSON.stringify(user)) 
+
+                        utils.helpers.storeUserInSessionAndRedirect(req, res, user, resources) ;
+                        
+                        // sendEmail(user, getRegisterEmailContent(user), null, null);
+                      }) ;
+                    }) ;
+                  } else {
+                    req.session.userid = user._id ;
+                    req.session.project_id = user.configuration.project_id ;
+                    req.session.username = user.name ;
+
+                    res.redirect('/home');
+                  }
+                });
+              });
+            } else {
+              res.writeHead(200, {'Content-Type': 'application/json'});
+              res.end(JSON.stringify({body: body, error: error}));
+              res.send();
+            }
+          }
+        );
+      } else {
+        res.writeHead(200, {'Content-Type': 'application/json'});
+        res.end(JSON.stringify({queryCode: req.query.code, error: error}));
+        res.send();
+      }
+    }
+  );  
+});
 
 app.get('/login', function(req, res, next) {
  
