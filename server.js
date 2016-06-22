@@ -164,10 +164,10 @@ app.get('/home', authorize, function(req, res) {
 app.get('/login/github', function(req, res){
   var url = 'https://github.com/login/oauth/authorize';
   url += '?client_id=17da81822abb58babb72';
-  var host = 'todo-micstach.rhcloud.com' ;
-  //var host = environment.config.ip();
-  var redirect_uri = 'https://' + host + '/auth/github/callback';
+  var redirect_uri = 'https://' + environment.config.host() + '/auth/github/callback';
   url += '&redirect_uri=' + encodeURIComponent(redirect_uri);
+
+  console.log('redirect_url:', url);
   res.redirect(url);
 });
 

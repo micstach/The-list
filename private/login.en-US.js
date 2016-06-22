@@ -4,6 +4,8 @@ exports.resources = {
 	userPassword: "Password",
 	userPasswordPlaceholder: "Enter password",
 	signInButtonText: "Sign in",
+  signInWithButtonText: "Sign in with",
 	errorTag: "Ouch!",
-	errorInvalidUserOrPassword: "Invalid user or password"
+	errorInvalidUserOrPassword: "Invalid user or password",
+  actionOr: "or"
 }
