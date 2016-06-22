@@ -273,8 +273,7 @@ app.get('/auth/github/callback', function(req, res) {
 app.get('/login/facebook', function(req, res){
   var url = 'https://www.facebook.com/dialog/oauth';
   url += '?client_id=1689283628023344';
-  //var host = 'todo-micstach.rhcloud.com' ;
-  var host = environment.config.ip();
+  var host = environment.config.host();
   var redirect_uri = 'http://' + host + '/auth/facebook/callback';
   url += '&redirect_uri=' + encodeURIComponent(redirect_uri);
   res.redirect(url);
@@ -309,7 +308,7 @@ app.get('/auth/facebook/callback', function(req, res) {
         var access_token = values['access_token'];
 
         request.get({
-          url: 'https://graph.facebook.com/v2.5/me/permissions?access_token=' + access_token,
+          url: 'https://graph.facebook.com/v2.5/me?access_token=' + access_token,
           headers: {
             'User-Agent': '2do-server'
             }
