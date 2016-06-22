@@ -164,10 +164,10 @@ app.get('/home', authorize, function(req, res) {
 app.get('/login/github', function(req, res){
   var url = 'https://github.com/login/oauth/authorize';
   url += '?client_id=17da81822abb58babb72';
-  var host = 'todo-micstach.rhcloud.com' ;
-  //var host = environment.config.ip();
-  var redirect_uri = 'https://' + host + '/auth/github/callback';
+  var redirect_uri = 'https://' + environment.config.host() + '/auth/github/callback';
   url += '&redirect_uri=' + encodeURIComponent(redirect_uri);
+
+  console.log('redirect_url:', url);
   res.redirect(url);
 });
 
@@ -246,8 +246,6 @@ app.get('/auth/github/callback', function(req, res) {
                       console.log('User created: ' + JSON.stringify(user)) 
 
                       utils.helpers.storeUserInSessionAndRedirect(req, res, user, resources) ;
-                      
-                      // sendEmail(user, getRegisterEmailContent(user), null, null);
                     }) ;
                   }) ;
                 } else {
@@ -274,7 +272,7 @@ app.get('/login/facebook', function(req, res){
   var url = 'https://www.facebook.com/dialog/oauth';
   url += '?client_id=1689283628023344';
   var host = environment.config.host();
-  var redirect_uri = 'http://' + host + '/auth/facebook/callback';
+  var redirect_uri = 'https://' + host + '/auth/facebook/callback';
   url += '&redirect_uri=' + encodeURIComponent(redirect_uri);
   res.redirect(url);
 });
@@ -282,8 +280,8 @@ app.get('/login/facebook', function(req, res){
 app.get('/auth/facebook/callback', function(req, res) {
   console.log('get: callback');
 
-  var host = environment.config.ip();
-  var redirect_uri = 'http://' + host + '/auth/facebook/callback';
+  var host = environment.config.host();
+  var redirect_uri = 'https://' + host + '/auth/facebook/callback';
   //url += '&redirect_uri=' + encodeURIComponent(redirect_uri);
   console.log('redirect_uri: ' + redirect_uri);
 
@@ -298,27 +296,16 @@ app.get('/auth/facebook/callback', function(req, res) {
 
       if (!error && response.statusCode == 200) {
           
-        var parameters = body.split('&');
-        var values = {} ;
-        for (var i=0; i<parameters.length; i++) {
-          var keyValues = parameters[i].split('=');
-          values[keyValues[0]]=keyValues[1];
-        }
+        var responseObject = JSON.parse(body) ;
+        var access_token = responseObject['access_token'];
 
-        var access_token = values['access_token'];
+        console.log('verify token request:', 'https://graph.facebook.com/me?access_token=' + access_token);
 
-        request.get({
-          url: 'https://graph.facebook.com/v2.5/me?access_token=' + access_token,
-          headers: {
-            'User-Agent': '2do-server'
-            }
-          },
+        request('https://graph.facebook.com/me?fields=name,id,email&access_token=' + access_token,
           function(error, response, body) {
-            console.log('facebook user api:' + body);
-
             if (!error && response.statusCode == 200) {
-              console.log(body);
-              var githubUser = JSON.parse(body);
+              console.log('facebook user api response', body);
+              var facebookUser = JSON.parse(body);
               
               var mongoUrl = environment.config.db() ;  
               var locale = utils.helpers.getLocale(req, res) ;
@@ -330,13 +317,18 @@ app.get('/auth/facebook/callback', function(req, res) {
                 var users = db.collection('users') ;
                 var projects = db.collection('projects') ;
 
-                users.findOne({name: githubUser.name, email: githubUser.email}, function(err, user) {
+                users.findOne({
+                    name: facebookUser.name, 
+                    email: facebookUser.email
+                  }, 
+                  function(err, user) {
                   if (user === null) {
-                  
+                    console.log('facebook user created');
+
                     var defaultProject = {
                       name: resources.defaultProjectName,
                       users: [
-                        { name: githubUser.name, role: "owner"}
+                        { name: facebookUser.name, role: "owner"}
                       ]
                     }
 
@@ -346,8 +338,8 @@ app.get('/auth/facebook/callback', function(req, res) {
                       console.log('Project created: ' + JSON.stringify(project)) ;
 
                       var newUser = {
-                        email: githubUser.email, 
-                        name: githubUser.name, 
+                        email: facebookUser.email, 
+                        name: facebookUser.name, 
                         password: '',
                         configuration: {
                           project_id: project._id,
@@ -361,8 +353,6 @@ app.get('/auth/facebook/callback', function(req, res) {
                         console.log('User created: ' + JSON.stringify(user)) 
 
                         utils.helpers.storeUserInSessionAndRedirect(req, res, user, resources) ;
-                        
-                        // sendEmail(user, getRegisterEmailContent(user), null, null);
                       }) ;
                     }) ;
                   } else {

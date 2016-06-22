@@ -29,5 +29,13 @@ exports.config = {
 
   protocol: function() {
     return 'http';
+  },
+
+  host: function() {
+    if (process.env.OPENSHIFT_NODEJS_IP) {
+      return 'todo-micstach.rhcloud.com';
+    } else {
+      return this.ip(); 
+    }
   }
 }
