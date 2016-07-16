@@ -28,7 +28,11 @@ exports.config = {
   },
 
   protocol: function() {
-    return 'http';
+    if (process.env.OPENSHIFT_NODEJS_IP) {
+      return 'https';
+    } else {
+      return 'http';
+    } 
   },
 
   host: function() {
@@ -37,5 +41,15 @@ exports.config = {
     } else {
       return this.ip(); 
     }
+  },
+
+  env: function() {
+    if (process.env.OPENSHIFT_NODEJS_IP) {
+      return "production";
+    }
+    else {
+      return "development";
+    }
   }
+
 }

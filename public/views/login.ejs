@@ -47,8 +47,11 @@
         <button type="submit" class="login-button form-control btn btn-primary"><strong><%= resources.signInButtonText %></strong></button>
       </form>
       <div class="centered" style="margin-top: 20px; text-align: center;"><%= resources.actionOr %></div>
-      <div class="centered" style="margin-top: 20px; color: black;">
+      <div class="centered" style="margin-top: 20px;">
         <button onclick="location.href='/login/github'" class="form-control btn btn-success"><%= resources.signInWithButtonText %> <strong>GitHub</strong></button>
+      </div>
+      <div class="centered" style="margin-top: 20px;">
+        <button onclick="location.href='/login/facebook'" class="form-control btn btn-success"><%= resources.signInWithButtonText %> <strong>Facebook</strong></button>
       </div>
     </div>
   </body>

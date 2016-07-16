@@ -28,6 +28,16 @@
     <script src="../scripts/home.js"></script>
     <script src="../scripts/home-app.js"></script>
     <script src="../scripts/google-analytics.js"></script>
+    
+    <script type="text/javascript">
+      // remove facebook's '#_=_'
+      if (window.location.hash == '#_=_'){
+          history.replaceState 
+              ? history.replaceState(null, null, window.location.href.split('#')[0])
+              : window.location.hash = '';
+      }
+    </script>    
+
   </head>
   <body ng-controller="Notes">
     

@@ -1,3 +1,5 @@
+var Promise = require("bluebird");
+var githubEnvironment = require('./credentials/github');
 var express = require('express') ;
 var session = require('express-session') ;
 var cookieParser = require('cookie-parser') ;
@@ -8,6 +10,8 @@ var nodemailer = require('nodemailer') ;
 var locale = require("locale") ;
 var request = require("request") ;
 
+Promise.promisifyAll(mongodb);
+
 var supportedLanguages = ["en-US", "pl-PL"] ;
 
 var languages = {
@@ -16,6 +20,9 @@ var languages = {
 } ;
 
 var environment = require('./environment.js') ;
+
+var githubCredentials = githubEnvironment[environment.config.env()];
+
 var utils = require('./utils.js');
 var MongoClient = mongodb.MongoClient ;
 
@@ -126,11 +133,6 @@ app.get('/', function(req, res) {
   }
 });
 
-app.post('/locale/:locale', function(req, res){
-  console.log("POST: /locale/" + req.params.locale) ;
-  res.cookie('locale', req.params.locale).send();
-}) ;
-
 app.get('/home', authorize, function(req, res) {
 
   var locale = utils.helpers.getLocale(req, res) ;
@@ -150,21 +152,24 @@ app.get('/home', authorize, function(req, res) {
   var mongoUrl = environment.config.db();  
   var userid = req.session.userid ;
 
-  MongoClient.connect(mongoUrl, function(err, db) {
-    db.collection('users').findOne({_id: mongodb.ObjectID(userid)}, function(err, user){
+  MongoClient.connectAsync(mongoUrl)
+    .then(function(db) {
+      return db.collection('users').findOne({_id: mongodb.ObjectID(userid)}) ;  
+    })
+    .then(function(user){
       parameters.username = user.name;
       parameters.userid = user.userid;
       
       res.render('home', parameters) ;
-      db.close();
-    }) ;
-  });
+    });
 });
 
 app.get('/login/github', function(req, res){
   var url = 'https://github.com/login/oauth/authorize';
-  url += '?client_id=17da81822abb58babb72';
-  var redirect_uri = 'https://' + environment.config.host() + '/auth/github/callback';
+  url += "?client_id=" + githubCredentials.client_id;
+  
+  var protocol = environment.config.protocol();
+  var redirect_uri = protocol + '://' + environment.config.host() + '/auth/github/callback';
   url += '&redirect_uri=' + encodeURIComponent(redirect_uri);
 
   console.log('redirect_url:', url);
@@ -172,14 +177,14 @@ app.get('/login/github', function(req, res){
 });
 
 app.get('/auth/github/callback', function(req, res) {
-  console.log('get: callback');
+  console.log('github callback: ' + JSON.stringify(githubCredentials));
 
   request.post(
     'https://github.com/login/oauth/access_token',
     { 
       form: { 
-        client_id: '17da81822abb58babb72',
-        client_secret: '1fd316d8dfa147d6a487e3ac30157ca594b12a96',
+        client_id: githubCredentials.client_id,
+        client_secret: githubCredentials.client_secret,
         code: req.query.code
       } 
     },
@@ -246,8 +251,6 @@ app.get('/auth/github/callback', function(req, res) {
                       console.log('User created: ' + JSON.stringify(user)) 
 
                       utils.helpers.storeUserInSessionAndRedirect(req, res, user, resources) ;
-                      
-                      // sendEmail(user, getRegisterEmailContent(user), null, null);
                     }) ;
                   }) ;
                 } else {
@@ -259,41 +262,132 @@ app.get('/auth/github/callback', function(req, res) {
                 }
               });
             });
-
-            //re            //req.session.userid = resp.id ;
-            //req.session.project_id = null ;
-            //req.session.username = resp.name ;
-            //s.writeHead(200, {'Content-Type': 'application/json'});
-            //res.end(JSON.stringify({body: body}));
-            //res.send();
-            //res.redirect('/home');
           }
         );
-
-
-        //req.session.userid = user._id ;
-        //req.session.project_id = user.configuration.project_id ;
-        //req.session.username = user.name ;
-
-        //res.redirect('/home');
-
       } else {
         res.writeHead(200, {'Content-Type': 'application/json'});
         res.end(JSON.stringify({queryCode: req.query.code, error: error}));
         res.send();
-        
-        //res.redirect('/home');
       }
     }
   );  
- 
-  //res.writeHead(200, {'Content-Type': 'application/json'});
-  //res.end(JSON.stringify({queryCode: req.query.code, header: req.headers}));
-  //res.send();
 });
 
-// app.post('/auth/github/callback', function(req, res) {
-// });
+app.get('/login/facebook', function(req, res){
+  var url = 'https://www.facebook.com/dialog/oauth';
+
+
+
+  url += '?client_id=1689283628023344';
+  var host = environment.config.host();
+  var protocol = environment.config.protocol();
+  var redirect_uri = protocol + '://' + host + '/auth/facebook/callback';
+  url += '&redirect_uri=' + encodeURIComponent(redirect_uri);
+  res.redirect(url);
+});
+
+app.get('/auth/facebook/callback', function(req, res) {
+  console.log('get: callback');
+
+  var host = environment.config.host();
+  var redirect_uri = 'https://' + host + '/auth/facebook/callback';
+  //url += '&redirect_uri=' + encodeURIComponent(redirect_uri);
+  console.log('redirect_uri: ' + redirect_uri);
+
+  var url = 'https://graph.facebook.com/v2.3/oauth/access_token' ;
+  url += '?client_id=1689283628023344';
+  url += '&client_secret=0fa323261a660265fa447f3cd67d90fe';
+  url += '&code=' + req.query.code;
+  url += '&redirect_uri=' + encodeURIComponent(redirect_uri);
+
+  request.get(url, function (error, response, body) {
+      console.log('token request:' + body);
+
+      if (!error && response.statusCode == 200) {
+          
+        var responseObject = JSON.parse(body) ;
+        var access_token = responseObject['access_token'];
+
+        console.log('verify token request:', 'https://graph.facebook.com/me?access_token=' + access_token);
+
+        request('https://graph.facebook.com/me?fields=name,id,email&access_token=' + access_token,
+          function(error, response, body) {
+            if (!error && response.statusCode == 200) {
+              console.log('facebook user api response', body);
+              var facebookUser = JSON.parse(body);
+              
+              var mongoUrl = environment.config.db() ;  
+              var locale = utils.helpers.getLocale(req, res) ;
+              var resources = require('./private/register.' + locale + '.js').resources ;
+
+              // register if not exists
+              MongoClient.connect(mongoUrl, function(err, db) {
+
+                var users = db.collection('users') ;
+                var projects = db.collection('projects') ;
+
+                users.findOne({
+                    name: facebookUser.name, 
+                    email: facebookUser.email
+                  }, 
+                  function(err, user) {
+                  if (user === null) {
+                    console.log('facebook user created');
+
+                    var defaultProject = {
+                      name: resources.defaultProjectName,
+                      users: [
+                        { name: facebookUser.name, role: "owner"}
+                      ]
+                    }
+
+                    projects.insert(defaultProject, function(err, result) {
+                      var project = result.ops[0] ;
+
+                      console.log('Project created: ' + JSON.stringify(project)) ;
+
+                      var newUser = {
+                        email: facebookUser.email, 
+                        name: facebookUser.name, 
+                        password: '',
+                        configuration: {
+                          project_id: project._id,
+                          tags:[]
+                        }
+                      } ;
+
+                      users.insert(newUser, function(err, result) {           
+                        var user = result.ops[0];
+
+                        console.log('User created: ' + JSON.stringify(user)) 
+
+                        utils.helpers.storeUserInSessionAndRedirect(req, res, user, resources) ;
+                      }) ;
+                    }) ;
+                  } else {
+                    req.session.userid = user._id ;
+                    req.session.project_id = user.configuration.project_id ;
+                    req.session.username = user.name ;
+
+                    res.redirect('/home');
+                  }
+                });
+              });
+            } else {
+              res.writeHead(200, {'Content-Type': 'application/json'});
+              res.end(JSON.stringify({body: body, error: error}));
+              res.send();
+            }
+          }
+        );
+      } else {
+        res.writeHead(200, {'Content-Type': 'application/json'});
+        res.end(JSON.stringify({queryCode: req.query.code, error: error}));
+        res.send();
+      }
+    }
+  );  
+});
 
 app.get('/login', function(req, res, next) {
  
