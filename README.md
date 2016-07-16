@@ -8,5 +8,5 @@ It's a todo-list project: https://todo-micstach.rhcloud.com
 
 ## Starting
 - ```npm install```
-- ```mongodb --dbpath <dbpath>```
+- ```mongod --dbpath <dbpath>```
 - ```node server.js```
